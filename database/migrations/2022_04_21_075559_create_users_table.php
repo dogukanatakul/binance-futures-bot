@@ -22,6 +22,8 @@ return new class extends Migration {
             $table->dateTime('subscription_period')->nullable()->default(null);
             $table->decimal('balance', 38, 22)->default(0);
             $table->tinyInteger('status')->default(0);
+            $table->bigInteger('reference_codes_id')->unsigned()->nullable()->default(null);
+            $table->foreign('reference_codes_id')->references('id')->on('reference_codes');
             $table->softDeletes();
             $table->timestamps();
         });

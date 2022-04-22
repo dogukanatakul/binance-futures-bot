@@ -1,1 +1,0 @@
-https://python-binance.readthedocs.io/en/latest/market_data.html#id11
