@@ -1,14 +1,12 @@
 import random
 import time
-
 import requests
 from binance.client import Client
-import datetime
 import pandas as pd
-import asyncio
 from datetime import datetime
 import termtables as tt
-import sys
+
+url = "http://192.168.1.101:8000/api/"
 
 
 def get_diff(previous, current):
@@ -150,8 +148,8 @@ getBot = {
 while True:
     while getBot['status'] == 0 or getBot['status'] == 2:
         time.sleep(random.randint(3, 5))
-        getBot = requests.post('http://192.168.1.101:8000/api/get-order/new', json={
-            'neresi': 'doğukanın taşakları'
+        getBot = requests.post(url + 'get-order/new', headers={
+            'neresi': 'dogunun+billurlari'
         }).json()
     print(getBot, "yeni emir")
     client = Client(getBot['api_key'], getBot['api_secret'], {"timeout": 40})
@@ -160,6 +158,11 @@ while True:
     if not dual['dualSidePosition']:
         client.futures_change_position_mode(dualSidePosition=True)
     result = client.futures_change_leverage(symbol=getBot['parity'], leverage=getBot['leverage'])
+
+    info = client.futures_exchange_info()
+    fractions = {}
+    for item in info['symbols']:
+        fractions[item['symbol']] = item['quantityPrecision']
 
     # LONG: BUY | SHORT: SELL
 
@@ -190,14 +193,23 @@ while True:
                 'D': getKline['D'],
                 'J': getKline['J']
             }
-            syncBot = requests.post('http://192.168.1.101:8000/api/get-order/' + str(getBot['bot']), json={
-                'neresi': 'doğukanın taşakları'
+            syncBot = requests.post(url + 'get-order/' + str(getBot['bot']), headers={
+                'neresi': 'dogunun+billurlari'
             }).json()
             print(syncBot)
             for bt in syncBot.keys():
                 getBot[bt] = syncBot[bt]
             if lastSide == False and lastType == False and getBot['status'] == 2:
                 operationLoop = False
+                setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                    'neresi': 'dogunun+billurlari'
+                }, json={
+                    'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    'K': getKline['K'],
+                    'D': getKline['D'],
+                    'J': getKline['J'],
+                    'action': 'STOP',
+                }).status_code
             else:
                 if shortTrigger >= getBot['short_trigger_min']:
                     if getKline['type'] == 'LONG' and longStatus == False:
@@ -216,6 +228,17 @@ while True:
                         shortTrigger = 0
                     elif not longStatus:
                         startJ = getKline['J']
+                        setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                            'neresi': 'dogunun+billurlari'
+                        }, json={
+                            'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            'K': getKline['K'],
+                            'D': getKline['D'],
+                            'J': getKline['J'],
+                            'action': 'LONG_WAITING',
+                        }).status_code
+                        if setBot != 200:
+                            raise Exception('set_bot_fail')
                         print("LONG BEKLENİYOR..")
                     if longStatus:
                         if lastType == 'SHORT':
@@ -225,22 +248,28 @@ while True:
                         if getKline:
                             if not lastType:
                                 buyPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
-                                lastQuantity = int((getOrderBalance(client, getBot['source'], getBot['percent']) / buyPrice) * getBot['leverage'])
-                                if lastQuantity <= 0:
+                                lastQuantity = "{:0.0{}f}".format(float((getOrderBalance(client, getBot['source'], getBot['percent']) / buyPrice) * getBot['leverage']), fractions[getBot['parity']])
+                                if float(lastQuantity) <= 0:
                                     raise Exception("Bakiye hatası")
                                 lastSide = getKline['side']
                                 lastType = getKline['type']
                                 J = getKline['J']
                                 cutOrder = False
-                                results.append({
+                                setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                    'neresi': 'dogunun+billurlari'
+                                }, json={
                                     'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                    'price': buyPrice,
-                                    'quantity': lastQuantity,
+                                    'K': getKline['K'],
+                                    'D': getKline['D'],
+                                    'J': getKline['J'],
                                     'side': getKline['side'],
-                                    'type': 'MARKET',
-                                    'action': 'OPEN'
-                                })
-                                terminalTable(results)
+                                    'position_side': getKline['type'],
+                                    'quantity': lastQuantity,
+                                    'price': buyPrice,
+                                    'action': 'OPEN',
+                                }).status_code
+                                if setBot != 200:
+                                    raise Exception("set_bot_fail")
                                 fakeReverse = 0
                                 # client.futures_create_order(symbol=getBot['parity'], side=getKline['side'], type='MARKET', quantity=lastQuantity, positionSide=getKline['type'])
                             elif lastType != getKline['type']:
@@ -249,20 +278,27 @@ while True:
                                         operationDelay = 1
                                         buyPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
                                         if not cutOrder:
-                                            results.append({
+                                            setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                                'neresi': 'dogunun+billurlari'
+                                            }, json={
                                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                                'price': buyPrice,
-                                                'quantity': lastQuantity,
+                                                'K': getKline['K'],
+                                                'D': getKline['D'],
+                                                'J': getKline['J'],
                                                 'side': lastSide,
-                                                'type': 'MARKET',
-                                                'action': 'CLOSE'
-                                            })
-                                            terminalTable(results)
+                                                'position_side': lastType,
+                                                'quantity': lastQuantity,
+                                                'price': buyPrice,
+                                                'action': 'CLOSE',
+                                            }).status_code
+                                            if setBot != 200:
+                                                raise Exception("set_bot_fail")
+
                                             # client.futures_cancel_all_open_orders(symbol=getBot['parity'])
                                             # client.futures_create_order(symbol=getBot['parity'], side=getKline['side'], positionSide=lastType, type="MARKET", quantity=lastQuantity)
 
-                                        lastQuantity = int((getOrderBalance(client, getBot['source'], getBot['percent']) / buyPrice) * getBot['leverage'])
-                                        if lastQuantity <= 0:
+                                        lastQuantity = "{:0.0{}f}".format(float((getOrderBalance(client, getBot['source'], getBot['percent']) / buyPrice) * getBot['leverage']), fractions[getBot['parity']])
+                                        if float(lastQuantity) <= 0:
                                             raise Exception("Bakiye hatası")
                                         if getBot['status'] == 2:
                                             operationLoop = False
@@ -272,20 +308,24 @@ while True:
                                             lastType = getKline['type']
                                             J = getKline['J']
                                             cutOrder = False
-                                            results.append({
+                                            setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                                'neresi': 'dogunun+billurlari'
+                                            }, json={
                                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                                'price': buyPrice,
-                                                'quantity': lastQuantity,
+                                                'K': getKline['K'],
+                                                'D': getKline['D'],
+                                                'J': getKline['J'],
                                                 'side': getKline['side'],
-                                                'type': 'MARKET',
-                                                'action': 'OPEN'
-                                            })
-                                            terminalTable(results)
+                                                'position_side': getKline['type'],
+                                                'quantity': lastQuantity,
+                                                'price': buyPrice,
+                                                'action': 'OPEN',
+                                            }).status_code
+                                            if setBot != 200:
+                                                raise Exception("set_bot_fail")
                                             # client.futures_create_order(symbol=getBot['parity'], side=getKline['side'], type='MARKET', quantity=lastQuantity, positionSide=getKline['type'])
                                             fakeReverse = 0
                                             print(text.format(lastType), text.format(" İŞLEM AÇILDI"))
-
-
                                     else:
                                         operationDelay = 1
                                         print("İŞLER KARIŞTI! DEVAM...")
@@ -309,15 +349,21 @@ while True:
                                     if fakeReverse >= getBot['fake_reverse']:
                                         cutOrder = True
                                         buyPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
-                                        results.append({
+                                        setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                            'neresi': 'dogunun+billurlari'
+                                        }, json={
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                            'price': buyPrice,
+                                            'K': getKline['K'],
+                                            'D': getKline['D'],
+                                            'J': getKline['J'],
+                                            'side': "SELL",
+                                            'position_side': "LONG",
                                             'quantity': lastQuantity,
-                                            'side': 'BUY',
-                                            'type': 'MARKET',
-                                            'action': 'CLOSE_TRIGGER'
-                                        })
-                                        terminalTable(results)
+                                            'price': buyPrice,
+                                            'action': 'CLOSE_TRIGGER',
+                                        }).status_code
+                                        if setBot != 200:
+                                            raise Exception("set_bot_fail")
                                         # client.futures_cancel_all_open_orders(symbol=getBot['parity'])
                                         # client.futures_create_order(symbol=getBot['parity'], side="SELL", positionSide="LONG", type="MARKET", quantity=lastQuantity)
                                     else:
@@ -327,15 +373,21 @@ while True:
                                     if fakeReverse >= getBot['fake_reverse']:
                                         cutOrder = True
                                         buyPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
-                                        results.append({
+                                        setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                            'neresi': 'dogunun+billurlari'
+                                        }, json={
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                            'price': buyPrice,
+                                            'K': getKline['K'],
+                                            'D': getKline['D'],
+                                            'J': getKline['J'],
+                                            'side': "BUY",
+                                            'position_side': "SHORT",
                                             'quantity': lastQuantity,
-                                            'side': 'SELL',
-                                            'type': 'MARKET',
-                                            'action': 'CLOSE_TRIGGER'
-                                        })
-                                        terminalTable(results)
+                                            'price': buyPrice,
+                                            'action': 'CLOSE_TRIGGER',
+                                        }).status_code
+                                        if setBot != 200:
+                                            raise Exception("set_bot_fail")
                                         # client.futures_cancel_all_open_orders(symbol=getBot['parity'])
                                         # client.futures_create_order(symbol=getBot['parity'], side="BUY", positionSide="SHORT", type="MARKET", quantity=lastQuantity)
                                     else:
@@ -345,13 +397,40 @@ while True:
                                 if cutOrder:
                                     fakeStatus += 1
                                     print("BEKLİYOR:")
+                                    if getBot['status'] == 2:
+                                        operationLoop = False
+                                        print("emir kapatıldı!")
                                 else:
                                     fakeStatus += 1
+                                    setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                        'neresi': 'dogunun+billurlari'
+                                    }, json={
+                                        'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                        'K': getKline['K'],
+                                        'D': getKline['D'],
+                                        'J': getKline['J'],
+                                        'side': lastSide,
+                                        'position_side': lastType,
+                                        'quantity': lastQuantity,
+                                        'price': buyPrice,
+                                        'action': 'CONTINUE',
+                                    }).status_code
+                                    if setBot != 200:
+                                        raise Exception("set_bot_fail")
                                     print(text.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")), text.format(lastType + " DEVAM EDİYOR"))
                 else:
                     if getKline['type'] == 'SHORT':
                         shortTrigger += 1
                         print("SHORT TRIGGER ADD")
                     print("SHORT TRICKER")
+                    setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                        'neresi': 'dogunun+billurlari'
+                    }, json={
+                        'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        'K': getKline['K'],
+                        'D': getKline['D'],
+                        'J': getKline['J'],
+                        'action': 'SHORT_TRICKER',
+                    }).status_code
         else:
             time.sleep(1)

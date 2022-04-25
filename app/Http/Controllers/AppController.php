@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Leverage;
 use App\Models\Order;
+use App\Models\OrderOperation;
 use App\Models\Parity;
 use App\Models\Time;
 use App\Models\User;
@@ -66,43 +67,111 @@ class AppController extends Controller
 
     public function dashboard(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        $user = User::with('order')->where('login_key', $this->user)->first();
-        return view('dashboard', compact('user'));
+        $orderCheck = User::with('order')
+            ->where('login_key', $this->user)
+            ->whereHas('order', function ($q) {
+                $q->whereNotIn('status', [3]);
+            })
+            ->first();
+        $user = User::with(['order' => function ($q) {
+            $q->with(['leverage', 'parity', 'time', 'order_operation'])->orderBy('id', 'DESC');
+        }])
+            ->where('login_key', $this->user)
+            ->first();
+        return view('dashboard', compact('user', 'orderCheck'));
     }
 
-    public function newOrder(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
+    public function newOrder(Request $request): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\Contracts\Foundation\Application
     {
-        $parities = Parity::get()->pluck('parity');
-        $leverages = Leverage::get()->pluck('leverage');
-        $times = Time::get()->pluck('time');
-        return view('new_order', compact('parities', 'leverages', 'times'));
-    }
+        $user = User::with('order')
+            ->where('login_key', $this->user)
+            ->whereHas('order', function ($q) {
+                $q->whereNotIn('status', [3]);
+            })
+            ->first();
+        if (empty($user)) {
+            $leverages = [];
+            $times = [];
+            $parities = [];
 
-    public function orderSave(Request $request)
-    {
-        $parities = Parity::get()->pluck('parity');
-        $leverages = Leverage::get()->pluck('leverage');
-        $times = Time::get()->pluck('time');
-        $validator = validator()->make(request()->all(), [
-            'leverage' => 'required|filled|integer|in:' . implode(",", $leverages->toArray()),
-            'time' => 'required|filled|string|in:' . implode(",", $times->toArray()),
-            'percent' => 'required|filled|integer|in:' . implode(",", config('order.percent')),
-            'parity' => 'required|filled|string|in:' . implode(",", $parities->toArray())
-        ]);
-        if ($validator->fails()) {
+            if ($request->filled('parity')) {
+                $parity = Parity::where('parity', $request->parity)->first();
+                $leverages = Leverage::get()->pluck('leverage');
+                $times = Time::where('parities_id', $parity->id)->get()->pluck('time');
+            } else {
+                $parities = Parity::get()->pluck('parity');
+            }
+            return view('new_order', compact('parities', 'leverages', 'times'));
+        } else {
             return redirect()->back();
         }
-        $parity = Parity::where('parity', $request->parity)->first();
-        $leverage = Leverage::where('leverage', $request->leverage)->first();
-        $time = Time::where('time', $request->time)->first();
-        $user = User::where('login_key', $this->user)->first();
-        Order::create([
-            'users_id' => $user->id,
-            'parities_id' => $parity->id,
-            'leverages_id' => $leverage->id,
-            'times_id' => $time->id,
-            'percent' => $request->percent,
-        ]);
-        return redirect()->route('panel.dashboard');
+    }
+
+    public function orderSave(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        $user = User::with('order')
+            ->where('login_key', $this->user)
+            ->whereHas('order', function ($q) {
+                $q->whereNotIn('status', [3]);
+            })
+            ->first();
+        if (empty($user)) {
+            $parities = Parity::get()->pluck('parity');
+            $leverages = Leverage::get()->pluck('leverage');
+            $times = Time::get()->pluck('time');
+            $validator = validator()->make(request()->all(), [
+                'leverage' => 'required|filled|integer|in:' . implode(",", $leverages->toArray()),
+                'time' => 'required|filled|string|in:' . implode(",", $times->toArray()),
+                'percent' => 'required|filled|integer|in:' . implode(",", config('order.percent')),
+                'parity' => 'required|filled|string|in:' . implode(",", $parities->toArray())
+            ]);
+            if ($validator->fails()) {
+                return redirect()->back();
+            }
+            $parity = Parity::where('parity', $request->parity)->first();
+            $leverage = Leverage::where('leverage', $request->leverage)->first();
+            $time = Time::where('time', $request->time)->first();
+            $user = User::where('login_key', $this->user)->first();
+            Order::create([
+                'users_id' => $user->id,
+                'parities_id' => $parity->id,
+                'leverages_id' => $leverage->id,
+                'times_id' => $time->id,
+                'percent' => $request->percent,
+            ]);
+            return redirect()->route('panel.dashboard');
+        } else {
+            return redirect()->back();
+        }
+    }
+
+    public function orderStop($id): \Illuminate\Http\RedirectResponse
+    {
+        try {
+            Order::whereHas('user', function ($q) {
+                $q->where('login_key', $this->user);
+            })->where('id', $id)->update([
+                'status' => 2
+            ]);
+            return redirect()->back();
+        } catch (\Exception $exception) {
+            return redirect()->back();
+        }
+    }
+
+    public function orderDetail($id)
+    {
+        $orderOperations = OrderOperation::with(['order' => function ($q) {
+            $q->with(['user']);
+        }])
+            ->whereHas('order.user', function ($q) {
+                $q->where('login_key', $this->user);
+            })
+            ->where('orders_id', $id)
+            ->get();
+        if ($orderOperations->count() == 0) {
+            return redirect()->back();
+        }
+        return view('order_detail', compact('orderOperations'));
     }
 }

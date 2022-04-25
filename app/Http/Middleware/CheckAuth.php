@@ -16,7 +16,7 @@ class CheckAuth
      * @param \Closure(\Illuminate\Http\Request): (\Illuminate\Http\Response|\Illuminate\Http\RedirectResponse)  $next
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
     {
         if (Session::has('u2317') && !empty($user = User::where('login_key', Session::get('u2317'))->first())) {
             if ((empty($user->api_key) || empty($user->api_secret)) && !in_array($request->route()->getActionMethod(), ['binance', 'binanceSave'])) {

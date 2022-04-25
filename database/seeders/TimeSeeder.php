@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Parity;
 use App\Models\Time;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -47,8 +48,13 @@ class TimeSeeder extends Seeder
                 'trigger_diff' => 5,
             ],
         ];
-        foreach ($times as $time) {
-            Time::create($time);
+
+        $parities = Parity::get()->pluck('id');
+        foreach ($parities as $parity) {
+            foreach ($times as $time) {
+                $time['parities_id'] = $parity;
+                Time::create($time);
+            }
         }
     }
 }

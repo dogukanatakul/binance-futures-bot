@@ -14,16 +14,19 @@ return new class extends Migration {
     {
         Schema::create('order_operations', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('orders_id')->unsigned();
-            $table->foreign('orders_id')->references('id')->on('orders');
-            $table->decimal("price", 38, 22);
-            $table->decimal("quantity", 38, 22);
-            $table->decimal("balance", 38, 22);
-            $table->string('side');
-            $table->string('position_side');
-            $table->tinyInteger('profit')->default(0);
-            $table->timestamp('start');
-            $table->timestamp('finish')->nullable()->default(null);
+            $table->bigInteger("orders_id")->unsigned();
+            $table->foreign("orders_id")->references("id")->on("orders");
+            $table->decimal("price", 38, 22)->nullable()->default(null);
+            $table->decimal("quantity", 38, 22)->nullable()->default(null);
+            $table->decimal("balance", 38, 22)->default(0);
+            $table->string("side")->nullable()->default(null);
+            $table->string("position_side")->nullable()->default(null);
+            $table->string("action")->nullable()->default(null);
+            $table->tinyInteger("profit")->default(0);
+            $table->decimal("K", 38, 22)->default(0);
+            $table->decimal("D", 38, 22)->default(0);
+            $table->decimal("J", 38, 22)->default(0);
+            $table->timestamp("time");
             $table->softDeletes();
             $table->timestamps();
         });

@@ -3,15 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class User extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'email',
+        'admin',
         'login_key',
         'reference_codes_id',
         'subscription_period',
@@ -19,17 +21,21 @@ class User extends Model
         'api_secret',
     ];
 
+    protected $casts = [
+        'admin' => 'boolean'
+    ];
+
     protected $attributes = [
         'reference_codes_id' => '',
         'subscription_period' => '',
     ];
 
-    public function reference()
+    public function reference(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(ReferenceCode::class, 'id', 'reference_codes_id');
     }
 
-    public function order()
+    public function order(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Order::class, 'users_id', 'id');
     }

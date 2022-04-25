@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'datakul@yandex.com',
             'login_key' => 'X',
             'status' => 2,
+            'admin' => true,
             'api_key' => 'SjlxXktwDHd1h7Nrg9HnAQM4oJ7R8tu9H7joAEJM9mPc79RWkj0qDMviby1wb7Zq',
             'api_secret' => 'KWyjvXX4lkMBtlwIj9R4BIJkpLgYcfwNfFIiSUemojroJaEgDLgGsnz7rfb4CHYG',
         ]);

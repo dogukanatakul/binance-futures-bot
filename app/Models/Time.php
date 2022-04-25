@@ -3,10 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Time extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
+        'parities_id',
         'time',
         'start_diff',
         'trigger_diff',
@@ -15,4 +19,9 @@ class Time extends Model
         'fake_reverse',
         'status',
     ];
+
+    public function parity(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Parity::class, 'id', 'parities_id');
+    }
 }

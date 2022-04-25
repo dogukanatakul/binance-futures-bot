@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'users_id',
         'parities_id',
@@ -16,6 +19,11 @@ class Order extends Model
         'finish',
         'status',
         'bot',
+    ];
+
+    protected $casts = [
+        'start' => 'datetime',
+        'finish' => 'datetime',
     ];
 
     public function leverage(): \Illuminate\Database\Eloquent\Relations\HasOne
@@ -36,5 +44,10 @@ class Order extends Model
     public function user(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(User::class, 'id', 'users_id');
+    }
+
+    public function order_operation(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(OrderOperation::class, 'orders_id', 'id');
     }
 }
