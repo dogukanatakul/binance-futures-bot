@@ -28,7 +28,7 @@
                             </td>
                             <td class="text-end">
                                 @if($user->status==1)
-                                        <a href="{{ route('panel.admin.users')."?confirmation=".$user->id }}" class="btn btn-outline-secondary btn-sm">Onayla</a>
+                                    <a href="{{ route('panel.admin.users')."?confirmation=".$user->id }}" class="btn btn-outline-secondary btn-sm">Onayla</a>
                                 @else
                                     <a href="{{ route('panel.admin.users')."?admin=".$user->id }}" class="btn btn-outline-secondary btn-sm">{{ $user->admin?'Admin':'Üye' }}</a>
                                 @endif
