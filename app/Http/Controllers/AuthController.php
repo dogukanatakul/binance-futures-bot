@@ -21,7 +21,7 @@ class AuthController extends Controller
                 'email' => $request->email
             ]);
         }
-        EmailAuth::dispatch($request->email);
+        EmailAuth::dispatch($request->email)->onQueue('email');
         return view('email.check');
     }
 }
