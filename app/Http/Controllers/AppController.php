@@ -43,18 +43,22 @@ class AppController extends Controller
     {
         $validator = validator()->make(request()->all(), [
             'api_key' => 'required|filled|string',
-            'api_secret' => 'required|filled|string'
+            'api_secret' => 'required|filled|string',
+            'binance_id' => 'required|filled|integer',
         ]);
         if ($validator->fails()) {
+            Session::flash('error', 'Hatalı girişler!');
             return redirect()->back();
         }
         try {
             User::where('login_key', $this->user)->update([
                 'api_key' => $request->api_key,
                 'api_secret' => $request->api_secret,
+                'binance_id' => $request->binance_id,
                 'status' => 1,
             ]);
         } catch (\Exception $exception) {
+            Session::flash('error', 'Zaten kayıtlı!');
             return redirect()->back();
         }
         return redirect()->route('panel.binance_waiting');
@@ -103,7 +107,7 @@ class AppController extends Controller
             }
             return view('new_order', compact('parities', 'leverages', 'times'));
         } else {
-            return redirect()->back();
+            return redirect()->route('panel.dashboard');
         }
     }
 
@@ -141,7 +145,7 @@ class AppController extends Controller
             ]);
             return redirect()->route('panel.dashboard');
         } else {
-            return redirect()->back();
+            return redirect()->route('panel.dashboard');
         }
     }
 

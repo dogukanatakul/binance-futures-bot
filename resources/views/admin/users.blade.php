@@ -12,8 +12,8 @@
                     <thead>
                     <tr>
                         <th scope="col">E-Posta</th>
-                        <th scope="col">Admin</th>
-                        <th scope="col">Bakiye</th>
+                        <th scope="col">Binance ID</th>
+                        <th scope="col">Durum</th>
                         <th scope="col">Kayıt Tarihi</th>
                     </tr>
                     </thead>
@@ -23,11 +23,15 @@
                             <td>
                                 {{ $user->email }}
                             </td>
-                            <td class="text-end">
-                                <a href="{{ route('panel.admin.users')."?admin=".$user->admin }}" class="btn btn-outline-secondary btn-sm">{{ $user->admin?'Admin':'Üye' }}</a>
-                            </td>
                             <td>
-                                {{ $user->balance }}
+                                {{ $user->binance_id }}
+                            </td>
+                            <td class="text-end">
+                                @if($user->status==1)
+                                        <a href="{{ route('panel.admin.users')."?confirmation=".$user->id }}" class="btn btn-outline-secondary btn-sm">Onayla</a>
+                                @else
+                                    <a href="{{ route('panel.admin.users')."?admin=".$user->id }}" class="btn btn-outline-secondary btn-sm">{{ $user->admin?'Admin':'Üye' }}</a>
+                                @endif
                             </td>
                             <td>
                                 {{ $user->created_at->format('y-m-d H:i') }}

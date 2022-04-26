@@ -13,6 +13,7 @@ class User extends Model
 
     protected $fillable = [
         'email',
+        'binance_id',
         'admin',
         'login_key',
         'reference_codes_id',
@@ -22,7 +23,7 @@ class User extends Model
     ];
 
     protected $casts = [
-        'admin' => 'boolean'
+        'admin' => 'boolean',
     ];
 
     protected $attributes = [

@@ -15,9 +15,21 @@ class AdminController extends Controller
         return view('admin.dashboard');
     }
 
-    public function users(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
+    public function users(Request $request): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\Contracts\Foundation\Application
     {
-        $users = User::withoutTrashed()->orderBy('email', 'ASC')->get();
+        if ($request->filled('admin')) {
+            $userUpdate = User::where('id', $request->admin)->first();
+            $userUpdate->admin = !$userUpdate->admin;
+            $userUpdate->save();
+            return redirect()->back();
+        }
+        if ($request->filled('confirmation')) {
+            $userUpdate = User::where('id', $request->confirmation)->first();
+            $userUpdate->status = 2;
+            $userUpdate->save();
+            return redirect()->back();
+        }
+        $users = User::withoutTrashed()->whereIn('status', [1, 2])->orderBy('status', 'ASC')->get();
         return view('admin.users', compact('users'));
     }
 

@@ -4,7 +4,11 @@
         <div class="row">
             <div class="col-12">
                 <div class="d-grid gap-2">
-                    <a href="{{ route('panel.admin.dashboard') }}" class="btn btn-outline-warning btn-sm">Geri Dön</a>
+                    @if(request()->filled('parity'))
+                        <a href="{{ route('panel.admin.times') }}" class="btn btn-outline-warning btn-sm">Geri Dön</a>
+                    @else
+                        <a href="{{ route('panel.admin.dashboard') }}" class="btn btn-outline-warning btn-sm">Geri Dön</a>
+                    @endif
                 </div>
             </div>
             @if(!request()->filled('parity'))

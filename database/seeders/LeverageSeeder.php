@@ -16,7 +16,7 @@ class LeverageSeeder extends Seeder
     public function run()
     {
 
-        $leverages = [10, 15, 30];
+        $leverages = [5, 10, 15];
         foreach ($leverages as $leverage) {
             Leverage::create([
                 'leverage' => $leverage
