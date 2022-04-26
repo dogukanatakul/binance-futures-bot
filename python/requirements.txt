@@ -1,0 +1,6 @@
+requests
+python-binance
+pandas
+termtables
+configparser
+DateTime

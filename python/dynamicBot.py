@@ -5,9 +5,17 @@ from binance.client import Client
 import pandas as pd
 from datetime import datetime
 import termtables as tt
+import configparser
+import os
 
-url = "http://192.168.1.101:8000/api/"
 
+def config(cat, param):
+    cnf = configparser.ConfigParser()
+    cnf.read(os.path.dirname(os.path.realpath(__file__)) + '/config.ini')
+    return str(cnf.get(cat, param))
+
+
+url = config('API', 'SITE')
 
 def get_diff(previous, current):
     try:
