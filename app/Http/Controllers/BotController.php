@@ -82,7 +82,7 @@ class BotController extends Controller
     public function getReqUser(Request $request): \Illuminate\Http\JsonResponse
     {
         if ($request->hasHeader('neresi') && $request->header('neresi') == "dogunun+billurlari") {
-            $users = User::select(['id', 'api_key', 'api_secret'])->get();
+            $users = User::select(['id', 'api_key', 'api_secret'])->whereNotNull('api_key')->whereNotNull('api_secret')->get();
             return response()->json($users->toArray());
         }
         return abort(404);
@@ -97,8 +97,6 @@ class BotController extends Controller
                 $user->api_permissions = $request->permissions;
             } else if ($request->filled('status') && $request->status == 'fail') {
                 $user->api_status = false;
-                $user->api_key = null;
-                $user->api_secret = null;
                 $user->api_permissions = [];
             } else {
                 $user->api_status = true;

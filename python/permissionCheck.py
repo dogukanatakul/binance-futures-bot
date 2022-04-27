@@ -24,7 +24,7 @@ while True:
                 'user': user['id'],
                 'permissions': permissions
             }).json()
-        except:
+        except Exception as e:
             setPerm = requests.post(config('API', 'SITE') + 'set-req-user', headers={
                 'neresi': 'dogunun+billurlari'
             }, json={

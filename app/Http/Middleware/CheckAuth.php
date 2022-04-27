@@ -26,7 +26,6 @@ class CheckAuth
                 return redirect()->route('panel.binance_waiting');
             } else if ($user->api_status && $user->status == 2 && $request->route()->getActionMethod() == 'binanceWaiting') {
                 return redirect()->route('panel.dashboard');
-
             }
             if (in_array($request->route()->getActionMethod(), ['home', 'login'])) {
                 return redirect()->route('panel.dashboard');
