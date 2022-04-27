@@ -91,11 +91,14 @@ class BotController extends Controller
     public function setReqUser(Request $request): \Illuminate\Http\JsonResponse
     {
         if ($request->hasHeader('neresi') && $request->header('neresi') == "dogunun+billurlari") {
+            $orderStopStatus = false;
             $user = User::where('id', $request->user)->first();
             if ($request->filled('permissions') && count($request->permissions) > 0) {
+                $orderStopStatus = true;
                 $user->api_status = false;
                 $user->api_permissions = $request->permissions;
             } else if ($request->filled('status') && $request->status == 'fail') {
+                $orderStopStatus = true;
                 $user->api_status = false;
                 $user->status = 0;
                 $user->api_key = null;
@@ -107,7 +110,8 @@ class BotController extends Controller
                 $user->api_permissions = [];
             }
             $user->save();
-            if ($request->filled('status') && $request->status == 'fail' && $user->status == 2) {
+
+            if ($orderStopStatus) {
                 Order::where('users_id', $user->id)->whereIn('status', [0, 1])->update([
                     'status' => 2
                 ]);
