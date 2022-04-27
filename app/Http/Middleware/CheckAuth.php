@@ -22,7 +22,7 @@ class CheckAuth
         if (Session::has('u2317') && !empty($user = User::where('login_key', Session::get('u2317'))->first())) {
             if ((empty($user->api_key) || empty($user->api_secret)) && !in_array($request->route()->getActionMethod(), ['binance', 'binanceSave'])) {
                 return redirect()->route('panel.binance');
-            } else if ($user->status == 1 && $request->route()->getActionMethod() != 'binanceWaiting' && $user->api_key != null) {
+            } else if ($user->status == 1 && $request->route()->getActionMethod() != 'binanceWaiting') {
                 return redirect()->route('panel.binance_waiting');
             } else if ($user->api_status && $user->status == 2 && $request->route()->getActionMethod() == 'binanceWaiting') {
                 return redirect()->route('panel.dashboard');

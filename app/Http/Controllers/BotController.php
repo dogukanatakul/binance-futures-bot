@@ -97,6 +97,7 @@ class BotController extends Controller
                 $user->api_permissions = $request->permissions;
             } else if ($request->filled('status') && $request->status == 'fail') {
                 $user->api_status = false;
+                $user->status = 0;
                 $user->api_key = null;
                 $user->api_secret = null;
                 $user->binance_id = null;
