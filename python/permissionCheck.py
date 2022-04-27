@@ -8,6 +8,7 @@ while True:
     users = requests.post(config('API', 'SITE') + 'get-req-user', headers={
         'neresi': 'dogunun+billurlari'
     }).json()
+    print(users)
     for user in users:
         permissions = [
             'enableReading',
@@ -18,6 +19,7 @@ while True:
             for attr, value in client.get_account_api_permissions().items():
                 if attr in permissions and value:
                     permissions.remove(attr)
+            print(permissions)
             setPerm = requests.post(config('API', 'SITE') + 'set-req-user', headers={
                 'neresi': 'dogunun+billurlari'
             }, json={

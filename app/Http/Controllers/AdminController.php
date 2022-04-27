@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use App\Models\Parity;
 use App\Models\Time;
 use App\Models\User;
@@ -60,6 +61,12 @@ class AdminController extends Controller
         }
         Time::where('id', $request->id)->update($request->update);
         return redirect()->back();
+    }
+
+    public function orders(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
+    {
+        $orders = Order::with('user')->get();
+        return view('admin.orders', compact('orders'));
     }
 
 }

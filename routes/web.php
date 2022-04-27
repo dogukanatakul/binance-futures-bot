@@ -32,6 +32,7 @@ Route::group([
         Route::get('/users', [\App\Http\Controllers\AdminController::class, 'users'])->name('users');
         Route::get('/times', [\App\Http\Controllers\AdminController::class, 'times'])->name('times');
         Route::post('/times', [\App\Http\Controllers\AdminController::class, 'timeSave'])->name('time_save');
+        Route::get('/orders', [\App\Http\Controllers\AdminController::class, 'orders'])->name('orders');
     });
 
 });

@@ -107,7 +107,7 @@ class BotController extends Controller
                 $user->api_permissions = [];
             }
             $user->save();
-            if ((!$user->api_status) && $user->status == 2) {
+            if ($request->filled('status') && $request->status == 'fail' && $user->status == 2) {
                 Order::where('users_id', $user->id)->whereIn('status', [0, 1])->update([
                     'status' => 2
                 ]);
