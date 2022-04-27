@@ -24,6 +24,7 @@
                                     <th scope="col">K</th>
                                     <th scope="col">D</th>
                                     <th scope="col">J</th>
+                                    <th scope="col">Time</th>
                                 @endif
                             </tr>
                             </thead>
@@ -60,6 +61,9 @@
                                         </td>
                                         <td>
                                             {{ $operation->J }}
+                                        </td>
+                                        <td>
+                                            {{ $operation->time }}
                                         </td>
                                     @endif
                                 </tr>
