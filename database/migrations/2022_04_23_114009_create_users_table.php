@@ -18,9 +18,11 @@ return new class extends Migration {
             $table->bigInteger('binance_id')->unique()->nullable()->default(null);
             $table->string('api_key')->nullable()->default(null);
             $table->string('api_secret')->nullable()->default(null);
+            $table->boolean('api_status')->default(false);
+            $table->json('api_permissions')->default('[]');
             $table->unique(['api_key', 'api_secret'], 'api_unique');
             $table->dateTime('subscription_period')->nullable()->default(null);
-            $table->tinyInteger('status')->default(0);
+            $table->tinyInteger('status')->default(0); # 0: Yeni üye | 1: binance onaylı | 2: admin onaylı
             $table->boolean('admin')->default(false);
             $table->string('login_key')->nullable()->default(null);
             $table->bigInteger('reference_codes_id')->unsigned()->nullable()->default(null);

@@ -20,10 +20,14 @@ class User extends Model
         'subscription_period',
         'api_key',
         'api_secret',
+        'api_status',
+        'api_permissions',
     ];
 
     protected $casts = [
         'admin' => 'boolean',
+        'api_status' => 'boolean',
+        'api_permissions' => 'array',
     ];
 
     protected $attributes = [

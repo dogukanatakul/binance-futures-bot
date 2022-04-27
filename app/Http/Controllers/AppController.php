@@ -27,7 +27,6 @@ class AppController extends Controller
         });
     }
 
-
     public function home(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
         return view('index');
@@ -66,7 +65,13 @@ class AppController extends Controller
 
     public function binanceWaiting(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        return view('binance_waiting');
+        $user = User::where('login_key', $this->user)->first();
+        if (!((!$user->api_status) && count($user->api_permissions) > 0)) {
+            header("Refresh: 5;");
+        } else {
+            header("Refresh: 15;");
+        }
+        return view('binance_waiting', compact('user'));
     }
 
     public function dashboard(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application

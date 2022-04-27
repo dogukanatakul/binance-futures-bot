@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderOperation;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -14,7 +15,9 @@ class BotController extends Controller
         if ($request->hasHeader('neresi') && $request->header('neresi') == "dogunun+billurlari") {
             if ($bot == "new") {
                 $uuid = (string)Str::uuid();
-                $order = Order::whereNull('bot')->update([
+                $order = Order::whereHas('user', function ($q) {
+                    $q->where('api_status', true);
+                })->whereNull('bot')->update([
                     'bot' => $uuid,
                     'status' => 1,
                 ]);
@@ -52,11 +55,10 @@ class BotController extends Controller
                 ]);
             }
         }
-
         return abort(404);
     }
 
-    public function setOrder($bot, Request $request)
+    public function setOrder($bot, Request $request): \Illuminate\Http\JsonResponse
     {
         if ($request->hasHeader('neresi') && $request->header('neresi') == "dogunun+billurlari" && !empty($order = Order::where('bot', $bot)->first())) {
             $orderOperation = $request->toArray();
@@ -66,8 +68,52 @@ class BotController extends Controller
                 $stopOrder->status = 3;
                 $stopOrder->finish = now()->toDateTime();
                 $stopOrder->save();
+                return response()->json([
+                    'status' => 'success'
+                ]);
             }
-
+            return response()->json([
+                'status' => 'fail'
+            ]);
         }
+        return abort(404);
+    }
+
+    public function getReqUser(Request $request): \Illuminate\Http\JsonResponse
+    {
+        if ($request->hasHeader('neresi') && $request->header('neresi') == "dogunun+billurlari") {
+            $users = User::select(['id', 'api_key', 'api_secret'])->get();
+            return response()->json($users->toArray());
+        }
+        return abort(404);
+    }
+
+    public function setReqUser(Request $request): \Illuminate\Http\JsonResponse
+    {
+        if ($request->hasHeader('neresi') && $request->header('neresi') == "dogunun+billurlari") {
+            $user = User::where('id', $request->user)->first();
+            if ($request->filled('permissions') && count($request->permissions) > 0) {
+                $user->api_status = false;
+                $user->api_permissions = $request->permissions;
+            } else if ($request->filled('status') && $request->status == 'fail') {
+                $user->api_status = false;
+                $user->api_key = null;
+                $user->api_secret = null;
+                $user->api_permissions = [];
+            } else {
+                $user->api_status = true;
+                $user->api_permissions = [];
+            }
+            $user->save();
+            if ((!$user->api_status) && $user->status == 2) {
+                Order::where('users_id', $user->id)->whereIn('status', [0, 1])->update([
+                    'status' => 2
+                ]);
+            }
+            return response()->json([
+                'status' => 'success'
+            ]);
+        }
+        return abort(404);
     }
 }

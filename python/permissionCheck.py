@@ -1,0 +1,34 @@
+import time
+
+from binance.client import Client
+from helper import config
+import requests
+
+while True:
+    users = requests.post(config('API', 'SITE') + 'get-req-user', headers={
+        'neresi': 'dogunun+billurlari'
+    }).json()
+    for user in users:
+        permissions = [
+            'enableReading',
+            'enableFutures',  # Vadeli işlem hesabınız açılmadan önce oluşturulan API Anahtarı, vadeli işlem API hizmetini desteklemiyor
+        ]
+        try:
+            client = Client(user['api_key'], user['api_secret'], {"timeout": 40})
+            for attr, value in client.get_account_api_permissions().items():
+                if attr in permissions and value:
+                    permissions.remove(attr)
+            setPerm = requests.post(config('API', 'SITE') + 'set-req-user', headers={
+                'neresi': 'dogunun+billurlari'
+            }, json={
+                'user': user['id'],
+                'permissions': permissions
+            }).json()
+        except:
+            setPerm = requests.post(config('API', 'SITE') + 'set-req-user', headers={
+                'neresi': 'dogunun+billurlari'
+            }, json={
+                'user': user['id'],
+                'status': 'fail'
+            }).json()
+    time.sleep(5)

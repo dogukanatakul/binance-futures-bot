@@ -29,7 +29,7 @@ class AdminController extends Controller
             $userUpdate->save();
             return redirect()->back();
         }
-        $users = User::withoutTrashed()->whereIn('status', [1, 2])->orderBy('status', 'ASC')->get();
+        $users = User::withoutTrashed()->whereIn('status', [1, 2])->where('api_status', true)->orderBy('status', 'ASC')->get();
         return view('admin.users', compact('users'));
     }
 

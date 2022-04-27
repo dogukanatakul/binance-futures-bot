@@ -22,9 +22,9 @@ class CheckAuth
             if ((empty($user->api_key) || empty($user->api_secret)) && !in_array($request->route()->getActionMethod(), ['binance', 'binanceSave'])) {
                 return redirect()->route('panel.binance');
             }
-            if ($user->status == 1 && $request->route()->getActionMethod() != 'binanceWaiting') {
+            if ((!$user->api_status) && $request->route()->getActionMethod() != 'binanceWaiting') {
                 return redirect()->route('panel.binance_waiting');
-            } else if ($user->status != 1 && $request->route()->getActionMethod() == 'binanceWaiting') {
+            } else if ($user->api_status && $user->status == 2 && $request->route()->getActionMethod() == 'binanceWaiting') {
                 return redirect()->route('panel.dashboard');
 
             }
