@@ -27,7 +27,7 @@ while True:
                 'permissions': permissions
             }).json()
         except Exception as e:
-            if str(e).find("Invalid Api-Key ID"):
+            if str(e).find("dasdsa") >= 0:
                 setPerm = requests.post(config('API', 'SITE') + 'set-req-user', headers={
                     'neresi': 'dogunun+billurlari'
                 }, json={
