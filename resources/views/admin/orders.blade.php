@@ -1,11 +1,12 @@
 @extends('layout.app')
 @section('container')
-        <div class="col-12 col-md-8">
+        <div class="col-12 col-md-10">
             <div class="row">
                 <div class="col-12" style="max-width: 100%;max-height:40vh;overflow-x:auto;overflow-y: auto">
                     <table class="table table-striped table-dark">
                         <thead>
                         <tr>
+                            <th scope="col">Kullanıcı</th>
                             <th scope="col">Parite</th>
                             <th scope="col">Zaman</th>
                             <th scope="col">Kaldıraç</th>
@@ -17,6 +18,9 @@
                         <tbody>
                         @foreach($orders as $order)
                             <tr>
+                                <td>
+                                    {{ $order->user->email }}
+                                </td>
                                 <td>
                                     {{ $order->parity->parity }}
                                 </td>
