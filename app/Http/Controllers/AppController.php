@@ -184,6 +184,7 @@ class AppController extends Controller
         if ($orderOperations->count() == 0) {
             return redirect()->back();
         }
+        header("Refresh: 5;");
         return view('order_detail', compact('orderOperations', 'user'));
     }
 }
