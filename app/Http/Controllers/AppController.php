@@ -184,6 +184,6 @@ class AppController extends Controller
         if ($orderOperations->count() == 0) {
             return redirect()->back();
         }
-        return view('order_detail', compact('orderOperations'));
+        return view('order_detail', compact('orderOperations', 'user'));
     }
 }

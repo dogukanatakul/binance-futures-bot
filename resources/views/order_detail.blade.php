@@ -20,9 +20,11 @@
                                 <th scope="col">Taraf</th>
                                 <th scope="col">Pozisyon</th>
                                 <th scope="col">Aksiyon</th>
-                                <th scope="col">K</th>
-                                <th scope="col">D</th>
-                                <th scope="col">J</th>
+                                @if($user->admin)
+                                    <th scope="col">K</th>
+                                    <th scope="col">D</th>
+                                    <th scope="col">J</th>
+                                @endif
                             </tr>
                             </thead>
                             <tbody>
@@ -49,15 +51,17 @@
                                     <td>
                                         {{ $operation->action }}
                                     </td>
-                                    <td>
-                                        {{ $operation->K }}
-                                    </td>
-                                    <td>
-                                        {{ $operation->D }}
-                                    </td>
-                                    <td>
-                                        {{ $operation->J }}
-                                    </td>
+                                    @if($user->admin)
+                                        <td>
+                                            {{ $operation->K }}
+                                        </td>
+                                        <td>
+                                            {{ $operation->D }}
+                                        </td>
+                                        <td>
+                                            {{ $operation->J }}
+                                        </td>
+                                    @endif
                                 </tr>
                             @endforeach
                             </tbody>
