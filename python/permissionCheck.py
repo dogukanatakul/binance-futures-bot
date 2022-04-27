@@ -14,8 +14,8 @@ while True:
             'enableFutures',  # Vadeli işlem hesabınız açılmadan önce oluşturulan API Anahtarı, vadeli işlem API hizmetini desteklemiyor
         ]
         try:
-            get_account_api_permissions = client.get_account_api_permissions()
             client = Client(user['api_key'], user['api_secret'], {"timeout": 40})
+            get_account_api_permissions = client.get_account_api_permissions()
             for attr, value in get_account_api_permissions.items():
                 if attr in permissions and value:
                     permissions.remove(attr)
@@ -27,6 +27,7 @@ while True:
                 'permissions': permissions
             }).json()
         except Exception as e:
+            print(str(e))
             if str(e).find("dasdsa") >= 0:
                 setPerm = requests.post(config('API', 'SITE') + 'set-req-user', headers={
                     'neresi': 'dogunun+billurlari'
