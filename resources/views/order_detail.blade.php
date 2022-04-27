@@ -6,7 +6,7 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="d-grid gap-2">
-                            <a href="{{ url()->previous() }}" class="btn btn-outline-warning btn-sm">Geri Dön</a>
+                            <a href="{{ $user->admin ? route('panel.admin.orders'): route('panel.dashboard') }}" class="btn btn-outline-warning btn-sm">Geri Dön</a>
                         </div>
                     </div>
                     <div class="col-12" style="max-width: 100%;max-height:40vh;overflow-x:auto;overflow-y: auto">
