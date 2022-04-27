@@ -19,6 +19,11 @@
                     <a href="{{ route('panel.admin.times') }}" title="Zaman Ayarları" class="btn btn-outline-warning">Zaman Ayarları</a>
                 </div>
             </div>
+            <div class="col-12 text-center mt-2">
+                <div class="d-grid gap-2">
+                    <a href="{{ route('panel.admin.orders') }}" title="Emirler" class="btn btn-outline-warning">Emirler</a>
+                </div>
+            </div>
         </div>
 
     </div>

@@ -168,13 +168,16 @@ class AppController extends Controller
         }
     }
 
-    public function orderDetail($id)
+    public function orderDetail($id): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\Contracts\Foundation\Application
     {
+        $user = User::where('login_key', $this->user)->first();
         $orderOperations = OrderOperation::with(['order' => function ($q) {
             $q->with(['user']);
         }])
-            ->whereHas('order.user', function ($q) {
-                $q->where('login_key', $this->user);
+            ->whereHas('order.user', function ($q) use ($user) {
+                if (!$user->admin) {
+                    $q->where('login_key', $this->user);
+                }
             })
             ->where('orders_id', $id)
             ->get();

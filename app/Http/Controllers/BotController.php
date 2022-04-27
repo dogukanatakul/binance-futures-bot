@@ -110,7 +110,6 @@ class BotController extends Controller
                 $user->api_permissions = [];
             }
             $user->save();
-
             if ($orderStopStatus) {
                 Order::where('users_id', $user->id)->whereIn('status', [0, 1])->update([
                     'status' => 2
