@@ -31,6 +31,7 @@ class OrderOperation extends Model
       'K' => 'float',
       'D' => 'float',
       'J' => 'float',
+      'time' => 'datetime',
     ];
 
     public function order(): \Illuminate\Database\Eloquent\Relations\HasOne
