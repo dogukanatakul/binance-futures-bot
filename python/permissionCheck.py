@@ -29,6 +29,7 @@ while True:
         except Exception as e:
             print(str(e))
             if str(e).find("Invalid API-key") >= 0:
+                # APIError(code=-2008): Invalid Api-Key ID.
                 setPerm = requests.post(config('API', 'SITE') + 'set-req-user', headers={
                     'neresi': 'dogunun+billurlari'
                 }, json={
