@@ -233,9 +233,6 @@ while True:
                             else:
                                 fakeStatus += 1
                                 print("%" + str(get_diff(startJ, getKline['J'])) + " FARK BEKLENİYOR", startJ, getKline['J'])
-                        elif getKline['type'] == 'SHORT' and longStatus == False:
-                            print("SHORT DEVAM EDİYOR..")
-                            shortTrigger = 0
                         elif not longStatus:
                             startJ = getKline['J']
                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
@@ -436,18 +433,18 @@ while True:
                                         print(text.format(datetime.now().strftime("%Y-%m-%d %H:%M:%S")), text.format(lastType + " DEVAM EDİYOR"))
                     else:
                         if getKline['type'] == 'SHORT':
+                            startJ = getKline['J']
                             shortTrigger += 1
                             print("SHORT TRIGGER ADD")
-                        print("SHORT TRICKER")
-                        setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                            'neresi': 'dogunun+billurlari'
-                        }, json={
-                            'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            'K': getKline['K'],
-                            'D': getKline['D'],
-                            'J': getKline['J'],
-                            'action': 'SHORT_TRICKER',
-                        }).status_code
+                            setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                'neresi': 'dogunun+billurlari'
+                            }, json={
+                                'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                'K': getKline['K'],
+                                'D': getKline['D'],
+                                'J': getKline['J'],
+                                'action': 'SHORT_TRICKER',
+                            }).status_code
             else:
                 time.sleep(2)
         except:
