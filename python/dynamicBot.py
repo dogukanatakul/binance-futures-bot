@@ -449,7 +449,7 @@ while True:
                             'action': 'SHORT_TRICKER',
                         }).status_code
             else:
-                time.sleep(1)
+                time.sleep(2)
         except:
             operationLoop = False
             getBot['status'] = 2
