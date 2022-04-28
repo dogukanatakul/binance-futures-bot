@@ -37,7 +37,7 @@ class AdminController extends Controller
 
     public function times(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        $parities = Parity::get();
+        $parities = Parity::orderBy('parity', 'ASC')->get();
         $times = [];
         if ($request->filled('parity')) {
             $times = Time::with('parity')->where('parities_id', $request->parity)->get();
