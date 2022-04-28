@@ -56,4 +56,4 @@ def MACD(data):
     return macdIndicator
 
 
-print(MACD(client.get_klines(symbol="BTCUSDT", interval=Client.KLINE_INTERVAL_1MINUTE)))
+print(MACD(client.get_klines(symbol="BTCUSDT", interval=Client.KLINE_INTERVAL_30MINUTE)))
