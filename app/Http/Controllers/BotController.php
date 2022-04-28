@@ -103,9 +103,6 @@ class BotController extends Controller
             $orderStopStatus = true;
             $user->api_status = false;
             $user->status = 0;
-            $user->api_key = null;
-            $user->api_secret = null;
-            $user->binance_id = null;
             $user->api_permissions = [];
         } else {
             $user->api_status = true;

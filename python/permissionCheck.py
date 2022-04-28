@@ -15,6 +15,7 @@ while True:
         try:
             client = Client(user['api_key'], user['api_secret'], {"timeout": 40})
             get_account_api_permissions = client.get_account_api_permissions()
+            client.futures_get_position_mode()
             for attr, value in get_account_api_permissions.items():
                 if attr in permissions and value:
                     permissions.remove(attr)
@@ -27,7 +28,7 @@ while True:
             }).json()
         except Exception as e:
             print(str(e))
-            if str(e).find("dasdsa") >= 0:
+            if str(e).find("Invalid API-key") >= 0:
                 setPerm = requests.post(config('API', 'SITE') + 'set-req-user', headers={
                     'neresi': 'dogunun+billurlari'
                 }, json={
