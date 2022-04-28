@@ -147,7 +147,7 @@ class AppController extends Controller
             }
             $parity = Parity::where('parity', $request->parity)->first();
             $leverage = Leverage::where('leverage', $request->leverage)->first();
-            $time = Time::where('time', $request->time)->first();
+            $time = Time::where('time', $request->time)->where('parities_id', $parity->id)->first();
             $user = User::where('login_key', $this->user)->first();
             Order::create([
                 'users_id' => $user->id,
@@ -156,10 +156,8 @@ class AppController extends Controller
                 'times_id' => $time->id,
                 'percent' => $request->percent,
             ]);
-            return redirect()->route('panel.dashboard');
-        } else {
-            return redirect()->route('panel.dashboard');
         }
+        return redirect()->route('panel.dashboard');
     }
 
     public function orderStop($id): \Illuminate\Http\RedirectResponse
