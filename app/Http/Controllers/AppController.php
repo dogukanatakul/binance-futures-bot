@@ -189,6 +189,7 @@ class AppController extends Controller
                 }
             })
             ->where('orders_id', $id)
+            ->orderBy('id', 'DESC')
             ->get();
         if ($orderOperations->count() == 0) {
             return redirect()->back();
