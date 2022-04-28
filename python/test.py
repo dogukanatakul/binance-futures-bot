@@ -1,9 +1,6 @@
-from datetime import datetime
+import os, sys
 
-print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+text = "sda"
+while True:
+    print(text)
+    os.execl(sys.executable, sys.executable, *sys.argv)

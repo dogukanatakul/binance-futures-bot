@@ -1,17 +1,14 @@
-import configparser
-import os
+from binance.client import Client
 import pandas as pd
 
-
-def config(cat, param):
-    cnf = configparser.ConfigParser()
-    cnf.read(os.path.dirname(os.path.realpath(__file__)) + '/config.ini')
-    return str(cnf.get(cat, param))
+client = Client("l8FqzEGOW91yP139vjZKDMs6oZJse4Isl3emol6dAMwVwKhHvOwH5irOVBvBhsVc", "eMlTWnJKQypSF2nlpCoWqTv6zyXej2hjDt2e7iqTNQbMoRQW3mOp94bkowj1OAtg", {"timeout": 40})
 
 
+# =============================================================================
+# Function of Exponential Moving Avarage
+# =============================================================================
 def ema(data, num):
     """
-    https://github.com/Tousama/BinanceApiDataAnalysis/blob/557c2642da4a7eafc679c4c3b8b242d8a02cd5ab/binance.py
     Parameters
     ----------
     data : Data for calculate Ema
@@ -30,9 +27,11 @@ def ema(data, num):
     return ema
 
 
+# =============================================================================
+# Function of MACD signal
+# =============================================================================
 def MACD(data):
     """
-    https://github.com/Tousama/BinanceApiDataAnalysis/blob/557c2642da4a7eafc679c4c3b8b242d8a02cd5ab/binance.py
     Parameters
     ----------
     data : Data for calculate Macd
@@ -55,3 +54,6 @@ def MACD(data):
     else:
         macdIndicator = 'HOLD'
     return macdIndicator
+
+
+print(MACD(client.get_klines(symbol="BTCUSDT", interval=Client.KLINE_INTERVAL_1MINUTE)))

@@ -7,7 +7,6 @@ while True:
     users = requests.post(config('API', 'SITE') + 'get-req-user', headers={
         'neresi': 'dogunun+billurlari'
     }).json()
-    print(users)
     for user in users:
         permissions = [
             'enableReading',

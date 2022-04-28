@@ -15,6 +15,8 @@ return [
     |
     */
 
+    'bot_version' => '2',
+
     'name' => env('APP_NAME', 'Laravel'),
 
     /*
@@ -41,7 +43,7 @@ return [
     |
     */
 
-    'debug' => (bool) env('APP_DEBUG', false),
+    'debug' => (bool)env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------

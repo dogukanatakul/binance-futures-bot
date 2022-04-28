@@ -56,7 +56,8 @@ class AppController extends Controller
                 'binance_id' => $request->binance_id,
                 'status' => 1,
             ]);
-        } catch (\Exception $exception) {
+        } catch (\Exception $e) {
+            report($e);
             Session::flash('error', 'Zaten kayıtlı!');
             return redirect()->back();
         }
@@ -87,6 +88,13 @@ class AppController extends Controller
         }])
             ->where('login_key', $this->user)
             ->first();
+
+        $startingOrder = collect($user->order)->filter(function ($item, $key) {
+            return $item->status != 3;
+        })->count();
+        if ($startingOrder > 0) {
+            header("Refresh: 5;");
+        }
         return view('dashboard', compact('user', 'orderCheck'));
     }
 
@@ -163,7 +171,8 @@ class AppController extends Controller
                 'status' => 2
             ]);
             return redirect()->back();
-        } catch (\Exception $exception) {
+        } catch (\Exception $e) {
+            report($e);
             return redirect()->back();
         }
     }
