@@ -221,7 +221,7 @@ while True:
                         'action': 'STOP',
                     }).status_code
                 else:
-                    if shortTrigger >= getBot['short_trigger_min']:
+                    if shortTrigger >= getBot['start_trigger_min']:
                         if getKline['type'] == 'LONG' and longStatus == False:
                             if startJ == 0:
                                 startJ = getKline['J']

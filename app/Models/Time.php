@@ -15,7 +15,7 @@ class Time extends Model
         'start_diff',
         'trigger_diff',
         'risk_percentage',
-        'short_trigger_min',
+        'start_trigger_min',
         'fake_reverse',
         'status',
     ];

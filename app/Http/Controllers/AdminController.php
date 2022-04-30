@@ -52,7 +52,7 @@ class AdminController extends Controller
             'update.start_diff' => 'required|filled|integer',
             'update.fake_reverse' => 'required|filled|integer',
             'update.trigger_diff' => 'required|filled|integer',
-            'update.short_trigger_min' => 'required|filled|integer',
+            'update.start_trigger_min' => 'required|filled|integer',
             'update.reverse_delay' => 'required|filled|integer',
         ]);
         if ($validator->fails()) {

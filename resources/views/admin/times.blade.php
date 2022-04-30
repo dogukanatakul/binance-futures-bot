@@ -76,7 +76,7 @@
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[short_trigger_min]" value="{{ $time->short_trigger_min }}">
+                                            <input type="number" class="form-control" name="update[start_trigger_min]" value="{{ $time->start_trigger_min }}">
                                         </div>
                                     </td>
                                     <td>
