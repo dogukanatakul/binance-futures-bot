@@ -7,7 +7,7 @@
                         @csrf
                         <input type="hidden" name="parity" value="{{ request()->parity }}">
                         <div class="col-12  text-center mt-2">
-                            <h6>Kaldıraç:</h6>
+                            <h6>{{ __('app.order_leverage') }}</h6>
                             <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
                                 @foreach($leverages as $leverage)
                                     <input type="radio" value="{{ $leverage }}" class="btn-check" name="leverage" id="leverage{{ $leverage }}" autocomplete="off" {{ $leverage==10?'checked':'' }}>
@@ -16,7 +16,7 @@
                             </div>
                         </div>
                         <div class="col-12 mt-2 text-center">
-                            <h6>Emir Miktarı:</h6>
+                            <h6>{{ __('app.order_amount') }}</h6>
                             <div class="btn-group btn-group-justified" role="group" aria-label="Basic radio toggle button group">
                                 @foreach(config('order.percent') as $percent)
                                     <input type="radio" value="{{ $percent }}" class="btn-check" name="percent" id="percent{{ $percent }}" autocomplete="off" {{ $percent==10?'checked':'' }}>
@@ -25,7 +25,7 @@
                             </div>
                         </div>
                         <div class="col-12 mt-2 text-center">
-                            <h6>Zaman Aralığı:</h6>
+                            <h6>{{ __('app.order_time') }}</h6>
                             <div class="btn-group btn-group-justified" role="group" aria-label="Basic radio toggle button group">
                                 @foreach($times as $time)
                                     <input type="radio" value="{{ $time }}" class="btn-check" name="time" id="time{{ $time }}" autocomplete="off" {{ $time=='5min'?'checked':'' }}>
@@ -35,7 +35,7 @@
                         </div>
                         <div class="col-12 mt-2">
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-outline-warning btn-lg">Emir Oluştur</button>
+                                <button type="submit" class="btn btn-outline-warning btn-lg">{{ __('app.create_order') }}</button>
                             </div>
                         </div>
                     </form>
@@ -50,7 +50,7 @@
                         </div>
                         <div class="col-12 mt-2">
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-outline-warning btn-lg">PARİTE SEÇ</button>
+                                <button type="submit" class="btn btn-outline-warning btn-lg">{{ __('app.select_parity') }}</button>
                             </div>
                         </div>
                     </form>

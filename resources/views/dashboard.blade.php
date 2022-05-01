@@ -8,8 +8,8 @@
                 </div>
                 <div class="col-12 text-center m-2">
                     <div class="btn-shine"></div>
-                    <div>Aramıza katılarak kalbimizi kazandınız.<br> Şimdi para kazanmak için ilk emrini oluştur!</div>
-                    <a href="{{ route('panel.new_order') }}" title="Emir Oluştur" class="btn btn-outline-warning mt-5">Emir Oluştur</a>
+                    <div>{{ __('app.first_order_message') }}</div>
+                    <a href="{{ route('panel.new_order') }}" title="{{ __('app.create_order') }}" class="btn btn-outline-warning mt-5">{{ __('app.create_order') }}</a>
                     @if($user->admin)
                         <a href="{{ route('panel.admin.dashboard') }}" title="Yönetim" class="btn btn-outline-info mt-5">Yönetim</a>
                     @endif
@@ -22,9 +22,9 @@
                 <div class="col-12">
                     <div class="d-grid gap-2">
                         @if(empty($orderCheck))
-                            <a href="{{ route('panel.new_order') }}" class="btn btn-outline-warning btn-sm">Yeni Emir</a>
+                            <a href="{{ route('panel.new_order') }}" class="btn btn-outline-warning btn-sm">{{ __('app.create_order') }}</a>
                         @else
-                            <button type="button" class="btn btn-outline-warning btn-sm" disabled>Yeni Emir</button>
+                            <button type="button" class="btn btn-outline-warning btn-sm" disabled>{{ __('app.create_order') }}</button>
                         @endif
                         @if($user->admin)
                             <a href="{{ route('panel.admin.dashboard') }}" title="Yönetim" class="btn btn-outline-info btn-sm">Yönetim</a>
@@ -35,12 +35,12 @@
                     <table class="table table-striped table-dark">
                         <thead>
                         <tr>
-                            <th scope="col">Parite</th>
-                            <th scope="col">Zaman</th>
-                            <th scope="col">Kaldıraç</th>
-                            <th scope="col">Başlama</th>
-                            <th scope="col">Bitiş</th>
-                            <th scope="col">İşlemler</th>
+                            <th scope="col">{{ __('app.parity') }}</th>
+                            <th scope="col">{{ __('app.time') }}</th>
+                            <th scope="col">{{ __('app.leverage') }}</th>
+                            <th scope="col">{{ __('app.starting') }}</th>
+                            <th scope="col">{{ __('app.finish') }}</th>
+                            <th scope="col">{{ __('app.operations') }}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -60,9 +60,9 @@
                                 </td>
                                 <td>
                                     @if($order->status == 1 or $order->status == 0)
-                                        <a href="{{ route('panel.order_stop', $order->id) }}" title="Durdur" class="btn btn-outline-danger btn-sm">Durdur</a>
+                                        <a href="{{ route('panel.order_stop', $order->id) }}" title="{{ __('app.stop') }}" class="btn btn-outline-danger btn-sm">{{ __('app.stop') }}</a>
                                     @elseif($order->status == 2)
-                                        Durmayı Bekliyor
+                                        {{ __('app.waiting_to_stop') }}
                                     @else
                                         {{ $order->finish->format('y-m-d H:i') }}
                                     @endif

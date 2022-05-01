@@ -6,25 +6,25 @@
                 <div class="row">
                     <div class="col-12">
                         <div class="d-grid gap-2">
-                            <a href="{{ $user->admin ? route('panel.admin.orders'): route('panel.dashboard') }}" class="btn btn-outline-warning btn-sm">Geri Dön</a>
+                            <a href="{{ $user->admin ? route('panel.admin.orders'): route('panel.dashboard') }}" class="btn btn-outline-warning btn-sm">{{ __('app.go_back') }}</a>
                         </div>
                     </div>
                     <div class="col-12" style="max-width: 100%;max-height:40vh;overflow-x:auto;overflow-y: auto">
                         <table class="table table-striped table-dark">
                             <thead>
                             <tr>
-                                <th scope="col">Fiyat</th>
-                                <th scope="col">Adet</th>
-                                <th scope="col">Bakiye</th>
-                                <th scope="col">Kâr</th>
-                                <th scope="col">Taraf</th>
-                                <th scope="col">Pozisyon</th>
-                                <th scope="col">Aksiyon</th>
+                                <th scope="col">{{ __('app.order_detail_price') }}</th>
+                                <th scope="col">{{ __('app.order_detail_amount') }}</th>
+                                <th scope="col">{{ __('app.order_detail_balance') }}</th>
+                                <th scope="col">{{ __('app.order_detail_profit') }}</th>
+                                <th scope="col">{{ __('app.order_detail_side') }}</th>
+                                <th scope="col">{{ __('app.order_detail_position') }}</th>
+                                <th scope="col">{{ __('app.order_detail_action') }}</th>
                                 @if($user->admin)
                                     <th scope="col">K</th>
                                     <th scope="col">D</th>
                                     <th scope="col">J</th>
-                                    <th scope="col">Time</th>
+                                    <th scope="col">{{ __('app.order_detail_time') }}</th>
                                 @endif
                             </tr>
                             </thead>
@@ -71,8 +71,6 @@
                             </tbody>
                         </table>
                     </div>
-
                 </div>
             </div>
-
 @endsection

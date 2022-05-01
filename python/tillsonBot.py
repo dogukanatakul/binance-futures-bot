@@ -138,7 +138,7 @@ while True:
         getBot = requests.post(url + 'get-order/new', headers={
             'neresi': 'dogunun+billurlari'
         }).json()
-    print(getBot, "yeni emir")
+
     client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40})
 
     dual = client.futures_get_position_mode()

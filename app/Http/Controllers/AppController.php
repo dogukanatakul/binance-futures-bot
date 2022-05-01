@@ -6,10 +6,12 @@ use App\Models\Leverage;
 use App\Models\Order;
 use App\Models\OrderOperation;
 use App\Models\Parity;
+use App\Models\Proxy;
 use App\Models\Time;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 
 class AppController extends Controller
 {
@@ -145,17 +147,25 @@ class AppController extends Controller
             if ($validator->fails()) {
                 return redirect()->back();
             }
-            $parity = Parity::where('parity', $request->parity)->first();
-            $leverage = Leverage::where('leverage', $request->leverage)->first();
-            $time = Time::where('time', $request->time)->where('parities_id', $parity->id)->first();
-            $user = User::where('login_key', $this->user)->first();
-            Order::create([
-                'users_id' => $user->id,
-                'parities_id' => $parity->id,
-                'leverages_id' => $leverage->id,
-                'times_id' => $time->id,
-                'percent' => $request->percent,
-            ]);
+            $activeOrders = Order::whereIn('status', [0, 1, 2])->get()->pluck('proxies_id');
+            $proxy = Proxy::whereNotIn('id', $activeOrders->toArray())->orderByRaw("RAND()")->first();
+            if (!empty($proxy)) {
+                $parity = Parity::where('parity', $request->parity)->first();
+                $leverage = Leverage::where('leverage', $request->leverage)->first();
+                $time = Time::where('time', $request->time)->where('parities_id', $parity->id)->first();
+                $user = User::where('login_key', $this->user)->first();
+                Order::create([
+                    'proxies_id' => $proxy->id,
+                    'users_id' => $user->id,
+                    'parities_id' => $parity->id,
+                    'leverages_id' => $leverage->id,
+                    'times_id' => $time->id,
+                    'percent' => $request->percent,
+                ]);
+            } else {
+                Session::flash('error', 'Yoğunluktan dolayı emrinizi şuan oluşturamıyoruz! Lütfen biraz sonra tekrar deneyiniz.');
+                return redirect()->route('panel.dashboard');
+            }
         }
         return redirect()->route('panel.dashboard');
     }

@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call(ParitySeeder::class);
         $this->call(LeverageSeeder::class);
         $this->call(TimeSeeder::class);
+        $this->call(ProxySeeder::class);
 //        \App\Models\User::factory(50)->create();
         \App\Models\User::create([
             'email' => 'datakul@yandex.com',

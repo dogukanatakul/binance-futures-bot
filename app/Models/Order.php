@@ -10,6 +10,7 @@ class Order extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'proxies_id',
         'users_id',
         'parities_id',
         'leverages_id',
@@ -49,5 +50,10 @@ class Order extends Model
     public function order_operation(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(OrderOperation::class, 'orders_id', 'id');
+    }
+
+    public function proxy(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Proxy::class, 'id', 'proxies_id');
     }
 }

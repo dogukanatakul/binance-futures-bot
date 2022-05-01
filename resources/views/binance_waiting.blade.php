@@ -8,8 +8,8 @@
                 </div>
                 <div class="col-12 text-center m-2">
                     <div class="btn-shine"></div>
-                    <div class="copright" data-text="İZİNLER KONTROL EDİLİYOR..">İZİNLER KONTROL EDİLİYOR..</div>
-                    <div>Sayfa otomatik olarak yenilenecektir..</div>
+                    <div class="copright" data-text="{{ __('app.permissions_check') }}">{{ __('app.permissions_check') }}</div>
+                    <div>{{ __('app.auto_refresh_page') }}</div>
                 </div>
             </div>
         </div>
@@ -21,9 +21,9 @@
                 </div>
                 <div class="col-12 text-center m-2">
                     <div class="btn-shine"></div>
-                    <div class="copright" data-text="EKSİK İZİN TESPİT EDİLDİ!">EKSİK İZİN TESPİT EDİLDİ!</div>
+                    <div class="copright" data-text="{{ __('app.insufficient_permission') }}">{{ __('app.insufficient_permission') }}</div>
                     <div class="mt-2">
-                        <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#learnModal">Nasıl Yaparım?</button>
+                        <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#learnModal">{{ __('app.how_to_do') }}</button>
                     </div>
                 </div>
             </div>
@@ -35,8 +35,8 @@
                         <img src="{{ asset('assets/learn/api-perms.gif') }}" style="min-width: 100%;width: 100%;">
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
-                        <a href="https://www.binance.com/en-GB/my/settings/api-management" target="_blank" class="btn btn-warning text-dark">Binance'a git</a>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('app.close') }}</button>
+                        <a href="https://www.binance.com/en-GB/my/settings/api-management" target="_blank" class="btn btn-warning text-dark">{{ __('app.go_to_binance') }}</a>
                     </div>
                 </div>
             </div>
@@ -49,8 +49,8 @@
                 </div>
                 <div class="col-12 text-center m-2">
                     <div class="btn-shine"></div>
-                    <div class="copright" data-text="DOĞRULANIYOR..">DOĞRULANIYOR..</div>
-                    <div>Doğrulama tamamlanınca bir e-posta alacaksınız.</div>
+                    <div class="copright" data-text="{{ __('app.being_checked_title') }}">{{ __('app.being_checked_title') }}</div>
+                    <div>{{ __('app.being_checked_desc') }}</div>
                 </div>
             </div>
         </div>

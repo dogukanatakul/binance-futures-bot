@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\EmailAdminUserVerify;
 use App\Models\Order;
 use App\Models\OrderError;
 use App\Models\OrderOperation;
@@ -111,6 +112,12 @@ class BotController extends Controller
         } else {
             $user->api_status = true;
             $user->api_permissions = [];
+
+            if ($user->status == 1) {
+                foreach (User::where('admin', true)->get() as $admin) {
+                    EmailAdminUserVerify::dispatch($admin->email)->onQueue('email');
+                }
+            }
         }
         $user->save();
         if ($orderStopStatus) {

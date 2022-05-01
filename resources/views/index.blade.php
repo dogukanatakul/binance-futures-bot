@@ -23,7 +23,7 @@
                                 <input type="email" name="email" class="form-control text-center bg-dark text-light" placeholder="xxxx@xxxx.com">
                             </div>
                             <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-outline-warning btn-lg">Giriş Bağlantısı Gönder</button>
+                                <button type="submit" class="btn btn-outline-warning btn-lg">{{ __('app.get_auth_mail_button') }}</button>
                             </div>
                         </div>
                     </form>

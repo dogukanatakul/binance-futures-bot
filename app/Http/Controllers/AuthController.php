@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
-    public function auth(Request $request)
+    public function auth(Request $request): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\Contracts\Foundation\Application
     {
         $validator = validator()->make(request()->all(), [
             'email' => 'required|filled|email'
@@ -16,12 +16,12 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return redirect()->back();
         }
-        if (empty(User::where('email', $request->email)->first())) {
+        if (empty(User::withTrashed()->where('email', $request->email)->first())) {
             User::create([
                 'email' => $request->email
             ]);
         }
-        EmailAuth::dispatch($request->email)->onQueue('email');
+        EmailAuth::dispatch($request->email, app()->getLocale())->onQueue('email');
         return view('email.check');
     }
 }
