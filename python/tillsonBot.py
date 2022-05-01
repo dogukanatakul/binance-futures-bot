@@ -274,7 +274,7 @@ while True:
                                 raise Exception('set_bot_fail')
             else:
                 time.sleep(1)
-        except:
+        except Exception as exception:
             operationLoop = False
             getBot['status'] = 2
             print("emir kapatıldı!!")
@@ -288,6 +288,7 @@ while True:
                     str(exc_type),
                     str(fname),
                     str(exc_tb.tb_lineno),
+                    str(exception)
                 ]
             }).status_code
             if getBot['version'] != version:
