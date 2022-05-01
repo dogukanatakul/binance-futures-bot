@@ -133,7 +133,6 @@ getBot = {
 version = None
 while True:
     while getBot['status'] == 0 or getBot['status'] == 2:
-        time.sleep(random.randint(3, 5))
         getBot = requests.post(url + 'get-order/new', headers={
             'neresi': 'dogunun+billurlari'
         }).json()
