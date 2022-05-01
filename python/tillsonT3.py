@@ -12,6 +12,7 @@ def generateTillsonT3(historyMap, volume_factor, t3Length):
     e4 = ta.EMA(e3, t3Length)
     e5 = ta.EMA(e4, t3Length)
     e6 = ta.EMA(e5, t3Length)
+
     c1 = -1 * volume_factor * volume_factor * volume_factor
     c2 = 3 * volume_factor * volume_factor + 3 * volume_factor * volume_factor * volume_factor
     c3 = -6 * volume_factor * volume_factor - 3 * volume_factor - 3 * volume_factor * volume_factor * volume_factor
@@ -26,8 +27,8 @@ def getSignal(historyMap, valueFactor, t3length, lastOperation):
     t3_previous = tillsont3[-2]
     t3_prev_previous = tillsont3[-3]
     status = "HOLD"
-    if t3_last > t3_previous and t3_previous < t3_prev_previous and lastOperation != 'BUY':
+    if t3_last > t3_previous and lastOperation != 'BUY':
         status = "BUY"
-    elif t3_last < t3_previous and t3_previous > t3_prev_previous and lastOperation != 'SELL':
+    elif t3_last < t3_previous and lastOperation != 'SELL':
         status = "SELL"
     return status

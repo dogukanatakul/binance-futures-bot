@@ -47,6 +47,8 @@
                             <th scope="col">Tetikleme %'si</th>
                             <th scope="col">Başlangıçta minimum SHORT işlem sayısı</th>
                             <th scope="col">İşlem terse dönerse kaç işlem beklesin</th>
+                            <th scope="col">T3 Length</th>
+                            <th scope="col">Volume Factor</th>
                             <th scope="col"><i class="bi bi-arrow-clockwise"></i></th>
                         </tr>
                         </thead>
@@ -82,6 +84,16 @@
                                     <td>
                                         <div class="input-group input-group-sm">
                                             <input type="number" class="form-control" name="update[reverse_delay]" value="{{ $time->reverse_delay }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" name="update[t3_length]" value="{{ $time->t3_length }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" name="update[volume_factor]" value="{{ $time->volume_factor }}">
                                         </div>
                                     </td>
                                     <td>

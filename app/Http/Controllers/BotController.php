@@ -40,6 +40,8 @@ class BotController extends Controller
                     'start_trigger_min' => $order->time->start_trigger_min,
                     'fake_reverse' => $order->time->fake_reverse,
                     'reverse_delay' => $order->time->reverse_delay,
+                    't3_length' => $order->time->t3_length,
+                    'volume_factor' => $order->time->volume_factor,
                     'time' => $order->time->time,
                     'status' => $order->status,
                     'version' => config('app.bot_version')
@@ -53,6 +55,8 @@ class BotController extends Controller
                 'start_trigger_min' => $order->time->start_trigger_min,
                 'fake_reverse' => $order->time->fake_reverse,
                 'reverse_delay' => $order->time->reverse_delay,
+                't3_length' => $order->time->t3_length,
+                'volume_factor' => $order->time->volume_factor,
                 'status' => $order->status,
                 'version' => config('app.bot_version')
             ]);

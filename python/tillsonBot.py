@@ -159,6 +159,7 @@ while True:
     lastPrice = 0
     lastSide = 'HOLD'
     tillsonSide = 'HOLD'
+    triggerStatus = False
     while operationLoop:
         minutes = {
             '1min': Client.KLINE_INTERVAL_1MINUTE,
@@ -201,13 +202,14 @@ while True:
             else:
                 # GET SIGNAL
                 history = getCoinHistory(klines)
-                signal = getSignal(history, 0.7, 8, tillsonSide)
+                signal = getSignal(history, float(getBot['volume_factor']), int(getBot['t3_length']), tillsonSide)
                 if signal == 'BUY' or signal == 'SELL':
                     tillsonSide = signal
+
                 # GET SIGNAL END
                 if tillsonSide == getKDJ['side'] and tillsonSide != lastSide:
                     lastPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
-                    if lastSide != 'HOLD':
+                    if lastSide != 'HOLD' and triggerStatus != True:
                         setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                             'neresi': 'dogunun+billurlari'
                         }, json={
@@ -221,6 +223,8 @@ while True:
                         }).status_code
                         if setBot != 200:
                             raise Exception('set_bot_fail')
+                    else:
+                        triggerStatus = False
                     lastSide = tillsonSide
                     setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                         'neresi': 'dogunun+billurlari'
@@ -235,8 +239,8 @@ while True:
                     }).status_code
                     if setBot != 200:
                         raise Exception('set_bot_fail')
-                    print(tillsonSide, lastPrice, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-                elif tillsonSide != lastSide and signal != 'HOLD':
+                elif tillsonSide != lastSide and signal != 'HOLD' and lastSide != 'HOLD' and triggerStatus != True:
+                    triggerStatus = True
                     lastPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
                     setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                         'neresi': 'dogunun+billurlari'

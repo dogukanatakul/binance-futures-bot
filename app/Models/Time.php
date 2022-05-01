@@ -17,6 +17,8 @@ class Time extends Model
         'risk_percentage',
         'start_trigger_min',
         'fake_reverse',
+        't3_length',
+        'volume_factor',
         'status',
     ];
 
