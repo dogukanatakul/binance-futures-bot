@@ -21,3 +21,11 @@ sudo systemctl stop supervisor
 sudo systemctl restart supervisor
 ```
 
+
+```
+sudo ufw allow 1625
+sudo nano /etc/nginx/nginx.conf
+```
+
+
+

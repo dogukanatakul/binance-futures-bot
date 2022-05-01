@@ -181,13 +181,21 @@ while True:
                     'D': getKDJ['D'],
                     'J': getKDJ['J']
                 }
-
                 # SYNC BOT
-                syncBot = requests.post(url + 'get-order/' + str(getBot['bot']), headers={
-                    'neresi': 'dogunun+billurlari'
-                }).json()
-                for bt in syncBot.keys():
-                    getBot[bt] = syncBot[bt]
+                syncBotWhile = True
+                syncBotCount = 0
+                while syncBotWhile:
+                    syncBot = requests.post(url + 'get-order/' + str(getBot['bot']), headers={
+                        'neresi': 'dogunun+billurlari'
+                    })
+                    if syncBot.status_code == 200:
+                        for bt in syncBot.json().keys():
+                            getBot[bt] = syncBot.json()[bt]
+                        syncBotWhile = False
+                    elif syncBotCount > 1:
+                        raise Exception('server_error')
+                    else:
+                        syncBotCount += 1
                 # SYNC BOT END
 
                 if lastSide == 'HOLD' and getBot['status'] == 2 and lastPrice == 0:
