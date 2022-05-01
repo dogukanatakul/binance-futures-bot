@@ -260,7 +260,7 @@ while True:
                         if setBot != 200:
                             raise Exception('set_bot_fail')
                     else:
-                        if lastSide == 'HOLD':
+                        if lastPrice == 0:
                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                 'neresi': 'dogunun+billurlari'
                             }, json={
@@ -272,7 +272,6 @@ while True:
                             }).status_code
                             if setBot != 200:
                                 raise Exception('set_bot_fail')
-                        print(signal, getKDJ['side'])
             else:
                 time.sleep(1)
         except:
