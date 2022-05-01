@@ -24,11 +24,11 @@ class CheckLanguage
                 if (in_array($browserLocale, config('app.available_locales'))) {
                     // dil desteği varsa
                     app()->setLocale($browserLocale);
-                    $next($request);
+                    return $next($request);
                 } else {
                     // dil desteği yoksa
                     app()->setLocale("en-US");
-                    $next($request);
+                    return $next($request);
                 }
             } else {
                 // dil uzantısı varsa
@@ -37,11 +37,11 @@ class CheckLanguage
                     if (in_array($browserLocale, config('app.available_locales'))) {
                         // dil desteği varsa
                         app()->setLocale($browserLocale);
-                        $next($request);
+                        return $next($request);
                     } else {
                         // dil desteği yoksa
                         app()->setLocale("en-US");
-                        $next($request);
+                        return $next($request);
                     }
                 } else {
                     // dil halen geçerli ise
