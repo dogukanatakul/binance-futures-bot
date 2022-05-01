@@ -8,7 +8,7 @@
                 </div>
                 <div class="col-12 text-center m-2">
                     <div class="btn-shine"></div>
-                    <div>{{ __('app.first_order_message') }}</div>
+                    <div>{!!  __('app.first_order_message') !!}</div>
                     <a href="{{ route('panel.new_order') }}" title="{{ __('app.create_order') }}" class="btn btn-outline-warning mt-5">{{ __('app.create_order') }}</a>
                     @if($user->admin)
                         <a href="{{ route('panel.admin.dashboard') }}" title="Yönetim" class="btn btn-outline-info mt-5">Yönetim</a>

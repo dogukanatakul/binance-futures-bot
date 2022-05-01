@@ -148,7 +148,7 @@ class AppController extends Controller
                 return redirect()->back();
             }
             $activeOrders = Order::whereIn('status', [0, 1, 2])->get()->pluck('proxies_id');
-            $proxy = Proxy::whereNotIn('id', $activeOrders->toArray())->orderByRaw("RAND()")->first();
+            $proxy = Proxy::whereNotIn('id', $activeOrders->toArray())->where('status', 1)->orderByRaw("RAND()")->first();
             if (!empty($proxy)) {
                 $parity = Parity::where('parity', $request->parity)->first();
                 $leverage = Leverage::where('leverage', $request->leverage)->first();

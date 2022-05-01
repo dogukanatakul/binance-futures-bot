@@ -6,6 +6,7 @@ use App\Jobs\EmailAdminUserVerify;
 use App\Models\Order;
 use App\Models\OrderError;
 use App\Models\OrderOperation;
+use App\Models\Proxy;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -28,7 +29,7 @@ class BotController extends Controller
                     'version' => config('app.bot_version')
                 ]);
             } else {
-                $order = Order::with(['user', 'leverage', 'parity', 'time'])->where('bot', $uuid)->first();
+                $order = Order::with(['user', 'leverage', 'parity', 'time', 'proxy'])->where('bot', $uuid)->first();
                 return response()->json([
                     'bot' => $order->bot,
                     'api_key' => $order->user->api_key,
@@ -44,6 +45,10 @@ class BotController extends Controller
                     't3_length' => $order->time->t3_length,
                     'volume_factor' => $order->time->volume_factor,
                     'time' => $order->time->time,
+                    'proxy' => [
+                        'http' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port,
+                        'https' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port
+                    ],
                     'status' => $order->status,
                     'version' => config('app.bot_version')
                 ]);
@@ -93,7 +98,16 @@ class BotController extends Controller
     public function getReqUser(Request $request): \Illuminate\Http\JsonResponse
     {
         $users = User::select(['id', 'api_key', 'api_secret'])->whereNotNull('api_key')->whereNotNull('api_secret')->get();
-        return response()->json($users->toArray());
+        $proxies = collect(Proxy::limit($users->count())->where('status', 1)->orderByRaw("RAND()")->get())->map(function ($item) {
+            return [
+                'http' => "http://" . $item->user . ":" . $item->password . "@" . $item->host . ":" . $item->port,
+                'https' => "http://" . $item->user . ":" . $item->password . "@" . $item->host . ":" . $item->port
+            ];
+        });
+        return response()->json([
+            'users' => $users->toArray(),
+            'proxies' => $proxies->toArray()
+        ]);
     }
 
     public function setReqUser(Request $request): \Illuminate\Http\JsonResponse

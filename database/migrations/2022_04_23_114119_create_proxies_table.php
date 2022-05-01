@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->string('password')->nullable()->default(null);
             $table->string('host');
             $table->integer('port');
+            $table->unique(['user', 'password', 'host', 'port'], 'proxy_unique');
             $table->boolean('status')->default(true);
             $table->softDeletes();
             $table->timestamps();

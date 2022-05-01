@@ -1,7 +1,5 @@
-import random
-import time
+import random, time, sys, os, requests
 from datetime import datetime
-import requests
 from binance.client import Client
 import pandas as pd
 import termtables as tt
@@ -132,14 +130,19 @@ def getCoinHistory(klines):
 getBot = {
     'status': 0
 }
+version = None
 while True:
     while getBot['status'] == 0 or getBot['status'] == 2:
         time.sleep(random.randint(3, 5))
         getBot = requests.post(url + 'get-order/new', headers={
             'neresi': 'dogunun+billurlari'
         }).json()
+        if version is not None and getBot['status'] == 0 and getBot['version'] != version:
+            os.execl(sys.executable, sys.executable, *sys.argv)
+        else:
+            version = getBot['version']
 
-    client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40})
+    client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
 
     dual = client.futures_get_position_mode()
     if not dual['dualSidePosition']:
@@ -161,55 +164,72 @@ while True:
     tillsonSide = 'HOLD'
     triggerStatus = False
     while operationLoop:
-        minutes = {
-            '1min': Client.KLINE_INTERVAL_1MINUTE,
-            '5min': Client.KLINE_INTERVAL_5MINUTE,
-            '15min': Client.KLINE_INTERVAL_15MINUTE,
-            '30min': Client.KLINE_INTERVAL_30MINUTE,
-            '1hour': Client.KLINE_INTERVAL_1HOUR,
-            '4hour': Client.KLINE_INTERVAL_4HOUR
-        }
-        klines = client.get_klines(symbol=getBot['parity'], interval=minutes[str(getBot['time'])], limit=500)
-        getKDJ = get_kdj(klines)
-        if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
-            sameTest = {
-                'K': getKDJ['K'],
-                'D': getKDJ['D'],
-                'J': getKDJ['J']
+        try:
+            minutes = {
+                '1min': Client.KLINE_INTERVAL_1MINUTE,
+                '5min': Client.KLINE_INTERVAL_5MINUTE,
+                '15min': Client.KLINE_INTERVAL_15MINUTE,
+                '30min': Client.KLINE_INTERVAL_30MINUTE,
+                '1hour': Client.KLINE_INTERVAL_1HOUR,
+                '4hour': Client.KLINE_INTERVAL_4HOUR
             }
-
-            # SYNC BOT
-            syncBot = requests.post(url + 'get-order/' + str(getBot['bot']), headers={
-                'neresi': 'dogunun+billurlari'
-            }).json()
-            for bt in syncBot.keys():
-                getBot[bt] = syncBot[bt]
-            # SYNC BOT END
-
-            if lastSide == 'HOLD' and getBot['status'] == 2 and lastPrice == 0:
-                operationLoop = False
-                setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                    'neresi': 'dogunun+billurlari'
-                }, json={
-                    'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            klines = client.get_klines(symbol=getBot['parity'], interval=minutes[str(getBot['time'])], limit=500)
+            getKDJ = get_kdj(klines)
+            if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
+                sameTest = {
                     'K': getKDJ['K'],
                     'D': getKDJ['D'],
-                    'J': getKDJ['J'],
-                    'action': 'STOP',
-                }).status_code
-                if setBot != 200:
-                    raise Exception('set_bot_fail')
-            else:
-                # GET SIGNAL
-                history = getCoinHistory(klines)
-                signal = getSignal(history, float(getBot['volume_factor']), int(getBot['t3_length']), tillsonSide)
-                if signal == 'BUY' or signal == 'SELL':
-                    tillsonSide = signal
+                    'J': getKDJ['J']
+                }
 
-                # GET SIGNAL END
-                if tillsonSide == getKDJ['side'] and tillsonSide != lastSide:
-                    lastPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
-                    if lastSide != 'HOLD' and triggerStatus != True:
+                # SYNC BOT
+                syncBot = requests.post(url + 'get-order/' + str(getBot['bot']), headers={
+                    'neresi': 'dogunun+billurlari'
+                }).json()
+                for bt in syncBot.keys():
+                    getBot[bt] = syncBot[bt]
+                # SYNC BOT END
+
+                if lastSide == 'HOLD' and getBot['status'] == 2 and lastPrice == 0:
+                    operationLoop = False
+                    setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                        'neresi': 'dogunun+billurlari'
+                    }, json={
+                        'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        'K': getKDJ['K'],
+                        'D': getKDJ['D'],
+                        'J': getKDJ['J'],
+                        'action': 'STOP',
+                    }).status_code
+                    if setBot != 200:
+                        raise Exception('set_bot_fail')
+                else:
+                    # GET SIGNAL
+                    history = getCoinHistory(klines)
+                    signal = getSignal(history, float(getBot['volume_factor']), int(getBot['t3_length']), tillsonSide)
+                    if signal == 'BUY' or signal == 'SELL':
+                        tillsonSide = signal
+
+                    # GET SIGNAL END
+                    if tillsonSide == getKDJ['side'] and tillsonSide != lastSide:
+                        lastPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
+                        if lastSide != 'HOLD' and triggerStatus != True:
+                            setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                'neresi': 'dogunun+billurlari'
+                            }, json={
+                                'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                'K': getKDJ['K'],
+                                'D': getKDJ['D'],
+                                'J': getKDJ['J'],
+                                'side': lastSide,
+                                'price': lastPrice,
+                                'action': 'CLOSE',
+                            }).status_code
+                            if setBot != 200:
+                                raise Exception('set_bot_fail')
+                        else:
+                            triggerStatus = False
+                        lastSide = tillsonSide
                         setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                             'neresi': 'dogunun+billurlari'
                         }, json={
@@ -219,44 +239,13 @@ while True:
                             'J': getKDJ['J'],
                             'side': lastSide,
                             'price': lastPrice,
-                            'action': 'CLOSE',
+                            'action': 'OPEN',
                         }).status_code
                         if setBot != 200:
                             raise Exception('set_bot_fail')
-                    else:
-                        triggerStatus = False
-                    lastSide = tillsonSide
-                    setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                        'neresi': 'dogunun+billurlari'
-                    }, json={
-                        'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        'K': getKDJ['K'],
-                        'D': getKDJ['D'],
-                        'J': getKDJ['J'],
-                        'side': lastSide,
-                        'price': lastPrice,
-                        'action': 'OPEN',
-                    }).status_code
-                    if setBot != 200:
-                        raise Exception('set_bot_fail')
-                elif tillsonSide != lastSide and signal != 'HOLD' and lastSide != 'HOLD' and triggerStatus != True:
-                    triggerStatus = True
-                    lastPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
-                    setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                        'neresi': 'dogunun+billurlari'
-                    }, json={
-                        'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        'K': getKDJ['K'],
-                        'D': getKDJ['D'],
-                        'J': getKDJ['J'],
-                        'side': lastSide,
-                        'price': lastPrice,
-                        'action': 'CLOSE_TRIGGER',
-                    }).status_code
-                    if setBot != 200:
-                        raise Exception('set_bot_fail')
-                else:
-                    if lastSide == 'HOLD':
+                    elif tillsonSide != lastSide and signal != 'HOLD' and lastSide != 'HOLD' and triggerStatus != True:
+                        triggerStatus = True
+                        lastPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
                         setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                             'neresi': 'dogunun+billurlari'
                         }, json={
@@ -264,10 +253,44 @@ while True:
                             'K': getKDJ['K'],
                             'D': getKDJ['D'],
                             'J': getKDJ['J'],
-                            'action': 'ORDER_START_WAITING',
+                            'side': lastSide,
+                            'price': lastPrice,
+                            'action': 'CLOSE_TRIGGER',
                         }).status_code
                         if setBot != 200:
                             raise Exception('set_bot_fail')
-                    print(signal, getKDJ['side'])
-        else:
-            time.sleep(1)
+                    else:
+                        if lastSide == 'HOLD':
+                            setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                'neresi': 'dogunun+billurlari'
+                            }, json={
+                                'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                'K': getKDJ['K'],
+                                'D': getKDJ['D'],
+                                'J': getKDJ['J'],
+                                'action': 'ORDER_START_WAITING',
+                            }).status_code
+                            if setBot != 200:
+                                raise Exception('set_bot_fail')
+                        print(signal, getKDJ['side'])
+            else:
+                time.sleep(1)
+        except:
+            operationLoop = False
+            getBot['status'] = 2
+            print("emir kapatıldı!!")
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            setBot = requests.post(url + 'set-error', headers={
+                'neresi': 'dogunun+billurlari'
+            }, json={
+                'bot': getBot['bot'],
+                'errors': [
+                    str(exc_type),
+                    str(fname),
+                    str(exc_tb.tb_lineno),
+                ]
+            }).status_code
+            if getBot['version'] != version:
+                print("yeniden başlatma")
+                os.execl(sys.executable, sys.executable, *sys.argv)

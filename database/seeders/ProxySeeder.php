@@ -17,14 +17,18 @@ class ProxySeeder extends Seeder
     public function run()
     {
         $proxies = Storage::disk('public')->get('ips-data_center.txt');
+        $proxyCount = 0;
         foreach (explode("\n", $proxies) as $proxy) {
-            $proxy = explode(":", $proxy);
-            Proxy::create([
-                'user' => $proxy[2],
-                'password' => $proxy[3],
-                'host' => $proxy[0],
-                'port' => $proxy[1],
-            ]);
+            $proxyCount++;
+            if ($proxyCount <= 500) {
+                $proxy = explode(":", $proxy);
+                Proxy::create([
+                    'user' => $proxy[2],
+                    'password' => $proxy[3],
+                    'host' => $proxy[0],
+                    'port' => $proxy[1],
+                ]);
+            }
         }
     }
 }

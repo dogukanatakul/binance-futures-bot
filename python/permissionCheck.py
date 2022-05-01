@@ -4,16 +4,18 @@ from helper import config
 import requests
 
 while True:
-    users = requests.post(config('API', 'SITE') + 'get-req-user', headers={
+    reqs = requests.post(config('API', 'SITE') + 'get-req-user', headers={
         'neresi': 'dogunun+billurlari'
     }).json()
-    for user in users:
+    proxyCount = 0
+    for user in reqs['users']:
         permissions = [
             'enableReading',
             'enableFutures',  # Vadeli işlem hesabınız açılmadan önce oluşturulan API Anahtarı, vadeli işlem API hizmetini desteklemiyor
         ]
         try:
-            client = Client(user['api_key'], user['api_secret'], {"timeout": 40})
+            client = Client(user['api_key'], user['api_secret'], {"timeout": 40, 'proxies': reqs['proxies'][proxyCount]})
+            proxyCount += 1
             get_account_api_permissions = client.get_account_api_permissions()
             client.futures_get_position_mode()
             for attr, value in get_account_api_permissions.items():
@@ -36,4 +38,4 @@ while True:
                     'user': user['id'],
                     'status': 'fail'
                 }).json()
-    time.sleep(5)
+    time.sleep(2)
