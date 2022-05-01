@@ -6,6 +6,7 @@ use App\Jobs\EmailAdminUserVerify;
 use App\Models\Order;
 use App\Models\OrderError;
 use App\Models\OrderOperation;
+use App\Models\Parity;
 use App\Models\Proxy;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -171,5 +172,36 @@ class BotController extends Controller
         return response()->json([
             'status' => 'success'
         ]);
+    }
+
+    public function updateParity(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $validator = validator()->make(request()->all(), [
+            'min_price' => 'required|filled',
+            'max_price' => 'required|filled',
+            'max_amount' => 'required|filled',
+            'min_amount' => 'required|filled',
+            'price_fraction' => 'required|filled',
+            'amount_fraction' => 'required|filled',
+            'status' => 'required|filled',
+            'parity' => 'required|filled',
+        ]);
+        if ($validator->fails()) {
+            return abort(404);
+        } else {
+            try {
+                if (!empty($parity = Parity::where('parity', $request->parity)->first())) {
+                    $parity->update($request->toArray());
+                }
+                return response()->json([
+                    'status' => 'success'
+                ]);
+            } catch (\Exception $exception) {
+                report($exception);
+                return response()->json([
+                    'status' => 'fail'
+                ]);
+            }
+        }
     }
 }

@@ -15,10 +15,14 @@ return new class extends Migration {
         Schema::create('parities', function (Blueprint $table) {
             $table->id();
             $table->string('parity')->unique(); # DOGEUSDT
-            $table->string('source'); # USDT
-            $table->string('token'); # DOGE
             $table->integer('risk_percentage')->default(100);
-            $table->integer('status')->default(0);
+            $table->decimal('min_price', 38, 22)->default(0);
+            $table->decimal('max_price', 38, 22)->default(0);
+            $table->decimal('min_amount', 38, 22)->default(0);
+            $table->decimal('max_amount', 38, 22)->default(0);
+            $table->integer('price_fraction')->default(0);
+            $table->integer('amount_fraction')->default(0);
+            $table->string('status')->default('WAITING');
             $table->softDeletes();
             $table->timestamps();
         });
