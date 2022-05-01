@@ -20,7 +20,7 @@ class BotController extends Controller
             $uuid = (string)Str::uuid();
             $order = Order::whereHas('user', function ($q) {
                 $q->where('api_status', true);
-            })->whereNull('bot')->update([
+            })->whereNull('bot')->limit(1)->update([
                 'bot' => $uuid,
                 'status' => 1,
             ]);
