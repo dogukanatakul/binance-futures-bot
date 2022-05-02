@@ -63,26 +63,6 @@
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[start_diff]" value="{{ $time->start_diff }}">
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[fake_reverse]" value="{{ $time->fake_reverse }}">
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[trigger_diff]" value="{{ $time->trigger_diff }}">
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[start_trigger_min]" value="{{ $time->start_trigger_min }}">
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
                                             <input type="number" class="form-control" name="update[reverse_delay]" value="{{ $time->reverse_delay }}">
                                         </div>
                                     </td>
@@ -94,6 +74,16 @@
                                     <td>
                                         <div class="input-group input-group-sm">
                                             <input type="number" class="form-control" name="update[volume_factor]" value="{{ $time->volume_factor }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" name="update[kdj_period]" value="{{ $time->kdj_period }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" name="update[kdj_signal]" value="{{ $time->kdj_signal }}">
                                         </div>
                                     </td>
                                     <td>

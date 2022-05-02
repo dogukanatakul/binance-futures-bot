@@ -22,7 +22,8 @@ return new class extends Migration {
             $table->decimal('max_amount', 38, 22)->default(0);
             $table->integer('price_fraction')->default(0);
             $table->integer('amount_fraction')->default(0);
-            $table->string('status')->default('WAITING');
+            $table->string('binance_status')->default('WAITING');
+            $table->boolean('status')->default(false);
             $table->softDeletes();
             $table->timestamps();
         });

@@ -118,7 +118,7 @@ class AppController extends Controller
                 $leverages = Leverage::get()->pluck('leverage');
                 $times = Time::where('parities_id', $parity->id)->get()->pluck('time');
             } else {
-                $parities = Parity::where('status', 'TRADING')->get()->pluck('parity');
+                $parities = Parity::where('status', true)->where('binance_status', 'TRADING')->get()->pluck('parity');
             }
             return view('new_order', compact('parities', 'leverages', 'times'));
         } else {

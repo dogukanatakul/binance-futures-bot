@@ -25,6 +25,8 @@ return new class extends Migration {
             $table->integer('risk_percentage')->default(0);
             $table->integer('t3_length')->default(2);
             $table->decimal("volume_factor", 3, 2)->default(0.7);
+            $table->integer('kdj_period')->default(9);
+            $table->integer('kdj_signal')->default(2);
             $table->integer('status')->default(0);
             $table->softDeletes();
             $table->timestamps();

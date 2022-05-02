@@ -38,4 +38,5 @@ while True:
                     'user': user['id'],
                     'status': 'fail'
                 }).json()
+        time.sleep(1)
     time.sleep(2)

@@ -20,6 +20,13 @@ class Time extends Model
         't3_length',
         'volume_factor',
         'status',
+        'kdj_period',
+        'kdj_signal',
+    ];
+
+    protected $casts = [
+        'kdj_period' => 'integer',
+        'kdj_signal' => 'integer',
     ];
 
     public function parity(): \Illuminate\Database\Eloquent\Relations\HasOne

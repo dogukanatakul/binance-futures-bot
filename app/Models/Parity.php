@@ -12,6 +12,7 @@ class Parity extends Model
     protected $fillable = [
         'parity',
         'risk_percentage',
+        'binance_status',
         'status',
         'min_price',
         'max_price',
@@ -28,6 +29,7 @@ class Parity extends Model
         'max_amount' => 'float',
         'price_fraction' => 'integer',
         'amount_fraction' => 'integer',
+        'status' => 'boolean',
     ];
 
 }

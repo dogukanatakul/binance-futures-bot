@@ -22,7 +22,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
-def kdj(kline):
+def kdj(kline, period, signal):
     cols = [
         'Date',
         'Open',
@@ -41,19 +41,19 @@ def kdj(kline):
     df = pd.DataFrame(kline, columns=cols)
     df = df.drop(columns=['CloseTime', 'QuoteVolume', 'NumberTrades', 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume', 'Ignore'])
     df[num_cols] = df[num_cols].apply(pd.to_numeric, errors='coerce')
-    low_list = df['Low'].rolling(9, min_periods=9).min()
+    low_list = df['Low'].rolling(period, min_periods=period).min()
     low_list.fillna(value=df['Low'].expanding().min(), inplace=True)
-    high_list = df['High'].rolling(9, min_periods=9).max()
+    high_list = df['High'].rolling(period, min_periods=period).max()
     high_list.fillna(value=df['High'].expanding().max(), inplace=True)
     rsv = (df['Close'] - low_list) / (high_list - low_list) * 100
     df_kdj = df.copy()
-    df_kdj['K'] = pd.DataFrame(rsv).ewm(com=2).mean()
-    df_kdj['D'] = df_kdj['K'].ewm(com=2).mean()
+    df_kdj['K'] = pd.DataFrame(rsv).ewm(com=signal).mean()
+    df_kdj['D'] = df_kdj['K'].ewm(com=signal).mean()
     df_kdj['J'] = 3 * df_kdj['K'] - 2 * df_kdj['D']
     return df_kdj.tail(1)['K'].item(), df_kdj.tail(1)['D'].item(), df_kdj.tail(1)['J'].item()
 
 
-def get_kdj(klines):
+def get_kdj(klines, period=9, signal=2):
     try:
         klineStatus = True
         while klineStatus:
@@ -63,7 +63,7 @@ def get_kdj(klines):
                 print(str(e))
                 time.sleep(2)
                 klineStatus = True
-        k, d, j = kdj(klines)
+        k, d, j = kdj(klines, period, signal)
         if float(j) > float(d) and float(d) < float(k):
             return {
                 'K': k,
@@ -174,7 +174,7 @@ while True:
                 '4hour': Client.KLINE_INTERVAL_4HOUR
             }
             klines = client.get_klines(symbol=getBot['parity'], interval=minutes[str(getBot['time'])], limit=200)
-            getKDJ = get_kdj(klines)
+            getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'])
             if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
                 sameTest = {
                     'K': getKDJ['K'],
