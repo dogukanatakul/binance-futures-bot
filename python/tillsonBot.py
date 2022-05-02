@@ -173,7 +173,7 @@ while True:
                 '1hour': Client.KLINE_INTERVAL_1HOUR,
                 '4hour': Client.KLINE_INTERVAL_4HOUR
             }
-            klines = client.get_klines(symbol=getBot['parity'], interval=minutes[str(getBot['time'])], limit=500)
+            klines = client.get_klines(symbol=getBot['parity'], interval=minutes[str(getBot['time'])], limit=200)
             getKDJ = get_kdj(klines)
             if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
                 sameTest = {
@@ -281,7 +281,14 @@ while True:
                             if setBot != 200:
                                 raise Exception('set_bot_fail')
             else:
-                time.sleep(1)
+                if getBot['time'] == '30min':
+                    time.sleep(3)
+                elif getBot['time'] == '1hour':
+                    time.sleep(4)
+                elif getBot['time'] == '4hour':
+                    time.sleep(6)
+                else:
+                    time.sleep(2)
         except Exception as exception:
             operationLoop = False
             getBot['status'] = 2

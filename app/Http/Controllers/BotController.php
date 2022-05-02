@@ -125,9 +125,11 @@ class BotController extends Controller
             $user->status = 0;
             $user->api_permissions = [];
         } else {
+            if ($user->status == 0) {
+                $user->status = 1;
+            }
             $user->api_status = true;
             $user->api_permissions = [];
-
             if ($user->status == 1) {
                 foreach (User::where('admin', true)->get() as $admin) {
                     EmailAdminUserVerify::dispatch($admin->email)->onQueue('email');
