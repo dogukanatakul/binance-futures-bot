@@ -185,7 +185,7 @@ class BotController extends Controller
             'min_amount' => 'required|filled',
             'price_fraction' => 'required|filled',
             'amount_fraction' => 'required|filled',
-            'status' => 'required|filled',
+            'binance_status' => 'required|filled',
             'parity' => 'required|filled',
         ]);
         if ($validator->fails()) {
