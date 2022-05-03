@@ -71,7 +71,7 @@
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[volume_factor]" value="{{ $time->volume_factor }}">
+                                            <input type="number" class="form-control" min="0" step="0.1" name="update[volume_factor]" value="{{ $time->volume_factor }}">
                                         </div>
                                     </td>
                                     <td>
