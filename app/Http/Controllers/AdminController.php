@@ -51,7 +51,7 @@ class AdminController extends Controller
             'id' => 'required|filled|integer',
             'update.reverse_delay' => 'required|filled|integer',
             'update.t3_length' => 'required|filled|integer',
-            'update.volume_factor' => 'required|filled|float',
+            'update.volume_factor' => 'required|filled|numaric',
             'update.kdj_period' => 'required|filled|integer',
             'update.kdj_signal' => 'required|filled|integer',
         ]);
