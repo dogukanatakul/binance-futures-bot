@@ -45,6 +45,8 @@ class BotController extends Controller
                     'reverse_delay' => $order->time->reverse_delay,
                     't3_length' => $order->time->t3_length,
                     'volume_factor' => $order->time->volume_factor,
+                    'kdj_period' => $order->time->kdj_period,
+                    'kdj_signal' => $order->time->kdj_signal,
                     'time' => $order->time->time,
                     'proxy' => [
                         'http' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port,
@@ -64,6 +66,8 @@ class BotController extends Controller
                 'reverse_delay' => $order->time->reverse_delay,
                 't3_length' => $order->time->t3_length,
                 'volume_factor' => $order->time->volume_factor,
+                'kdj_period' => $order->time->kdj_period,
+                'kdj_signal' => $order->time->kdj_signal,
                 'status' => $order->status,
                 'version' => config('app.bot_version')
             ]);
