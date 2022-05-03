@@ -17,35 +17,32 @@ class TimeSeeder extends Seeder
     public function run()
     {
         $times = [
-            [
-                'time' => '1min',
-                'start_diff' => 15,
-                'trigger_diff' => 20,
-            ],
-            [
-                'time' => '5min',
-                'start_diff' => 10,
-                'trigger_diff' => 10,
-            ],
-            [
-                'time' => '15min',
-                'start_diff' => 15,
-                'trigger_diff' => 15,
-            ],
+//            [
+//                'time' => '1min',
+//                'trigger_diff' => 20,
+//            ],
+//            [
+//                'time' => '5min',
+//                'trigger_diff' => 10,
+//            ],
+//            [
+//                'time' => '15min',
+//                'trigger_diff' => 15,
+//            ],
             [
                 'time' => '30min',
-                'start_diff' => 3,
                 'trigger_diff' => 3,
+                't3_length' => 14,
             ],
             [
                 'time' => '1hour',
-                'start_diff' => 7,
                 'trigger_diff' => 7,
+                't3_length' => 4,
             ],
             [
                 'time' => '4hour',
-                'start_diff' => 5,
                 'trigger_diff' => 5,
+                't3_length' => 3,
             ],
         ];
 

@@ -1,4 +1,5 @@
 import talib as ta
+import numpy as np
 
 
 def generateTillsonT3(historyMap, volume_factor, t3Length):
@@ -21,7 +22,23 @@ def generateTillsonT3(historyMap, volume_factor, t3Length):
     return T3
 
 
-def getSignal(historyMap, valueFactor, t3length, lastOperation):
+def getCoinHistory(klines):
+    high = [float(entry[2]) for entry in klines]
+    low = [float(entry[3]) for entry in klines]
+    close = [float(entry[4]) for entry in klines]
+    close_array = np.asarray(close)
+    high_array = np.asarray(high)
+    low_array = np.asarray(low)
+    klinesMap = {
+        "close": close_array,
+        "high": high_array,
+        "low": low_array
+    }
+    return klinesMap
+
+
+def getSignal(klines, valueFactor, t3length, lastOperation):
+    historyMap = getCoinHistory(klines)
     tillsont3 = generateTillsonT3(historyMap, valueFactor, t3length)
     t3_last = tillsont3[-1]
     t3_previous = tillsont3[-2]

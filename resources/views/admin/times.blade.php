@@ -42,13 +42,11 @@
                         <thead>
                         <tr>
                             <th scope="col">Zaman</th>
-                            <th scope="col">Başlama Farkı%</th>
                             <th scope="col">Sahte Ters İşlem</th>
-                            <th scope="col">Tetikleme %'si</th>
-                            <th scope="col">Başlangıçta minimum SHORT işlem sayısı</th>
-                            <th scope="col">İşlem terse dönerse kaç işlem beklesin</th>
                             <th scope="col">T3 Length</th>
                             <th scope="col">Volume Factor</th>
+                            <th scope="col">KDJ Period</th>
+                            <th scope="col">KDJ Factor</th>
                             <th scope="col"><i class="bi bi-arrow-clockwise"></i></th>
                         </tr>
                         </thead>
