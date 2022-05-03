@@ -17,7 +17,7 @@ while True:
                 'min_amount': item['filters'][1]['minQty'],
                 'price_fraction': item['pricePrecision'],
                 'amount_fraction': item['quantityPrecision'],
-                'status': item['status'],
+                'binance_status': item['status'],
                 'parity': item['symbol'],
             }).json()
             print(setPair)

@@ -166,6 +166,7 @@ class ParitySeeder extends Seeder
             try {
                 Parity::create([
                     'parity' => $pair,
+                    'status' => true
                 ]);
             } catch (\Exception $exception) {
                 report($exception);
