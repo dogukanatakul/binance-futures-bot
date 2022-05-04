@@ -30,6 +30,7 @@ return [
     'starting' => "Starting",
     'finish' => "Finish",
     'operations' => "Operations",
+    'percent' => "Percent",
 
     // Index
     'get_auth_mail_button' => "Submit Login Link",

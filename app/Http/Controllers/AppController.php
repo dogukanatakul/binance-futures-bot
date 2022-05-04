@@ -115,7 +115,7 @@ class AppController extends Controller
 
             if ($request->filled('parity')) {
                 $parity = Parity::where('parity', $request->parity)->first();
-                $leverages = Leverage::get()->pluck('leverage');
+                $leverages = Leverage::where('status', true)->get()->pluck('leverage');
                 $times = Time::where('parities_id', $parity->id)->where('status', true)->get()->pluck('time');
             } else {
                 $parities = Parity::with('time')

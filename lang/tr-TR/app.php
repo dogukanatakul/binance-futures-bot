@@ -30,6 +30,7 @@ return [
     'starting' => "Başlama",
     'finish' => "Bitiş",
     'operations' => "İşlemler",
+    'percent' => "Yüzde",
 
     // Index
     'get_auth_mail_button' => "Giriş Bağlantısı Gönder",

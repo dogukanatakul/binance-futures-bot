@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'bot_version' => '3',
+    'bot_version' => '4',
 
     'name' => env('APP_NAME', 'Laravel'),
 

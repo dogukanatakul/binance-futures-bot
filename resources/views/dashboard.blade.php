@@ -38,6 +38,7 @@
                             <th scope="col">{{ __('app.parity') }}</th>
                             <th scope="col">{{ __('app.time') }}</th>
                             <th scope="col">{{ __('app.leverage') }}</th>
+                            <th scope="col">{{ __('app.percent') }}</th>
                             <th scope="col">{{ __('app.starting') }}</th>
                             <th scope="col">{{ __('app.finish') }}</th>
                             <th scope="col">{{ __('app.operations') }}</th>
@@ -54,6 +55,9 @@
                                 </td>
                                 <td>
                                     {{ $order->leverage->leverage }}x
+                                </td>
+                                <td>
+                                    {{ $order->percent }}%
                                 </td>
                                 <td>
                                     {{ $order->start->format('y-m-d H:i') }}
