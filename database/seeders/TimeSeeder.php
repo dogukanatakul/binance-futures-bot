@@ -25,10 +25,10 @@ class TimeSeeder extends Seeder
 //                'time' => '5min',
 //                'trigger_diff' => 10,
 //            ],
-//            [
-//                'time' => '15min',
-//                'trigger_diff' => 15,
-//            ],
+            [
+                'time' => '15min',
+                'trigger_diff' => 15,
+            ],
             [
                 'time' => '30min',
                 'trigger_diff' => 3,

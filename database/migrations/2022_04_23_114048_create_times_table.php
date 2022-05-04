@@ -27,7 +27,7 @@ return new class extends Migration {
             $table->decimal("volume_factor", 3, 2)->default(0.7);
             $table->integer('kdj_period')->default(9);
             $table->integer('kdj_signal')->default(2);
-            $table->integer('status')->default(0);
+            $table->boolean('status')->default(false);
             $table->softDeletes();
             $table->timestamps();
         });

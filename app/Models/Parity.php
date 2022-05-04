@@ -32,4 +32,9 @@ class Parity extends Model
         'status' => 'boolean',
     ];
 
+    public function time(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Time::class, 'parities_id', 'id');
+    }
+
 }

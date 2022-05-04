@@ -1,40 +1,19 @@
 from binance.client import Client
-import pandas as pd
+
+client = Client("SjlxXktwDHd1h7Nrg9HnAQM4oJ7R8tu9H7joAEJM9mPc79RWkj0qDMviby1wb7Zq", "KWyjvXX4lkMBtlwIj9R4BIJkpLgYcfwNfFIiSUemojroJaEgDLgGsnz7rfb4CHYG", {"timeout": 40})
 
 
-def kdj(kline, N=9, M=2):
-    cols = [
-        'Date',
-        'Open',
-        'High',
-        'Low',
-        'Close',
-        'Volume',
-        'CloseTime',
-        'QuoteVolume',
-        'NumberTrades',
-        'TakerBuyBaseVolume',
-        'TakerBuyQuoteVolume',
-        'Ignore'
-    ]
-    num_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
-    df = pd.DataFrame(kline, columns=cols)
-    df = df.drop(columns=['CloseTime', 'QuoteVolume', 'NumberTrades', 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume', 'Ignore'])
-    df[num_cols] = df[num_cols].apply(pd.to_numeric, errors='coerce')
-    low_list = df['Low'].rolling(window=N).min()
-    low_list.fillna(value=df['Low'].expanding(min_periods=1).min(), inplace=True)
-    high_list = df['High'].rolling(window=N).max()
-    high_list.fillna(value=df['High'].expanding(min_periods=1).max(), inplace=True)
-    rvs = (df['Close'] - low_list) / (high_list - low_list) * 100
-    df['K'] = rvs.ewm(com=M, min_periods=0, adjust=True, ignore_na=False).mean()
-    df['D'] = df['K'].ewm(com=M, min_periods=0, adjust=True, ignore_na=False).mean()
-    df['J'] = 3 * df['K'] - 2 * df['D']
-    return df.tail(1)['K'].item(), df.tail(1)['D'].item(), df.tail(1)['J'].item()
+def getPosition(client, symbol, side):
+    info = client.futures_position_information(symbol=str(symbol))
+    positions = {}
+    for item in info:
+        positions[item['positionSide']] = {
+            'amount': float(item['positionAmt']),
+            'entryPrice': float(item['entryPrice']),
+            'markPrice': float(item['markPrice']),
+            'profit': float(item['unRealizedProfit']),
+        }
+    return positions[side]
 
 
-client = Client()
-
-klines100 = client.futures_klines(symbol="BTCUSDT", interval=client.KLINE_INTERVAL_30MINUTE, limit=100)
-
-
-print(kdj(klines100, 40, 10))
+print(getPosition(client, 'DOGEUSDT', "SHORT"))

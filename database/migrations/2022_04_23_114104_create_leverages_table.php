@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->id();
             $table->integer('leverage')->unique();
             $table->integer('risk_percentage')->default(0);
+            $table->boolean('status')->default(false);
             $table->softDeletes();
             $table->timestamps();
         });

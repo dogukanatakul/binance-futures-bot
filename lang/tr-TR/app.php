@@ -52,4 +52,8 @@ return [
     'order_detail_position' => "Pozisyon",
     'order_detail_action' => "Aksiyon",
     'order_detail_time' => "Zaman",
+
+    // errors
+    'error_no_parity' => 'Şuan emir verilebilecek parite bulunmamaktadır!',
+    'error_busy' => "Yoğunluktan dolayı emrinizi şu an oluşturamıyoruz! Lütfen biraz sonra tekrar deneyiniz.",
 ];

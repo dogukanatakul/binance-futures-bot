@@ -9,14 +9,19 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-6 text-center">
+            <div class="col-4 text-center">
                 <div class="d-grid gap-2">
                     <a href="{{ route('panel.admin.users') }}" title="Üyeler" class="btn btn-outline-warning">Üyeler</a>
                 </div>
             </div>
-            <div class="col-6 text-center">
+            <div class="col-4 text-center">
                 <div class="d-grid gap-2">
                     <a href="{{ route('panel.admin.times') }}" title="Zaman Ayarları" class="btn btn-outline-warning">Zaman Ayarları</a>
+                </div>
+            </div>
+            <div class="col-4 text-center">
+                <div class="d-grid gap-2">
+                    <a href="{{ route('panel.admin.leverages') }}" title="Kaldıraçlar" class="btn btn-outline-warning">Kaldıraçlar</a>
                 </div>
             </div>
             <div class="col-12 text-center mt-2">

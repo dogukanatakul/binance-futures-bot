@@ -47,6 +47,7 @@
                             <th scope="col">Volume Factor</th>
                             <th scope="col">KDJ Period</th>
                             <th scope="col">KDJ Factor</th>
+                            <th scope="col">Durum</th>
                             <th scope="col"><i class="bi bi-arrow-clockwise"></i></th>
                         </tr>
                         </thead>
@@ -82,6 +83,11 @@
                                     <td>
                                         <div class="input-group input-group-sm">
                                             <input type="number" class="form-control" name="update[kdj_signal]" value="{{ $time->kdj_signal }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="update[status]" id="flexSwitchCheckChecked" value="1" {{ $time->status ? 'checked':'' }}>
                                         </div>
                                     </td>
                                     <td>

@@ -116,9 +116,22 @@ class AppController extends Controller
             if ($request->filled('parity')) {
                 $parity = Parity::where('parity', $request->parity)->first();
                 $leverages = Leverage::get()->pluck('leverage');
-                $times = Time::where('parities_id', $parity->id)->get()->pluck('time');
+                $times = Time::where('parities_id', $parity->id)->where('status', true)->get()->pluck('time');
             } else {
-                $parities = Parity::where('status', true)->where('binance_status', 'TRADING')->get()->pluck('parity');
+                $parities = Parity::with('time')
+                    ->whereHas('time', function ($q) {
+                        $q->where('status', true);
+                    })
+                    ->where('status', true)
+                    ->where('binance_status', 'TRADING')
+                    ->get();
+                if ($parities->count() == 0) {
+                    Session::flash('error', __('app.error_no_parity'));
+                    return redirect()->route('panel.dashboard');
+                }
+                $parities = collect($parities)->filter(function ($query) {
+                    return $query->time->count() > 0;
+                })->pluck('parity');
             }
             return view('new_order', compact('parities', 'leverages', 'times'));
         } else {
@@ -163,7 +176,7 @@ class AppController extends Controller
                     'percent' => $request->percent,
                 ]);
             } else {
-                Session::flash('error', 'Yoğunluktan dolayı emrinizi şuan oluşturamıyoruz! Lütfen biraz sonra tekrar deneyiniz.');
+                Session::flash('error', __('app.error_busy'));
                 return redirect()->route('panel.dashboard');
             }
         }

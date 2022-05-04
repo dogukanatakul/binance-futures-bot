@@ -38,8 +38,6 @@ class BotController extends Controller
                     'leverage' => $order->leverage->leverage,
                     'percent' => $order->percent,
                     'parity' => $order->parity->parity,
-                    'source' => $order->parity->source,
-                    'token' => $order->parity->token,
                     'start_trigger_min' => $order->time->start_trigger_min,
                     'fake_reverse' => $order->time->fake_reverse,
                     'reverse_delay' => $order->time->reverse_delay,
@@ -87,6 +85,13 @@ class BotController extends Controller
                 $stopOrder->status = 3;
                 $stopOrder->finish = now()->toDateTime();
                 $stopOrder->save();
+                return response()->json([
+                    'status' => 'success'
+                ]);
+            } else if ((!empty($manualStop = Order::whereIn('status', [1, 2])->where('bot', $bot)->first())) and $request->action == "MANUAL_STOP") {
+                $manualStop->status = 3;
+                $manualStop->finish = now()->toDateTime();
+                $manualStop->save();
                 return response()->json([
                     'status' => 'success'
                 ]);

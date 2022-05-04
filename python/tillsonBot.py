@@ -98,6 +98,19 @@ def getOrderBalance(client, currenty, percent):
         return False
 
 
+def getPosition(client, symbol, side):
+    infos = client.futures_position_information(symbol=str(symbol))
+    positions = {}
+    for info in infos:
+        positions[info['positionSide']] = {
+            'amount': float(info['positionAmt']),
+            'entryPrice': float(info['entryPrice']),
+            'markPrice': float(info['markPrice']),
+            'profit': float(info['unRealizedProfit']),
+        }
+    return positions[side]
+
+
 def terminalTable(data):
     if len(data) > 0:
         header = list(data[0].keys())
@@ -144,6 +157,8 @@ while True:
     operationLoop = True
     lastPrice = 0
     lastSide = 'HOLD'
+    lastType = None
+    lastQuantity = None
     tillsonSide = 'HOLD'
     triggerStatus = False
     while operationLoop:
@@ -156,7 +171,18 @@ while True:
                 '1hour': Client.KLINE_INTERVAL_1HOUR,
                 '4hour': Client.KLINE_INTERVAL_4HOUR
             }
-            klines = client.futures_klines(symbol=getBot['parity'], interval=minutes[str(getBot['time'])], limit=100)
+            klineConnect = True
+            while klineConnect:
+                try:
+                    klines = client.futures_klines(symbol=getBot['parity'], interval=minutes[str(getBot['time'])], limit=100)
+                    klineConnect = False
+                    break
+                except Exception as e:
+                    if "Max retries exceeded" in str(e) or "Too many requests" in str(e):
+                        time.sleep(3)
+                        continue
+                    else:
+                        raise Exception(e)
             getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'])
             if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
                 sameTest = {
@@ -205,6 +231,72 @@ while True:
                     if tillsonSide == getKDJ['side'] and tillsonSide != lastSide:
                         lastPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
                         if lastSide != 'HOLD' and triggerStatus != True:
+                            position = getPosition(client, getBot['parity'], lastType)
+                            if position['amount'] > 0:
+                                # Binance
+                                client.futures_cancel_all_open_orders(symbol=getBot['parity'])
+                                client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=lastType, type="MARKET", quantity=lastQuantity)
+                                # Binance END
+                                setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                    'neresi': 'dogunun+billurlari'
+                                }, json={
+                                    'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                    'K': getKDJ['K'],
+                                    'D': getKDJ['D'],
+                                    'J': getKDJ['J'],
+                                    'side': lastSide,
+                                    'price': lastPrice,
+                                    'profit': position['profit'],
+                                    'action': 'CLOSE',
+                                }).status_code
+                                if setBot != 200:
+                                    raise Exception('set_bot_fail')
+                            else:
+                                setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                    'neresi': 'dogunun+billurlari'
+                                }, json={
+                                    'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                    'K': getKDJ['K'],
+                                    'D': getKDJ['D'],
+                                    'J': getKDJ['J'],
+                                    'action': 'MANUAL_STOP',
+                                }).status_code
+                                raise Exception('manual_stop')
+                        else:
+                            triggerStatus = False
+                        lastSide = tillsonSide
+                        lastType = getKDJ['type']
+
+                        # Binance
+                        lastQuantity = "{:0.0{}f}".format(float((getOrderBalance(client, "USDT", getBot['percent']) / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
+                        if float(lastQuantity) <= 0:
+                            raise Exception("Bakiye hatası")
+                        client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], type='MARKET', quantity=lastQuantity, positionSide=getKDJ['type'])
+                        # Binance END
+
+                        setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                            'neresi': 'dogunun+billurlari'
+                        }, json={
+                            'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            'K': getKDJ['K'],
+                            'D': getKDJ['D'],
+                            'J': getKDJ['J'],
+                            'side': lastSide,
+                            'position': lastType,
+                            'price': lastPrice,
+                            'action': 'OPEN',
+                        }).status_code
+                        if setBot != 200:
+                            raise Exception('set_bot_fail')
+                    elif tillsonSide != lastSide and signal != 'HOLD' and lastSide != 'HOLD' and triggerStatus != True:
+                        triggerStatus = True
+                        position = getPosition(client, getBot['parity'], lastType)
+                        if position['amount'] > 0:
+                            lastPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
+                            # Binance
+                            client.futures_cancel_all_open_orders(symbol=getBot['parity'])
+                            client.futures_create_order(symbol=getBot['parity'], side=tillsonSide, positionSide=lastType, type="MARKET", quantity=lastQuantity)
+                            # Binance End
                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                 'neresi': 'dogunun+billurlari'
                             }, json={
@@ -214,42 +306,22 @@ while True:
                                 'J': getKDJ['J'],
                                 'side': lastSide,
                                 'price': lastPrice,
-                                'action': 'CLOSE',
+                                'profit': position['profit'],
+                                'action': 'CLOSE_TRIGGER',
                             }).status_code
                             if setBot != 200:
                                 raise Exception('set_bot_fail')
                         else:
-                            triggerStatus = False
-                        lastSide = tillsonSide
-                        setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                            'neresi': 'dogunun+billurlari'
-                        }, json={
-                            'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            'K': getKDJ['K'],
-                            'D': getKDJ['D'],
-                            'J': getKDJ['J'],
-                            'side': lastSide,
-                            'price': lastPrice,
-                            'action': 'OPEN',
-                        }).status_code
-                        if setBot != 200:
-                            raise Exception('set_bot_fail')
-                    elif tillsonSide != lastSide and signal != 'HOLD' and lastSide != 'HOLD' and triggerStatus != True:
-                        triggerStatus = True
-                        lastPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
-                        setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                            'neresi': 'dogunun+billurlari'
-                        }, json={
-                            'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            'K': getKDJ['K'],
-                            'D': getKDJ['D'],
-                            'J': getKDJ['J'],
-                            'side': lastSide,
-                            'price': lastPrice,
-                            'action': 'CLOSE_TRIGGER',
-                        }).status_code
-                        if setBot != 200:
-                            raise Exception('set_bot_fail')
+                            setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                'neresi': 'dogunun+billurlari'
+                            }, json={
+                                'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                'K': getKDJ['K'],
+                                'D': getKDJ['D'],
+                                'J': getKDJ['J'],
+                                'action': 'MANUAL_STOP',
+                            }).status_code
+                            raise Exception('manual_stop')
                     else:
                         if lastPrice == 0:
                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
@@ -263,6 +335,17 @@ while True:
                             }).status_code
                             if setBot != 200:
                                 raise Exception('set_bot_fail')
+
+                # Max Request Sleep
+                if getBot['time'] == '30min':
+                    time.sleep(1)
+                elif getBot['time'] == '1hour':
+                    time.sleep(2)
+                elif getBot['time'] == '4hour':
+                    time.sleep(3)
+                else:
+                    time.sleep(5)
+                # Max Request Sleep
             else:
                 if getBot['time'] == '30min':
                     time.sleep(3)

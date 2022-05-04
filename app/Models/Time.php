@@ -19,14 +19,15 @@ class Time extends Model
         'fake_reverse',
         't3_length',
         'volume_factor',
-        'status',
         'kdj_period',
         'kdj_signal',
+        'status',
     ];
 
     protected $casts = [
         'kdj_period' => 'integer',
         'kdj_signal' => 'integer',
+        'status' => 'boolean',
     ];
 
     public function parity(): \Illuminate\Database\Eloquent\Relations\HasOne

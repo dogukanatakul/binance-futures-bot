@@ -52,4 +52,8 @@ return [
     'order_detail_position' => "Position",
     'order_detail_action' => "Action",
     'order_detail_time' => "Time",
+
+    // errors
+    'error_no_parity' => 'Currently, there is no parity to order!',
+    'error_busy' => "We can't create your order right now due to busyness! Please try again later.",
 ];

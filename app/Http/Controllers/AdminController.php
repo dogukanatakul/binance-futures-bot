@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Leverage;
 use App\Models\Order;
 use App\Models\Parity;
 use App\Models\Time;
@@ -59,7 +60,11 @@ class AdminController extends Controller
             Session::flash('error', 'Hatalı girişler!');
             return redirect()->back();
         }
-        Time::where('id', $request->id)->update($request->update);
+        $update = $request->update;
+        if (!$request->filled('update.status')) {
+            $update['status'] = 0;
+        }
+        Time::where('id', $request->id)->update($update);
         return redirect()->back();
     }
 
@@ -68,6 +73,17 @@ class AdminController extends Controller
         $orders = Order::with('user')->get();
         header("Refresh: 5;");
         return view('admin.orders', compact('orders'));
+    }
+
+    public function leverages(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
+    {
+        if ($request->filled('status')) {
+            $leverage = Leverage::where('id', $request->status)->first();
+            $leverage->status = !$leverage->status;
+            $leverage->save();
+        }
+        $leverages = Leverage::get();
+        return view('admin.leverages', compact('leverages'));
     }
 
 }
