@@ -100,9 +100,10 @@ class BotController extends Controller
         ]);
     }
 
-    public function getReqUser(Request $request): \Illuminate\Http\JsonResponse
+    public function getReqUser(): \Illuminate\Http\JsonResponse
     {
-        $users = User::select(['id', 'api_key', 'api_secret'])->whereNotNull('api_key')->whereNotNull('api_secret')->get();
+        $orders = Order::whereIn('status', [0, 1, 2])->get()->pluck('users_id');
+        $users = User::select(['id', 'api_key', 'api_secret'])->whereNotIn('id', $orders->toArray())->whereNotNull('api_key')->whereNotNull('api_secret')->get();
         $proxies = collect(Proxy::limit($users->count())->where('status', 1)->orderByRaw("RAND()")->get())->map(function ($item) {
             return [
                 'http' => "http://" . $item->user . ":" . $item->password . "@" . $item->host . ":" . $item->port,
