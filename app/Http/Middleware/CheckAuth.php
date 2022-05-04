@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use App\Models\User;
 use Closure;
-use Dflydev\DotAccessData\Data;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -20,7 +19,7 @@ class CheckAuth
     public function handle(Request $request, Closure $next): \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
     {
         if (Session::has('u2317') && !empty($user = User::where('login_key', Session::get('u2317'))->first())) {
-            if ($user->api_status == 0 && !in_array($request->route()->getActionMethod(), ['binance', 'binanceSave'])) {
+            if ($user->status == 0 && $user->api_status == 0 && !in_array($request->route()->getActionMethod(), ['binance', 'binanceSave'])) {
                 return redirect()->route('panel.binance');
             } else if ($user->status == 1 && $request->route()->getActionMethod() != 'binanceWaiting') {
                 return redirect()->route('panel.binance_waiting');

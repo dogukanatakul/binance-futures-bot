@@ -35,10 +35,10 @@
                                         {{ $operation->price }}
                                     </td>
                                     <td>
-                                        {{ $operation->quantity }}
+                                        {{ $operation->balance }}
                                     </td>
                                     <td>
-                                        {{ $operation->balance }}
+                                        {{ $operation->quantity }}
                                     </td>
                                     <td>
                                         -

@@ -268,8 +268,8 @@ while True:
                         lastType = getKDJ['type']
 
                         # Binance
-                        balance = (getOrderBalance(client, "USDT", getBot['percent']) / lastPrice)
-                        lastQuantity = "{:0.0{}f}".format(float(balance * getBot['leverage']), fractions[getBot['parity']])
+                        balance = getOrderBalance(client, "USDT", int(getBot['percent']))
+                        lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
                         if float(lastQuantity) <= 0:
                             raise Exception("Bakiye hatası")
                         client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], type='MARKET', quantity=lastQuantity, positionSide=getKDJ['type'])
@@ -285,6 +285,7 @@ while True:
                             'side': lastSide,
                             'position': lastType,
                             'balance': balance,
+                            'quantity': lastQuantity,
                             'price': lastPrice,
                             'action': 'OPEN',
                         }).status_code
