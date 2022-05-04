@@ -70,7 +70,7 @@ class AdminController extends Controller
 
     public function orders(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
-        $orders = Order::with('user')->orderBy('id', 'DESC')->orderBy('status', 'ASC')->get();
+        $orders = Order::with('user')->orderBy('status', 'ASC')->orderBy('id', 'DESC')->get();
         header("Refresh: 5;");
         return view('admin.orders', compact('orders'));
     }
