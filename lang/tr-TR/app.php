@@ -46,7 +46,7 @@ return [
     // Order Detail
 
     'order_detail_price' => "Fiyat",
-    'order_detail_amount' => "Adet",
+    'order_detail_amount' => "USDT Adet",
     'order_detail_balance' => "Bakiye",
     'order_detail_profit' => "Kâr",
     'order_detail_side' => "Taraf",

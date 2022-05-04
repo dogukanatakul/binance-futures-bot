@@ -46,7 +46,7 @@ return [
     // Order Detail
 
     'order_detail_price' => "Price",
-    'order_detail_amount' => "Amount",
+    'order_detail_amount' => "USDT Amount",
     'order_detail_balance' => "Balance",
     'order_detail_profit' => "Profit",
     'order_detail_side' => "Side",
