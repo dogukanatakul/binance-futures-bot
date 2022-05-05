@@ -31,6 +31,7 @@ return [
     'finish' => "Bitiş",
     'operations' => "İşlemler",
     'percent' => "Yüzde",
+    'passive' => "Pasif",
 
     // Index
     'get_auth_mail_button' => "Giriş Bağlantısı Gönder",
@@ -40,6 +41,7 @@ return [
     'order_leverage' => "Kaldıraç:",
     'order_amount' => "Emir Miktarı:",
     'order_time' => "Zaman Aralığı:",
+    'order_profit' => "Max Kazanç:",
     'select_parity' => "PARİTE SEÇ",
 
 

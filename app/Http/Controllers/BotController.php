@@ -37,6 +37,7 @@ class BotController extends Controller
                     'api_secret' => $order->user->api_secret,
                     'leverage' => $order->leverage->leverage,
                     'percent' => $order->percent,
+                    'profit' => $order->profit,
                     'parity' => $order->parity->parity,
                     'start_trigger_min' => $order->time->start_trigger_min,
                     'fake_reverse' => $order->time->fake_reverse,
@@ -57,6 +58,7 @@ class BotController extends Controller
         } else if (!empty($order = Order::with(['leverage', 'parity', 'time'])->where('bot', $bot)->first())) {
             return response()->json([
                 'bot' => $order->bot,
+                'profit' => $order->profit,
                 'start_diff' => $order->time->start_diff,
                 'trigger_diff' => $order->time->trigger_diff,
                 'start_trigger_min' => $order->time->start_trigger_min,

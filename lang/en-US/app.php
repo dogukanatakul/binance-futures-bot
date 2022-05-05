@@ -31,6 +31,7 @@ return [
     'finish' => "Finish",
     'operations' => "Operations",
     'percent' => "Percent",
+    'passive' => "Passive",
 
     // Index
     'get_auth_mail_button' => "Submit Login Link",
@@ -40,6 +41,7 @@ return [
     'order_leverage' => "Leverage:",
     'order_amount' => "Order Amount:",
     'order_time' => "Time Range:",
+    'order_profit' => "Max Profit:",
     'select_parity' => "SELECT PARITY",
 
 

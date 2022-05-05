@@ -161,6 +161,8 @@ while True:
     lastQuantity = None
     tillsonSide = 'HOLD'
     triggerStatus = False
+    profitTrigger = False
+    profitSide = 'HOLD'
     while operationLoop:
         try:
             minutes = {
@@ -233,9 +235,9 @@ while True:
                         tillsonSide = signal
 
                     # GET SIGNAL END
-                    if tillsonSide == getKDJ['side'] and tillsonSide != lastSide:
+                    if tillsonSide == getKDJ['side'] and tillsonSide != lastSide and (profitTrigger == True and profitSide == tillsonSide) == False:
                         lastPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
-                        if lastSide != 'HOLD' and triggerStatus != True:
+                        if lastSide != 'HOLD' and triggerStatus != True and profitTrigger != True:
                             position = getPosition(client, getBot['parity'], lastType)
                             if position['amount'] > 0:
                                 # Binance
@@ -268,6 +270,7 @@ while True:
                                 raise Exception('manual_stop')
                         else:
                             triggerStatus = False
+                            profitTrigger = False
 
                         lastSide = tillsonSide
                         lastType = getKDJ['type']
@@ -296,7 +299,7 @@ while True:
                         }).status_code
                         if setBot != 200:
                             raise Exception('set_bot_fail')
-                    elif tillsonSide != lastSide and lastSide != 'HOLD' and triggerStatus == False:
+                    elif tillsonSide != lastSide and lastSide != 'HOLD' and triggerStatus == False and profitTrigger == False:
                         triggerStatus = True
                         position = getPosition(client, getBot['parity'], lastType)
                         if position['amount'] > 0:
@@ -343,14 +346,24 @@ while True:
                             }).status_code
                             if setBot != 200:
                                 raise Exception('set_bot_fail')
+                        elif getBot['profit'] > 0 and lastPrice != 0:
+                            position = getPosition(client, getBot['parity'], lastType)
+                            if position['profit'] >= getBot['profit']:
+                                profitTrigger = True
+                                triggerStatus = True
+                                profitSide = lastSide
+                                if lastType == 'LONG':
+                                    client.futures_create_order(symbol=getBot['parity'], side='SELL', positionSide='LONG', type="MARKET", quantity=lastQuantity)
+                                else:
+                                    client.futures_create_order(symbol=getBot['parity'], side='BUY', positionSide='SHORT', type="MARKET", quantity=lastQuantity)
 
                 # Max Request Sleep
                 if getBot['time'] == '30min':
-                    time.sleep(1)
-                elif getBot['time'] == '1hour':
-                    time.sleep(2)
-                elif getBot['time'] == '4hour':
                     time.sleep(3)
+                elif getBot['time'] == '1hour':
+                    time.sleep(5)
+                elif getBot['time'] == '4hour':
+                    time.sleep(8)
                 else:
                     time.sleep(5)
                 # Max Request Sleep
@@ -358,9 +371,9 @@ while True:
                 if getBot['time'] == '30min':
                     time.sleep(3)
                 elif getBot['time'] == '1hour':
-                    time.sleep(4)
+                    time.sleep(5)
                 elif getBot['time'] == '4hour':
-                    time.sleep(6)
+                    time.sleep(8)
                 else:
                     time.sleep(2)
         except Exception as exception:

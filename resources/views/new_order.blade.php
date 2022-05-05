@@ -35,6 +35,15 @@
                         @endforeach
                     </div>
                 </div>
+                <div class="col-12 mt-2 text-center">
+                    <h6>{{ __('app.order_profit') }}</h6>
+                    @foreach(range(0, 30, 5) as $profit)
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="profit" id="inlineRadio{{ $profit }}" value="{{ $profit }}" {{ $profit==0?'checked':'' }}>
+                            <label class="form-check-label text-warning" for="inlineRadio{{ $profit }}">{{ $profit==0?__('app.passive'):$profit.'%' }}</label>
+                        </div>
+                    @endforeach
+                </div>
                 <div class="col-12 mt-2">
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-outline-warning btn-lg">{{ __('app.create_order') }}</button>
