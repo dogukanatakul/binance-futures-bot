@@ -99,7 +99,7 @@ def getOrderBalance(client, currenty, percent):
 
 
 def getPosition(client, symbol, side):
-    infos = client.futures_position_information(symbol=str(symbol))
+    infos = client.futures_position_information(symbol=symbol)
     positions = {}
     for info in infos:
         positions[info['positionSide']] = {
@@ -181,6 +181,11 @@ while True:
                     if "Max retries exceeded" in str(e) or "Too many requests" in str(e):
                         time.sleep(3)
                         continue
+                    elif "Way too many requests" in str(e):
+                        proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
+                            'neresi': 'dogunun+billurlari'
+                        }).json()
+                        client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
                     else:
                         raise Exception(e)
             getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'])
@@ -234,7 +239,6 @@ while True:
                             position = getPosition(client, getBot['parity'], lastType)
                             if position['amount'] > 0:
                                 # Binance
-                                client.futures_cancel_all_open_orders(symbol=getBot['parity'])
                                 client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                 # Binance END
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
@@ -264,6 +268,7 @@ while True:
                                 raise Exception('manual_stop')
                         else:
                             triggerStatus = False
+
                         lastSide = tillsonSide
                         lastType = getKDJ['type']
 
@@ -272,7 +277,7 @@ while True:
                         lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
                         if float(lastQuantity) <= 0:
                             raise Exception("Bakiye hatası")
-                        client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], type='MARKET', quantity=lastQuantity, positionSide=getKDJ['type'])
+                        client.futures_create_order(symbol=getBot['parity'], side=lastSide, type='MARKET', quantity=lastQuantity, positionSide=lastType)
                         # Binance END
 
                         setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
@@ -291,13 +296,12 @@ while True:
                         }).status_code
                         if setBot != 200:
                             raise Exception('set_bot_fail')
-                    elif tillsonSide != lastSide and signal != 'HOLD' and lastSide != 'HOLD' and triggerStatus != True:
+                    elif tillsonSide != lastSide and lastSide != 'HOLD' and triggerStatus == False:
                         triggerStatus = True
                         position = getPosition(client, getBot['parity'], lastType)
                         if position['amount'] > 0:
                             lastPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
                             # Binance
-                            client.futures_cancel_all_open_orders(symbol=getBot['parity'])
                             client.futures_create_order(symbol=getBot['parity'], side=tillsonSide, positionSide=lastType, type="MARKET", quantity=lastQuantity)
                             # Binance End
                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
@@ -324,7 +328,8 @@ while True:
                                 'J': getKDJ['J'],
                                 'action': 'MANUAL_STOP',
                             }).status_code
-                            raise Exception('manual_stop')
+                            if setBot != 200:
+                                raise Exception('manual_stop')
                     else:
                         if lastPrice == 0:
                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={

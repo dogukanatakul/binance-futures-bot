@@ -25,6 +25,7 @@ return new class extends Migration {
             $table->bigInteger('times_id')->unsigned();
             $table->foreign('times_id')->references('id')->on('times');
             $table->integer('percent')->default(0);
+            $table->integer('profit')->default(0);
             $table->timestamp('start');
             $table->timestamp('finish')->nullable()->default(null);
             $table->tinyInteger('status')->default(0);

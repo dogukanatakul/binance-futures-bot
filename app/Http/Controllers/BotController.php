@@ -73,6 +73,29 @@ class BotController extends Controller
         return response()->json([
             'status' => 'fail'
         ]);
+
+    }
+
+    public function proxyOrder($bot): \Illuminate\Http\JsonResponse
+    {
+        if (!empty($order = Order::where('bot', $bot)->first())) {
+            $activeOrders = Order::whereIn('status', [0, 1, 2])->get()->pluck('proxies_id');
+            Proxy::where('id', $order->proxies_id)->update([
+                'status' => false
+            ]);
+            $proxy = Proxy::whereNotIn('id', $activeOrders->toArray())->where('status', true)->orderByRaw("RAND()")->first();
+            $order->proxies_id = $proxy->id;
+            $order->save();
+            return response()->json([
+                'proxy' => [
+                    'http' => "http://" . $proxy->user . ":" . $proxy->password . "@" . $proxy->host . ":" . $proxy->port,
+                    'https' => "http://" . $proxy->user . ":" . $proxy->password . "@" . $proxy->host . ":" . $proxy->port
+                ],
+            ]);
+        }
+        return response()->json([
+            'status' => 'fail'
+        ]);
     }
 
     public function setOrder($bot, Request $request): \Illuminate\Http\JsonResponse

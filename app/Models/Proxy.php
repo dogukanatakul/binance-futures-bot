@@ -17,4 +17,8 @@ class Proxy extends Model
         'port',
         'status',
     ];
+
+    protected $casts = [
+        'status' => 'boolean',
+    ];
 }

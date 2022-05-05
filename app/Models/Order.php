@@ -16,6 +16,7 @@ class Order extends Model
         'leverages_id',
         'times_id',
         'percent',
+        'profit',
         'start',
         'finish',
         'status',
@@ -23,6 +24,7 @@ class Order extends Model
     ];
 
     protected $casts = [
+        'profit' => 'integer',
         'start' => 'datetime',
         'finish' => 'datetime',
     ];
