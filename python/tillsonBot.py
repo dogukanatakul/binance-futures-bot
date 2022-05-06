@@ -236,7 +236,7 @@ while True:
 
                     # GET SIGNAL END
                     if tillsonSide == getKDJ['side'] and tillsonSide != lastSide and (profitTrigger == True and profitSide == tillsonSide) == False:
-                        lastPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
+                        lastPrice = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
                         if lastSide != 'HOLD' and triggerStatus != True and profitTrigger != True:
                             position = getPosition(client, getBot['parity'], lastType)
                             if position['amount'] > 0:
@@ -303,7 +303,7 @@ while True:
                         triggerStatus = True
                         position = getPosition(client, getBot['parity'], lastType)
                         if position['amount'] > 0:
-                            lastPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
+                            lastPrice = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
                             # Binance
                             client.futures_create_order(symbol=getBot['parity'], side=tillsonSide, positionSide=lastType, type="MARKET", quantity=lastQuantity)
                             # Binance End
