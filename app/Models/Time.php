@@ -27,6 +27,7 @@ class Time extends Model
     protected $casts = [
         'kdj_period' => 'integer',
         'kdj_signal' => 'integer',
+        'volume_factor' => 'float',
         'status' => 'boolean',
     ];
 

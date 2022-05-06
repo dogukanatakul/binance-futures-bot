@@ -37,7 +37,19 @@
                 </div>
                 <div class="col-12 mt-2 text-center">
                     <h6>{{ __('app.order_profit') }}</h6>
-                    @foreach(range(0, 30, 5) as $profit)
+                    @foreach(range(0, 30, 20) as $profit)
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="profit" id="inlineRadio{{ $profit }}" value="{{ $profit }}" {{ $profit==0?'checked':'' }}>
+                            <label class="form-check-label text-warning" for="inlineRadio{{ $profit }}">{{ $profit==0?__('app.passive'):$profit.'%' }}</label>
+                        </div>
+                    @endforeach
+                    @foreach(range(60, 100, 15) as $profit)
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="profit" id="inlineRadio{{ $profit }}" value="{{ $profit }}" {{ $profit==0?'checked':'' }}>
+                            <label class="form-check-label text-warning" for="inlineRadio{{ $profit }}">{{ $profit==0?__('app.passive'):$profit.'%' }}</label>
+                        </div>
+                    @endforeach
+                    @foreach(range(150, 200, 50) as $profit)
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="profit" id="inlineRadio{{ $profit }}" value="{{ $profit }}" {{ $profit==0?'checked':'' }}>
                             <label class="form-check-label text-warning" for="inlineRadio{{ $profit }}">{{ $profit==0?__('app.passive'):$profit.'%' }}</label>
