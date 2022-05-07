@@ -103,7 +103,7 @@ def getPosition(client, symbol, side):
     positions = {}
     for info in infos:
         positions[info['positionSide']] = {
-            'amount': float(abs(info['positionAmt'])),
+            'amount': abs(float(info['positionAmt'])),
             'entryPrice': float(info['entryPrice']),
             'markPrice': float(info['markPrice']),
             'profit': float(info['unRealizedProfit']),
