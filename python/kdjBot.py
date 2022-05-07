@@ -83,7 +83,7 @@ def get_kdj(klines, period=9, signal=2):
 
 
 def getOrderBalance(client, currenty, percent):
-    minAmount = 10
+    minAmount = 1
     maxAmount = 134
     try:
         balance = client.futures_account_balance(asset=currenty)
