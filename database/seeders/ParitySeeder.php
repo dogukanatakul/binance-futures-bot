@@ -50,7 +50,7 @@ class ParitySeeder extends Seeder
             'DOGEUSDT',
 //            'SXPUSDT',
 //            'KAVAUSDT',
-//            'BANDUSDT',
+            'BANDUSDT',
 //            'RLCUSDT',
 //            'WAVESUSDT',
 //            'MKRUSDT',

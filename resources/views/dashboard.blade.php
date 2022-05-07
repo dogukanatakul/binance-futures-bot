@@ -64,7 +64,7 @@
                                 </td>
                                 <td>
                                     @if($order->status == 1 or $order->status == 0)
-                                        <a href="{{ route('panel.order_stop', $order->id) }}" title="{{ __('app.stop') }}" class="btn btn-outline-danger btn-sm">{{ __('app.stop') }}</a>
+                                        <a href="{{ route('panel.order_stop', $order->id) }}" onclick="return confirm('Emin misin?')" title="{{ __('app.stop') }}" class="btn btn-outline-danger btn-sm">{{ __('app.stop') }}</a>
                                     @elseif($order->status == 2)
                                         {{ __('app.waiting_to_stop') }}
                                     @else
