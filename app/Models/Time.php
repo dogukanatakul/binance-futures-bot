@@ -21,6 +21,7 @@ class Time extends Model
         'volume_factor',
         'kdj_period',
         'kdj_signal',
+        'sub_times_id',
         'status',
     ];
 
@@ -34,5 +35,10 @@ class Time extends Model
     public function parity(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Parity::class, 'id', 'parities_id');
+    }
+
+    public function sub_time(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Time::class, 'id', 'sub_times_id');
     }
 }

@@ -40,10 +40,14 @@ class AdminController extends Controller
     {
         $parities = Parity::orderBy('parity', 'ASC')->get();
         $times = [];
+        $selectTimes = [];
         if ($request->filled('parity')) {
             $times = Time::with('parity')->where('parities_id', $request->parity)->get();
+            $selectTimes = collect($times)->mapWithKeys(function ($item) {
+                return [$item['id'] => $item['time']];
+            });
         }
-        return view('admin.times', compact('times', 'parities'));
+        return view('admin.times', compact('times', 'parities', 'selectTimes'));
     }
 
     public function timeSave(Request $request): \Illuminate\Http\RedirectResponse
@@ -55,6 +59,7 @@ class AdminController extends Controller
             'update.volume_factor' => 'required|filled|numeric',
             'update.kdj_period' => 'required|filled|integer',
             'update.kdj_signal' => 'required|filled|integer',
+            'update.sub_times_id' => 'required|filled|integer',
         ]);
         if ($validator->fails()) {
             Session::flash('error', 'Hatalı girişler!');

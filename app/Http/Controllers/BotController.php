@@ -30,7 +30,9 @@ class BotController extends Controller
                     'version' => config('app.bot_version')
                 ]);
             } else {
-                $order = Order::with(['user', 'leverage', 'parity', 'time', 'proxy'])->where('bot', $uuid)->first();
+                $order = Order::with(['user', 'leverage', 'parity', 'time' => function ($q) {
+                    $q->with('sub_time');
+                }, 'proxy'])->where('bot', $uuid)->first();
                 return response()->json([
                     'bot' => $order->bot,
                     'api_key' => $order->user->api_key,
@@ -47,6 +49,9 @@ class BotController extends Controller
                     'kdj_period' => $order->time->kdj_period,
                     'kdj_signal' => $order->time->kdj_signal,
                     'time' => $order->time->time,
+                    'sub_time' => $order->time->sub_time->time,
+                    'sub_kdj_period' => $order->time->sub_time->kdj_period,
+                    'sub_kdj_signal' => $order->time->sub_time->kdj_signal,
                     'proxy' => [
                         'http' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port,
                         'https' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port
@@ -55,7 +60,9 @@ class BotController extends Controller
                     'version' => config('app.bot_version')
                 ]);
             }
-        } else if (!empty($order = Order::with(['leverage', 'parity', 'time'])->where('bot', $bot)->first())) {
+        } else if (!empty($order = Order::with(['leverage', 'parity', 'time' => function ($q) {
+            $q->with('sub_time');
+        }])->where('bot', $bot)->first())) {
             return response()->json([
                 'bot' => $order->bot,
                 'profit' => $order->profit,
@@ -68,6 +75,9 @@ class BotController extends Controller
                 'volume_factor' => $order->time->volume_factor,
                 'kdj_period' => $order->time->kdj_period,
                 'kdj_signal' => $order->time->kdj_signal,
+                'sub_time' => $order->time->sub_time->time,
+                'sub_kdj_period' => $order->time->sub_time->kdj_period,
+                'sub_kdj_signal' => $order->time->sub_time->kdj_signal,
                 'status' => $order->status,
                 'version' => config('app.bot_version')
             ]);

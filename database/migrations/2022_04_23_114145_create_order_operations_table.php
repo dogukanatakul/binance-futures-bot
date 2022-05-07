@@ -27,6 +27,7 @@ return new class extends Migration {
             $table->decimal("D", 38, 22)->default(0);
             $table->decimal("J", 38, 22)->default(0);
             $table->dateTime("time");
+            $table->integer('line')->default(0);
             $table->softDeletes();
             $table->timestamps();
         });

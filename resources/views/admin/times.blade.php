@@ -47,6 +47,7 @@
                             <th scope="col">Volume Factor</th>
                             <th scope="col">KDJ Period</th>
                             <th scope="col">KDJ Factor</th>
+                            <th scope="col">Alt Takip Süresi</th>
                             <th scope="col">Durum</th>
                             <th scope="col"><i class="bi bi-arrow-clockwise"></i></th>
                         </tr>
@@ -84,6 +85,13 @@
                                         <div class="input-group input-group-sm">
                                             <input type="number" class="form-control" name="update[kdj_signal]" value="{{ $time->kdj_signal }}">
                                         </div>
+                                    </td>
+                                    <td>
+                                        <select class="input-group" name="update[sub_times_id]">
+                                            @foreach($selectTimes as $id => $selectTime)
+                                                <option value="{{ $id }}" {{ $id==$time->sub_times_id?'selected':'' }}>{{ $selectTime }}</option>
+                                            @endforeach
+                                        </select>
                                     </td>
                                     <td>
                                         <div class="form-check form-switch">

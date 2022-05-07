@@ -4,7 +4,6 @@ from binance.client import Client
 import pandas as pd
 import termtables as tt
 from helper import config
-from tillsonT3 import getSignal
 from inspect import currentframe, getframeinfo
 
 url = config('API', 'SITE')
@@ -160,7 +159,6 @@ while True:
     lastSide = 'HOLD'
     lastType = None
     lastQuantity = None
-    tillsonSide = 'HOLD'
     triggerStatus = False
     profitTrigger = False
     profitSide = 'HOLD'
@@ -178,6 +176,7 @@ while True:
             while klineConnect:
                 try:
                     klines = client.futures_klines(symbol=getBot['parity'], interval=minutes[str(getBot['time'])], limit=100)
+                    suKlines = client.futures_klines(symbol=getBot['parity'], interval=minutes[str(getBot['sub_time'])], limit=100)
                     klineConnect = False
                     break
                 except Exception as e:
@@ -192,6 +191,7 @@ while True:
                     else:
                         raise Exception(e)
             getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'])
+            getSubKDJ = get_kdj(suKlines, getBot['sub_kdj_period'], getBot['sub_kdj_signal'])
             if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
                 sameTest = {
                     'K': getKDJ['K'],
@@ -230,16 +230,9 @@ while True:
                     if setBot != 200:
                         raise Exception('set_bot_fail')
                 else:
-                    # GET SIGNAL
-
-                    signal = getSignal(klines, float(getBot['volume_factor']), int(getBot['t3_length']), tillsonSide)
-                    if signal == 'BUY' or signal == 'SELL':
-                        tillsonSide = signal
-
-                    # GET SIGNAL END
-                    if tillsonSide == getKDJ['side'] and tillsonSide != lastSide and (profitTrigger == True and profitSide == tillsonSide) == False:
+                    if lastSide != getKDJ['side'] and getKDJ['side'] == getSubKDJ['side']:
                         lastPrice = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
-                        if lastSide != 'HOLD' and triggerStatus != True and profitTrigger != True:
+                        if lastSide != 'HOLD' and profitTrigger == False:
                             position = getPosition(client, getBot['parity'], lastType)
                             if position['amount'] > 0:
                                 # Binance
@@ -277,7 +270,7 @@ while True:
                             triggerStatus = False
                             profitTrigger = False
 
-                        lastSide = tillsonSide
+                        lastSide = getKDJ['side']
                         lastType = getKDJ['type']
 
                         # Binance
@@ -305,43 +298,6 @@ while True:
                         }).status_code
                         if setBot != 200:
                             raise Exception('set_bot_fail')
-                    elif tillsonSide != lastSide and lastSide != 'HOLD' and triggerStatus == False and profitTrigger == False:
-                        triggerStatus = True
-                        position = getPosition(client, getBot['parity'], lastType)
-                        if position['amount'] > 0:
-                            lastPrice = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
-                            # Binance
-                            client.futures_create_order(symbol=getBot['parity'], side=tillsonSide, positionSide=lastType, type="MARKET", quantity=lastQuantity)
-                            # Binance End
-                            setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                'neresi': 'dogunun+billurlari'
-                            }, json={
-                                'line': getframeinfo(currentframe()).lineno,
-                                'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                'K': getKDJ['K'],
-                                'D': getKDJ['D'],
-                                'J': getKDJ['J'],
-                                'side': lastSide,
-                                'price': lastPrice,
-                                'profit': position['profit'],
-                                'action': 'CLOSE_TRIGGER',
-                            }).status_code
-                            if setBot != 200:
-                                raise Exception('set_bot_fail')
-                        else:
-                            setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                'neresi': 'dogunun+billurlari'
-                            }, json={
-                                'line': getframeinfo(currentframe()).lineno,
-                                'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                'K': getKDJ['K'],
-                                'D': getKDJ['D'],
-                                'J': getKDJ['J'],
-                                'side': lastSide,
-                                'action': 'MANUAL_STOP',
-                            }).status_code
-                            if setBot != 200:
-                                raise Exception('manual_stop')
                     else:
                         if lastPrice == 0:
                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={

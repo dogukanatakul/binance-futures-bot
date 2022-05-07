@@ -21,17 +21,19 @@ class OrderOperation extends Model
         'K',
         'D',
         'J',
-        'time'
+        'time',
+        'line',
     ];
 
     protected $casts = [
-      'price' => 'float',
-      'balance' => 'float',
-      'quantity' => 'float',
-      'K' => 'float',
-      'D' => 'float',
-      'J' => 'float',
-      'time' => 'datetime',
+        'price' => 'float',
+        'balance' => 'float',
+        'quantity' => 'float',
+        'K' => 'float',
+        'D' => 'float',
+        'J' => 'float',
+        'time' => 'datetime',
+        'line' => 'integer',
     ];
 
     public function order(): \Illuminate\Database\Eloquent\Relations\HasOne
