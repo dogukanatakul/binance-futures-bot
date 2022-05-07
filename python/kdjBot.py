@@ -115,7 +115,6 @@ def terminalTable(data):
         )
 
 
-
 getBot = {
     'status': 0
 }
@@ -227,7 +226,7 @@ while True:
                             position = getPosition(client, getBot['parity'], lastType)
                             if position['amount'] > 0:
                                 # Binance
-                                # client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=lastType, type="MARKET", quantity=lastQuantity)
+                                client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                 # Binance END
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                     'neresi': 'dogunun+billurlari'
@@ -269,7 +268,7 @@ while True:
                         lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
                         if float(lastQuantity) <= 0:
                             raise Exception("Bakiye hatası")
-                        # client.futures_create_order(symbol=getBot['parity'], side=lastSide, type='MARKET', quantity=lastQuantity, positionSide=lastType)
+                        client.futures_create_order(symbol=getBot['parity'], side=lastSide, type='MARKET', quantity=lastQuantity, positionSide=lastType)
                         # Binance END
 
                         setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
@@ -322,7 +321,7 @@ while True:
                             if position['profit'] > getBot['profit']:
                                 profitTrigger = True
                                 triggerStatus = True
-                                # client.futures_create_order(symbol=getBot['parity'], side='SELL' if lastType == 'LONG' else "BUY", positionSide=lastType, type="MARKET", quantity=lastQuantity)
+                                client.futures_create_order(symbol=getBot['parity'], side='SELL' if lastType == 'LONG' else "BUY", positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                     'neresi': 'dogunun+billurlari'
                                 }, json={
