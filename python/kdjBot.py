@@ -312,7 +312,7 @@ while True:
                             }).status_code
                             if setBot != 200:
                                 raise Exception('set_bot_fail')
-                        elif getBot['profit'] > 0 and lastPrice != 0:
+                        elif getBot['profit'] > 0 and lastPrice != 0 and profitTrigger == False:
                             # get Position
                             positionConnect = True
                             try:
