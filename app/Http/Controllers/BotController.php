@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\EmailAdminUserVerify;
+use App\Models\Bot;
 use App\Models\Order;
 use App\Models\OrderError;
 use App\Models\OrderOperation;
@@ -10,64 +11,22 @@ use App\Models\Parity;
 use App\Models\Proxy;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class BotController extends Controller
 {
     public function getOrder($bot): \Illuminate\Http\JsonResponse
     {
-        if ($bot == "new") {
-            $uuid = (string)Str::uuid();
-            $order = Order::whereHas('user', function ($q) {
-                $q->where('api_status', true);
-            })->whereNull('bot')->limit(1)->update([
-                'bot' => $uuid,
-                'status' => 1,
-            ]);
-            if ($order == 0) {
-                return response()->json([
-                    'status' => 0,
-                    'version' => config('app.bot_version')
-                ]);
-            } else {
-                $order = Order::with(['user', 'leverage', 'parity', 'time' => function ($q) {
-                    $q->with('sub_time');
-                }, 'proxy'])->where('bot', $uuid)->first();
-                return response()->json([
-                    'bot' => $order->bot,
-                    'api_key' => $order->user->api_key,
-                    'api_secret' => $order->user->api_secret,
-                    'leverage' => $order->leverage->leverage,
-                    'percent' => $order->percent,
-                    'profit' => $order->profit,
-                    'parity' => $order->parity->parity,
-                    'start_trigger_min' => $order->time->start_trigger_min,
-                    'fake_reverse' => $order->time->fake_reverse,
-                    'reverse_delay' => $order->time->reverse_delay,
-                    't3_length' => $order->time->t3_length,
-                    'volume_factor' => $order->time->volume_factor,
-                    'kdj_period' => $order->time->kdj_period,
-                    'kdj_signal' => $order->time->kdj_signal,
-                    'time' => $order->time->time,
-                    'sub_time' => $order->time->sub_time->time,
-                    'sub_kdj_period' => $order->time->sub_time->kdj_period,
-                    'sub_kdj_signal' => $order->time->sub_time->kdj_signal,
-                    'proxy' => [
-                        'http' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port,
-                        'https' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port
-                    ],
-                    'status' => $order->status,
-                    'version' => config('app.bot_version')
-                ]);
-            }
-        } else if (!empty($order = Order::with(['leverage', 'parity', 'time' => function ($q) {
+        if (!empty($order = Order::with(['user', 'leverage', 'parity', 'time' => function ($q) {
             $q->with('sub_time');
-        }])->where('bot', $bot)->first())) {
+        }, 'proxy'])->where('bot', $bot)->first())) {
             return response()->json([
                 'bot' => $order->bot,
+                'api_key' => $order->user->api_key,
+                'api_secret' => $order->user->api_secret,
+                'leverage' => $order->leverage->leverage,
+                'percent' => $order->percent,
                 'profit' => $order->profit,
-                'start_diff' => $order->time->start_diff,
-                'trigger_diff' => $order->time->trigger_diff,
+                'parity' => $order->parity->parity,
                 'start_trigger_min' => $order->time->start_trigger_min,
                 'fake_reverse' => $order->time->fake_reverse,
                 'reverse_delay' => $order->time->reverse_delay,
@@ -75,17 +34,28 @@ class BotController extends Controller
                 'volume_factor' => $order->time->volume_factor,
                 'kdj_period' => $order->time->kdj_period,
                 'kdj_signal' => $order->time->kdj_signal,
+                'time' => $order->time->time,
                 'sub_time' => $order->time->sub_time->time,
                 'sub_kdj_period' => $order->time->sub_time->kdj_period,
                 'sub_kdj_signal' => $order->time->sub_time->kdj_signal,
+                'proxy' => [
+                    'http' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port,
+                    'https' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port
+                ],
                 'status' => $order->status,
                 'version' => config('app.bot_version')
             ]);
+        } else {
+            if (empty(Bot::where('uuid', $bot)->first())) {
+                Bot::create([
+                    'uuid' => $bot
+                ]);
+            }
+            return response()->json([
+                'status' => 0,
+                'version' => config('app.bot_version')
+            ]);
         }
-        return response()->json([
-            'status' => 'fail'
-        ]);
-
     }
 
     public function proxyOrder($bot): \Illuminate\Http\JsonResponse

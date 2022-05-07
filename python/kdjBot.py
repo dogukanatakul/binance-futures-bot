@@ -1,4 +1,4 @@
-import random, time, sys, os, requests
+import random, time, sys, os, requests, uuid
 from datetime import datetime
 from binance.client import Client
 import pandas as pd
@@ -123,6 +123,7 @@ def terminalTable(data):
         )
 
 
+botUuid = str(uuid.uuid4())
 getBot = {
     'status': 0
 }
@@ -130,7 +131,7 @@ version = None
 while True:
     while getBot['status'] == 0 or getBot['status'] == 2:
         time.sleep(random.randint(2, 5))
-        getBot = requests.post(url + 'get-order/new', headers={
+        getBot = requests.post(url + 'get-order/' + botUuid, headers={
             'neresi': 'dogunun+billurlari'
         }).json()
         if version is not None and getBot['status'] == 0 and getBot['version'] != version:
@@ -216,7 +217,6 @@ while True:
                 # SYNC BOT END
 
                 if lastSide == 'HOLD' and getBot['status'] == 2 and lastPrice == 0:
-                    operationLoop = False
                     setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                         'neresi': 'dogunun+billurlari'
                     }, json={
@@ -229,6 +229,7 @@ while True:
                     }).status_code
                     if setBot != 200:
                         raise Exception('set_bot_fail')
+                    raise Exception('STOP')
                 else:
                     if lastSide != getKDJ['side'] and getKDJ['side'] == getSubKDJ['side']:
                         lastPrice = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
@@ -236,7 +237,7 @@ while True:
                             position = getPosition(client, getBot['parity'], lastType)
                             if position['amount'] > 0:
                                 # Binance
-                                client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=lastType, type="MARKET", quantity=lastQuantity)
+                                # client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                 # Binance END
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                     'neresi': 'dogunun+billurlari'
@@ -278,7 +279,7 @@ while True:
                         lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
                         if float(lastQuantity) <= 0:
                             raise Exception("Bakiye hatası")
-                        client.futures_create_order(symbol=getBot['parity'], side=lastSide, type='MARKET', quantity=lastQuantity, positionSide=lastType)
+                        # client.futures_create_order(symbol=getBot['parity'], side=lastSide, type='MARKET', quantity=lastQuantity, positionSide=lastType)
                         # Binance END
 
                         setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
@@ -334,7 +335,7 @@ while True:
                                 profitTrigger = True
                                 triggerStatus = True
                                 profitSide = lastSide
-                                client.futures_create_order(symbol=getBot['parity'], side='SELL' if lastType == 'LONG' else "BUY", positionSide=lastType, type="MARKET", quantity=lastQuantity)
+                                # client.futures_create_order(symbol=getBot['parity'], side='SELL' if lastType == 'LONG' else "BUY", positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                     'neresi': 'dogunun+billurlari'
                                 }, json={
@@ -370,6 +371,7 @@ while True:
                 else:
                     time.sleep(2)
         except Exception as exception:
+            botUuid = str(uuid.uuid4())
             operationLoop = False
             getBot['status'] = 2
             print("emir kapatıldı!!")
