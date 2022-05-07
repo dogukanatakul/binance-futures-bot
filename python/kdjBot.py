@@ -53,14 +53,6 @@ def kdj(kline, N=9, M=2):
 
 def get_kdj(klines, period=9, signal=2):
     try:
-        klineStatus = True
-        while klineStatus:
-            try:
-                klineStatus = False
-            except Exception as e:
-                print(str(e))
-                time.sleep(2)
-                klineStatus = True
         k, d, j = kdj(klines, period, signal)
         if float(j) > float(d) and float(d) < float(k):
             return {
@@ -123,12 +115,13 @@ def terminalTable(data):
         )
 
 
-botUuid = str(uuid.uuid4())
+
 getBot = {
     'status': 0
 }
 version = None
 while True:
+    botUuid = str(uuid.uuid4())
     while getBot['status'] == 0 or getBot['status'] == 2:
         time.sleep(random.randint(2, 5))
         getBot = requests.post(url + 'get-order/' + botUuid, headers={
@@ -162,7 +155,6 @@ while True:
     lastQuantity = None
     triggerStatus = False
     profitTrigger = False
-    profitSide = 'HOLD'
     while operationLoop:
         try:
             minutes = {
@@ -179,11 +171,9 @@ while True:
                     klines = client.futures_klines(symbol=getBot['parity'], interval=minutes[str(getBot['time'])], limit=100)
                     suKlines = client.futures_klines(symbol=getBot['parity'], interval=minutes[str(getBot['sub_time'])], limit=100)
                     klineConnect = False
-                    break
                 except Exception as e:
                     if "Max retries exceeded" in str(e) or "Too many requests" in str(e):
                         time.sleep(3)
-                        continue
                     elif "Way too many requests" in str(e):
                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                             'neresi': 'dogunun+billurlari'
@@ -319,11 +309,9 @@ while True:
                             try:
                                 position = getPosition(client, getBot['parity'], lastType)
                                 positionConnect = False
-                                break
                             except Exception as e:
                                 if "Max retries exceeded" in str(e) or "Too many requests" in str(e):
                                     time.sleep(3)
-                                    continue
                                 elif "Way too many requests" in str(e):
                                     proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                                         'neresi': 'dogunun+billurlari'
@@ -331,10 +319,9 @@ while True:
                                     client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
                                 else:
                                     raise Exception(e)
-                            if position['profit'] >= getBot['profit']:
+                            if position['profit'] > getBot['profit']:
                                 profitTrigger = True
                                 triggerStatus = True
-                                profitSide = lastSide
                                 # client.futures_create_order(symbol=getBot['parity'], side='SELL' if lastType == 'LONG' else "BUY", positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                     'neresi': 'dogunun+billurlari'
@@ -371,7 +358,6 @@ while True:
                 else:
                     time.sleep(2)
         except Exception as exception:
-            botUuid = str(uuid.uuid4())
             operationLoop = False
             getBot['status'] = 2
             print("emir kapatıldı!!")
