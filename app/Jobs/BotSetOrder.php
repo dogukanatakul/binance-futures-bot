@@ -36,7 +36,7 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
     {
         $orders = Order::where('status', 0)->get();
         foreach ($orders as $order) {
-            if (!empty($bot = Bot::orderBy('id', 'DESC')->first())) {
+            if (!empty($bot = Bot::orderBy('id', 'DESC')->where('version', config('app.bot_version'))->first())) {
                 $order->bot = $bot->uuid;
                 $order->status = 1;
                 $order->save();
@@ -44,6 +44,7 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
                 $bot->delete();
             }
         }
+        Bot::where('version', '!=', config('app.bot_version'))->delete();
         return true;
     }
 }

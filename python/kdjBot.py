@@ -172,7 +172,7 @@ while True:
                     klineConnect = False
                 except Exception as e:
                     if "Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e):
-                        time.sleep(3)
+                        time.sleep(1)
                     elif "Way too many requests" in str(e):
                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                             'neresi': 'dogunun+billurlari'
@@ -310,7 +310,7 @@ while True:
                                 positionConnect = False
                             except Exception as e:
                                 if "Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e):
-                                    time.sleep(3)
+                                    time.sleep(1)
                                 elif "Way too many requests" in str(e):
                                     proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                                         'neresi': 'dogunun+billurlari'
@@ -341,21 +341,21 @@ while True:
                 if getBot['time'] == '30min':
                     time.sleep(3)
                 elif getBot['time'] == '1hour':
-                    time.sleep(5)
+                    time.sleep(3)
                 elif getBot['time'] == '4hour':
-                    time.sleep(8)
+                    time.sleep(3)
                 else:
-                    time.sleep(5)
+                    time.sleep(3)
                 # Max Request Sleep
             else:
                 if getBot['time'] == '30min':
                     time.sleep(3)
                 elif getBot['time'] == '1hour':
-                    time.sleep(5)
+                    time.sleep(3)
                 elif getBot['time'] == '4hour':
-                    time.sleep(8)
+                    time.sleep(3)
                 else:
-                    time.sleep(2)
+                    time.sleep(3)
         except Exception as exception:
             operationLoop = False
             getBot['status'] = 2
