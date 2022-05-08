@@ -131,7 +131,7 @@ while True:
         else:
             version = getBot['version']
 
-    client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
+    client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy'], 'recvWindow': 100000000})
 
     dual = client.futures_get_position_mode()
     if not dual['dualSidePosition']:
@@ -171,13 +171,13 @@ while True:
                     suKlines = client.futures_klines(symbol=getBot['parity'], interval=minutes[str(getBot['sub_time'])], limit=100)
                     klineConnect = False
                 except Exception as e:
-                    if "Max retries exceeded" in str(e) or "Too many requests" in str(e):
+                    if "Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e):
                         time.sleep(3)
                     elif "Way too many requests" in str(e):
                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                             'neresi': 'dogunun+billurlari'
                         }).json()
-                        client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
+                        client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder, 'recvWindow': 100000000})
                     else:
                         raise Exception(e)
             getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'])
@@ -309,13 +309,13 @@ while True:
                                 position = getPosition(client, getBot['parity'], lastType)
                                 positionConnect = False
                             except Exception as e:
-                                if "Max retries exceeded" in str(e) or "Too many requests" in str(e):
+                                if "Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e):
                                     time.sleep(3)
                                 elif "Way too many requests" in str(e):
                                     proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                                         'neresi': 'dogunun+billurlari'
                                     }).json()
-                                    client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
+                                    client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder, 'recvWindow': 100000000})
                                 else:
                                     raise Exception(e)
                             if position['profit'] > getBot['profit']:
