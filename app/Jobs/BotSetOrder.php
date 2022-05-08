@@ -40,6 +40,7 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
                 $order->bot = $bot->uuid;
                 $order->status = 1;
                 $order->save();
+                sleep(1);
                 $bot->delete();
             }
         }

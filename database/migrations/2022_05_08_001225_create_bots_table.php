@@ -15,6 +15,7 @@ return new class extends Migration {
         Schema::create('bots', function (Blueprint $table) {
             $table->id();
             $table->string('uuid');
+            $table->string('version');
             $table->timestamps();
         });
     }

@@ -120,7 +120,7 @@ getBot = {
 }
 version = None
 while True:
-    botUuid = str(uuid.uuid4())
+    botUuid = "X"
     while getBot['status'] == 0 or getBot['status'] == 2:
         time.sleep(random.randint(2, 5))
         getBot = requests.post(url + 'get-order/' + botUuid, headers={
@@ -131,7 +131,7 @@ while True:
         else:
             version = getBot['version']
 
-    client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy'], 'recvWindow': 100000000})
+    client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
 
     dual = client.futures_get_position_mode()
     if not dual['dualSidePosition']:
@@ -177,7 +177,7 @@ while True:
                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                             'neresi': 'dogunun+billurlari'
                         }).json()
-                        client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder, 'recvWindow': 100000000})
+                        client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
                     else:
                         raise Exception(e)
             getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'])
@@ -315,7 +315,7 @@ while True:
                                     proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                                         'neresi': 'dogunun+billurlari'
                                     }).json()
-                                    client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder, 'recvWindow': 100000000})
+                                    client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
                                 else:
                                     raise Exception(e)
                             if position['profit'] > getBot['profit']:
