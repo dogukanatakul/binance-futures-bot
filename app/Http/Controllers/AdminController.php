@@ -54,12 +54,13 @@ class AdminController extends Controller
     {
         $validator = validator()->make(request()->all(), [
             'id' => 'required|filled|integer',
-            'update.reverse_delay' => 'required|filled|integer',
-            'update.t3_length' => 'required|filled|integer',
-            'update.volume_factor' => 'required|filled|numeric',
             'update.kdj_period' => 'required|filled|integer',
             'update.kdj_signal' => 'required|filled|integer',
-            'update.sub_times_id' => 'required|filled|integer',
+            'update.atr_period' => 'required|filled|integer',
+            'update.atr_multiplier' => 'required|filled|numeric',
+            'update.dema_short' => 'required|filled|integer',
+            'update.dema_long' => 'required|filled|integer',
+            'update.dema_signal' => 'required|filled|integer',
         ]);
         if ($validator->fails()) {
             Session::flash('error', 'Hatalı girişler!');

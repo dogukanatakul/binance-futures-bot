@@ -83,7 +83,7 @@
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" min="0" step="0.1" name="update[atr_multiplier]" value="{{ $time->atr_multiplier }}">
+                                            <input type="number" class="form-control" min="0" step="0.001" name="update[atr_multiplier]" value="{{ $time->atr_multiplier }}">
                                         </div>
                                     </td>
                                     <td>
