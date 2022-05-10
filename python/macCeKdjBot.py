@@ -182,9 +182,9 @@ getBot = {
 }
 version = None
 while True:
-    botUuid = str(uuid.uuid4())
+    botUuid = str("X")
     while getBot['status'] == 0 or getBot['status'] == 2:
-        time.sleep(random.randint(2, 5))
+        time.sleep(1)
         getBot = requests.post(url + 'get-order/' + botUuid, headers={
             'neresi': 'dogunun+billurlari'
         }).json()
@@ -194,7 +194,6 @@ while True:
             version = getBot['version']
 
     client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 300, 'proxies': getBot['proxy']})
-
     dual = client.futures_get_position_mode()
     if not dual['dualSidePosition']:
         client.futures_change_position_mode(dualSidePosition=True)
@@ -233,7 +232,6 @@ while True:
             while klineConnect:
                 try:
                     klines = client.futures_klines(symbol=getBot['parity'], interval=minutes[str(getBot['time'])], limit=100)
-                    suKlines = client.futures_klines(symbol=getBot['parity'], interval=minutes[str(getBot['sub_time'])], limit=100)
                     klineConnect = False
                 except Exception as e:
                     if "Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e):
@@ -356,6 +354,7 @@ while True:
                             raise Exception('set_bot_fail')
                     else:
                         if lastPrice == 0:
+                            print("ok")
                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                 'neresi': 'dogunun+billurlari'
                             }, json={
@@ -423,6 +422,7 @@ while True:
                 else:
                     time.sleep(3)
         except Exception as exception:
+            print(str(exception))
             operationLoop = False
             getBot['status'] = 2
             print("emir kapatıldı!!")
