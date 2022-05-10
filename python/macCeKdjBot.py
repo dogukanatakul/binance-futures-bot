@@ -182,7 +182,7 @@ getBot = {
 }
 version = None
 while True:
-    botUuid = str("X")
+    botUuid = str(uuid.uuid4())
     while getBot['status'] == 0 or getBot['status'] == 2:
         time.sleep(1)
         getBot = requests.post(url + 'get-order/' + botUuid, headers={
@@ -354,7 +354,6 @@ while True:
                             raise Exception('set_bot_fail')
                     else:
                         if lastPrice == 0:
-                            print("ok")
                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                 'neresi': 'dogunun+billurlari'
                             }, json={
