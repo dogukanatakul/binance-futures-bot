@@ -49,9 +49,9 @@
                             <th scope="col">ATR Multiplier</th>
 
 
-                            <th scope="col">CE Short</th>
-                            <th scope="col">CE Long</th>
-                            <th scope="col">CE Signal</th>
+                            <th scope="col">MACD Short</th>
+                            <th scope="col">MACD Long</th>
+                            <th scope="col">MACD Signal</th>
 
                             <th scope="col">Durum</th>
                             <th scope="col"><i class="bi bi-arrow-clockwise"></i></th>
