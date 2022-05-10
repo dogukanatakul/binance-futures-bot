@@ -27,17 +27,19 @@ class BotController extends Controller
                 'percent' => $order->percent,
                 'profit' => $order->profit,
                 'parity' => $order->parity->parity,
-                'start_trigger_min' => $order->time->start_trigger_min,
                 'fake_reverse' => $order->time->fake_reverse,
                 'reverse_delay' => $order->time->reverse_delay,
-                't3_length' => $order->time->t3_length,
-                'volume_factor' => $order->time->volume_factor,
                 'kdj_period' => $order->time->kdj_period,
                 'kdj_signal' => $order->time->kdj_signal,
+
+                'atr_period' => $order->time->atr_period,
+                'atr_multiplier' => $order->time->atr_multiplier,
+
+                'dema_short' => $order->time->dema_short,
+                'dema_long' => $order->time->dema_long,
+                'dema_signal' => $order->time->dema_signal,
+
                 'time' => $order->time->time,
-                'sub_time' => $order->time->sub_time->time,
-                'sub_kdj_period' => $order->time->sub_time->kdj_period,
-                'sub_kdj_signal' => $order->time->sub_time->kdj_signal,
                 'proxy' => [
                     'http' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port,
                     'https' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port

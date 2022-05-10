@@ -1,24 +1,13 @@
-import random, time, sys, os, requests, uuid
+import random, time, sys, os, requests, uuid, talib, numpy
 from datetime import datetime
 from binance.client import Client
 import pandas as pd
 import termtables as tt
 from helper import config
+import talib as ta
 from inspect import currentframe, getframeinfo
 
 url = config('API', 'SITE')
-
-
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
 
 
 def kdj(kline, N=9, M=2):
@@ -72,6 +61,79 @@ def get_kdj(klines, period=9, signal=2):
             }
     except Exception as e:
         return False
+
+
+def ce(kline, atr_period=22, atr_multiplier=3, lastCE=None):
+    df = pd.DataFrame(kline)
+    df.columns = ['Datetime',
+                  'Open', 'High', 'Low', 'Close', 'volume',
+                  'close_time', 'qav', 'num_trades',
+                  'taker_base_vol', 'taker_quote_vol', 'ignore']
+    df.index = [datetime.fromtimestamp(x / 1000.0) for x in df.close_time]
+
+    df.drop(['close_time', 'qav', 'num_trades', 'taker_base_vol', 'taker_quote_vol', 'ignore'], axis=1, inplace=True)
+
+    df['Open'] = pd.to_numeric(df["Open"], downcast="float")
+    df["High"] = pd.to_numeric(df["High"], downcast="float")
+    df["Low"] = pd.to_numeric(df["Low"], downcast="float")
+    df["Close"] = pd.to_numeric(df["Close"], downcast="float")
+    df["volume"] = pd.to_numeric(df["volume"], downcast="float")
+
+    atr = list(filter(lambda v: v == v, ta.ATR(df["High"], df["Low"], df["Close"], atr_period)))
+    atr = atr_multiplier * atr[0]
+
+    close = df['Close']
+    close = list(filter(lambda v: v == v, close))
+    low = df['Close'].rolling(window=atr_period).min()
+    low.fillna(value=df['Close'].expanding(min_periods=atr_period).min(), inplace=True)
+    low = list(filter(lambda v: v == v, low))
+    high = df['Close'].rolling(window=atr_period).max()
+    high.fillna(value=df['Close'].expanding(min_periods=atr_period).max(), inplace=True)
+    high = list(filter(lambda v: v == v, high))
+    longStop = high[0] - atr
+    shortStop = low[-1] + atr
+    if close[-1] > shortStop:
+        dir = 'LONG'
+    elif longStop > close[-1]:
+        dir = "SHORT"
+    else:
+        dir = lastCE
+
+    return dir
+
+
+def mac_dema(kline, dema_short=12, dema_long=26, dema_signal=9, lastMAC=None):
+    df = pd.DataFrame(kline)
+    df.columns = ['Datetime',
+                  'Open', 'High', 'Low', 'Close', 'volume',
+                  'close_time', 'qav', 'num_trades',
+                  'taker_base_vol', 'taker_quote_vol', 'ignore']
+    df.index = [datetime.fromtimestamp(x / 1000.0) for x in df.close_time]
+    df.drop(['close_time', 'qav', 'num_trades', 'taker_base_vol', 'taker_quote_vol', 'ignore'], axis=1, inplace=True)
+    df["Close"] = pd.to_numeric(df["Close"], downcast="float")
+    close = df['Close']
+    close = list(filter(lambda v: v == v, close))
+    MMEslowa = talib.EMA(numpy.asarray(close), timeperiod=dema_long)
+    MMEslowb = talib.EMA(MMEslowa, timeperiod=dema_long)
+    DEMAslow = ((2 * MMEslowa) - MMEslowb)
+
+    MMEfasta = talib.EMA(numpy.asarray(close), timeperiod=dema_short)
+    MMEfastb = talib.EMA(MMEfasta, timeperiod=dema_short)
+    DEMAfast = ((2 * MMEfasta) - MMEfastb)
+
+    LigneMACD = DEMAfast - DEMAslow
+
+    MMEsignala = talib.EMA(LigneMACD, timeperiod=dema_signal)
+    MMEsignalb = talib.EMA(MMEsignala, timeperiod=dema_signal)
+    Lignesignal = ((2 * MMEsignala) - MMEsignalb)
+
+    if LigneMACD[-2] < Lignesignal[-2] and LigneMACD[-1] >= Lignesignal[-1]:
+        dir = 'LONG'
+    elif LigneMACD[-2] > Lignesignal[-2] and LigneMACD[-1] <= Lignesignal[-1]:
+        dir = 'SHORT'
+    else:
+        dir = lastMAC
+    return dir
 
 
 def getOrderBalance(client, currenty, percent):
@@ -151,9 +213,12 @@ while True:
     lastPrice = 0
     lastSide = 'HOLD'
     lastType = None
+    lastCE = None
+    lastMAC = None
     lastQuantity = None
     triggerStatus = False
     profitTrigger = False
+    klines = {}
     while operationLoop:
         try:
             minutes = {
@@ -181,8 +246,9 @@ while True:
                     else:
                         raise Exception(e)
             getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'])
-            getSubKDJ = get_kdj(suKlines, getBot['sub_kdj_period'], getBot['sub_kdj_signal'])
             if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
+                lastCE = ce(klines, getBot['atr_period'], getBot['atr_multiplier'], lastCE)
+                lastMAC = mac_dema(klines, getBot['dema_short'], getBot['dema_long'], getBot['dema_signal'], lastMAC)
                 sameTest = {
                     'K': getKDJ['K'],
                     'D': getKDJ['D'],
@@ -220,13 +286,13 @@ while True:
                         raise Exception('set_bot_fail')
                     raise Exception('STOP')
                 else:
-                    if lastSide != getKDJ['side'] and getKDJ['side'] == getSubKDJ['side']:
+                    if lastSide != getKDJ['side'] and lastCE == lastMAC and lastCE == getKDJ['side']:
                         lastPrice = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
                         if lastSide != 'HOLD' and profitTrigger == False:
                             position = getPosition(client, getBot['parity'], lastType)
                             if position['amount'] > 0:
                                 # Binance
-                                client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=lastType, type="MARKET", quantity=lastQuantity)
+                                # client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                 # Binance END
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                     'neresi': 'dogunun+billurlari'
@@ -268,7 +334,7 @@ while True:
                         lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
                         if float(lastQuantity) <= 0:
                             raise Exception("Bakiye hatası")
-                        client.futures_create_order(symbol=getBot['parity'], side=lastSide, type='MARKET', quantity=lastQuantity, positionSide=lastType)
+                        # client.futures_create_order(symbol=getBot['parity'], side=lastSide, type='MARKET', quantity=lastQuantity, positionSide=lastType)
                         # Binance END
 
                         setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
@@ -321,7 +387,7 @@ while True:
                             if position['profit'] > getBot['profit']:
                                 profitTrigger = True
                                 triggerStatus = True
-                                client.futures_create_order(symbol=getBot['parity'], side='SELL' if lastType == 'LONG' else "BUY", positionSide=lastType, type="MARKET", quantity=lastQuantity)
+                                # client.futures_create_order(symbol=getBot['parity'], side='SELL' if lastType == 'LONG' else "BUY", positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                     'neresi': 'dogunun+billurlari'
                                 }, json={

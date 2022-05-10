@@ -18,9 +18,19 @@ class Time extends Model
         'start_trigger_min',
         'fake_reverse',
         't3_length',
-        'volume_factor',
+        't3_volume_factor',
+
         'kdj_period',
         'kdj_signal',
+
+        'atr_period',
+        'atr_multiplier',
+
+        'dema_short',
+        'dema_long',
+        'dema_signal',
+
+
         'sub_times_id',
         'status',
     ];
@@ -28,7 +38,19 @@ class Time extends Model
     protected $casts = [
         'kdj_period' => 'integer',
         'kdj_signal' => 'integer',
-        'volume_factor' => 'float',
+
+        't3_length' => 'integer',
+        't3_volume_factor' => 'float',
+
+        'atr_period' => 'integer',
+        'atr_multiplier' => 'float',
+
+
+        'dema_short' => 'float',
+        'dema_long' => 'float',
+        'dema_signal' => 'float',
+
+
         'status' => 'boolean',
     ];
 

@@ -22,7 +22,7 @@ return new class extends Migration {
             $table->string("side")->nullable()->default(null);
             $table->string("position_side")->nullable()->default(null);
             $table->string("action")->nullable()->default(null);
-            $table->tinyInteger("profit")->default(0);
+            $table->decimal("profit", 38, 22)->default(0);
             $table->decimal("K", 38, 22)->default(0);
             $table->decimal("D", 38, 22)->default(0);
             $table->decimal("J", 38, 22)->default(0);

@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Bot;
 use App\Models\Order;
+use App\Models\Proxy;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -44,6 +45,11 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
                 $bot->delete();
             }
         }
+        Proxy::where('status', false)
+            ->where('updated_at', '>', now()->tz('Europe/Istanbul')->subMinutes(15)->toDateTimeLocalString())
+            ->update([
+                'status' => true
+            ]);
         Bot::where('version', '!=', config('app.bot_version'))->delete();
         return true;
     }

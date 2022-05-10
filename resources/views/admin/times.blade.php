@@ -42,12 +42,17 @@
                         <thead>
                         <tr>
                             <th scope="col">Zaman</th>
-                            <th scope="col">Sahte Ters İşlem</th>
-                            <th scope="col">T3 Length</th>
-                            <th scope="col">Volume Factor</th>
                             <th scope="col">KDJ Period</th>
-                            <th scope="col">KDJ Factor</th>
-                            <th scope="col">Alt Takip Süresi</th>
+                            <th scope="col">KDJ Signal</th>
+
+                            <th scope="col">ATR Period</th>
+                            <th scope="col">ATR Multiplier</th>
+
+
+                            <th scope="col">CE Short</th>
+                            <th scope="col">CE Long</th>
+                            <th scope="col">CE Signal</th>
+
                             <th scope="col">Durum</th>
                             <th scope="col"><i class="bi bi-arrow-clockwise"></i></th>
                         </tr>
@@ -63,21 +68,6 @@
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[reverse_delay]" value="{{ $time->reverse_delay }}">
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[t3_length]" value="{{ $time->t3_length }}">
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" min="0" step="0.1" name="update[volume_factor]" value="{{ $time->volume_factor }}">
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
                                             <input type="number" class="form-control" name="update[kdj_period]" value="{{ $time->kdj_period }}">
                                         </div>
                                     </td>
@@ -87,11 +77,29 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <select class="input-group" name="update[sub_times_id]">
-                                            @foreach($selectTimes as $id => $selectTime)
-                                                <option value="{{ $id }}" {{ $id==$time->sub_times_id?'selected':'' }}>{{ $selectTime }}</option>
-                                            @endforeach
-                                        </select>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" name="update[atr_period]" value="{{ $time->atr_period }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" min="0" step="0.1" name="update[atr_multiplier]" value="{{ $time->atr_multiplier }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" name="update[dema_short]" value="{{ $time->dema_short }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" name="update[dema_long]" value="{{ $time->dema_long }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" name="update[dema_signal]" value="{{ $time->dema_signal }}">
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="form-check form-switch">
@@ -99,7 +107,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <button type="submit" onclick="return confirm('Abdurrahim Albayrak söylemiyle FAZİYAA ya yol açabilir! Emin misin?')" class="btn btn-outline-warning btn-sm"><i class="bi bi-arrow-clockwise"></i></button>
+                                        <button type="submit" onclick="return confirm('OK?')" class="btn btn-outline-warning btn-sm"><i class="bi bi-arrow-clockwise"></i></button>
                                     </td>
                                 </tr>
                             </form>
