@@ -256,7 +256,6 @@ while True:
             if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
                 lastCE = ce(klines, getBot['atr_period'], getBot['atr_multiplier'], lastCE)
                 lastMAC = mac_dema(klines, getBot['dema_short'], getBot['dema_long'], getBot['dema_signal'], lastMAC)
-                print(getKDJ, lastCE, lastMAC)
                 sameTest = {
                     'K': getKDJ['K'],
                     'D': getKDJ['D'],
@@ -431,7 +430,6 @@ while True:
                 else:
                     time.sleep(3)
         except Exception as exception:
-            print(str(exception))
             operationLoop = False
             getBot['status'] = 2
             print("emir kapatıldı!!")
