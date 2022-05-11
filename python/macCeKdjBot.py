@@ -79,26 +79,35 @@ def ce(kline, atr_period=22, atr_multiplier=3, lastCE=None):
     df["Close"] = pd.to_numeric(df["Close"], downcast="float")
     df["volume"] = pd.to_numeric(df["volume"], downcast="float")
 
-    atr = list(filter(lambda v: v == v, ta.ATR(df["High"], df["Low"], df["Close"], atr_period)))
-    atr = atr_multiplier * atr[0]
+    atr = ta.ATR(df['High'], df['Low'], df['Close'], timeperiod=atr_period)
+    atr = list(filter(lambda v: v == v, atr))
+    atr = round(atr_multiplier * atr[-1], 1)
 
     close = df['Close']
     close = list(filter(lambda v: v == v, close))
+
     low = df['Close'].rolling(window=atr_period).min()
     low.fillna(value=df['Close'].expanding(min_periods=atr_period).min(), inplace=True)
     low = list(filter(lambda v: v == v, low))
+
     high = df['Close'].rolling(window=atr_period).max()
     high.fillna(value=df['Close'].expanding(min_periods=atr_period).max(), inplace=True)
     high = list(filter(lambda v: v == v, high))
-    longStop = high[0] - atr
-    shortStop = low[-1] + atr
-    if close[-1] > shortStop:
+
+    longStopPrev = round(round(high[-2], 1) - atr, 1)
+    # longStop = max(longStop, longStopPrev) if close[1] > longStopPrev else longStop
+
+    shortStopPrev = round(round(low[-2], 1) + atr, 1)
+    # shortStop = min(shortStop, shortStopPrev) if close[1] < shortStopPrev else shortStop
+
+    # close1 = round(close[-2], 1)
+    close = round(close[-1], 1)
+    if close > shortStopPrev:
         dir = 'LONG'
-    elif longStop > close[-1]:
+    elif longStopPrev > close:
         dir = "SHORT"
     else:
         dir = lastCE
-
     return dir
 
 
@@ -127,9 +136,9 @@ def mac_dema(kline, dema_short=12, dema_long=26, dema_signal=9, lastMAC=None):
     MMEsignalb = talib.EMA(MMEsignala, timeperiod=dema_signal)
     Lignesignal = ((2 * MMEsignala) - MMEsignalb)
 
-    if LigneMACD[-2] < Lignesignal[-2] and LigneMACD[-1] >= Lignesignal[-1]:
+    if LigneMACD[-2] <= Lignesignal[-2] and LigneMACD[-1] >= Lignesignal[-1]:
         dir = 'LONG'
-    elif LigneMACD[-2] > Lignesignal[-2] and LigneMACD[-1] <= Lignesignal[-1]:
+    elif LigneMACD[-2] >= Lignesignal[-2] and LigneMACD[-1] <= Lignesignal[-1]:
         dir = 'SHORT'
     else:
         dir = lastMAC
@@ -223,7 +232,7 @@ while True:
             minutes = {
                 '1min': Client.KLINE_INTERVAL_1MINUTE,
                 '5min': Client.KLINE_INTERVAL_5MINUTE,
-                '15min': Client.KLINE_INTERVAL_15MINUTE,
+                '15min': Client.KLINE_INTERVAL_1MINUTE,
                 '30min': Client.KLINE_INTERVAL_30MINUTE,
                 '1hour': Client.KLINE_INTERVAL_1HOUR,
                 '4hour': Client.KLINE_INTERVAL_4HOUR
@@ -247,6 +256,7 @@ while True:
             if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
                 lastCE = ce(klines, getBot['atr_period'], getBot['atr_multiplier'], lastCE)
                 lastMAC = mac_dema(klines, getBot['dema_short'], getBot['dema_long'], getBot['dema_signal'], lastMAC)
+                print(getKDJ, lastCE, lastMAC)
                 sameTest = {
                     'K': getKDJ['K'],
                     'D': getKDJ['D'],
@@ -284,13 +294,13 @@ while True:
                         raise Exception('set_bot_fail')
                     raise Exception('STOP')
                 else:
-                    if lastSide != getKDJ['side'] and lastCE == lastMAC and lastCE == getKDJ['side']:
+                    if lastSide != getKDJ['side'] and lastCE == lastMAC and lastCE == getKDJ['type']:
                         lastPrice = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
                         if lastSide != 'HOLD' and profitTrigger == False:
                             position = getPosition(client, getBot['parity'], lastType)
                             if position['amount'] > 0:
                                 # Binance
-                                # client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=lastType, type="MARKET", quantity=lastQuantity)
+                                client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                 # Binance END
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                     'neresi': 'dogunun+billurlari'
@@ -332,7 +342,7 @@ while True:
                         lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
                         if float(lastQuantity) <= 0:
                             raise Exception("Bakiye hatası")
-                        # client.futures_create_order(symbol=getBot['parity'], side=lastSide, type='MARKET', quantity=lastQuantity, positionSide=lastType)
+                        client.futures_create_order(symbol=getBot['parity'], side=lastSide, type='MARKET', quantity=lastQuantity, positionSide=lastType)
                         # Binance END
 
                         setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
@@ -385,7 +395,7 @@ while True:
                             if position['profit'] > getBot['profit']:
                                 profitTrigger = True
                                 triggerStatus = True
-                                # client.futures_create_order(symbol=getBot['parity'], side='SELL' if lastType == 'LONG' else "BUY", positionSide=lastType, type="MARKET", quantity=lastQuantity)
+                                client.futures_create_order(symbol=getBot['parity'], side='SELL' if lastType == 'LONG' else "BUY", positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                     'neresi': 'dogunun+billurlari'
                                 }, json={
