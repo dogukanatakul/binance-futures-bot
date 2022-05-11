@@ -232,7 +232,7 @@ while True:
             minutes = {
                 '1min': Client.KLINE_INTERVAL_1MINUTE,
                 '5min': Client.KLINE_INTERVAL_5MINUTE,
-                '15min': Client.KLINE_INTERVAL_1MINUTE,
+                '15min': Client.KLINE_INTERVAL_15MINUTE,
                 '30min': Client.KLINE_INTERVAL_30MINUTE,
                 '1hour': Client.KLINE_INTERVAL_1HOUR,
                 '4hour': Client.KLINE_INTERVAL_4HOUR
