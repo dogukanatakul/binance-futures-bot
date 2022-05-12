@@ -156,7 +156,6 @@ class AppController extends Controller
                 'time' => 'required|filled|string|in:' . implode(",", $times->toArray()),
                 'percent' => 'required|filled|integer|in:' . implode(",", config('order.percent')),
                 'parity' => 'required|filled|string|in:' . implode(",", $parities->toArray()),
-                'profit' => 'required|filled',
             ]);
             if ($validator->fails()) {
                 return redirect()->back();
@@ -175,7 +174,6 @@ class AppController extends Controller
                     'leverages_id' => $leverage->id,
                     'times_id' => $time->id,
                     'percent' => $request->percent,
-                    'profit' => $request->profit
                 ]);
             } else {
                 Session::flash('error', __('app.error_busy'));
