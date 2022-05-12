@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Parity;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ParitySeeder extends Seeder
@@ -16,13 +15,13 @@ class ParitySeeder extends Seeder
     public function run()
     {
         $pairs = [
-            'BTCUSDT',
-            'ETHUSDT',
+//            'BTCUSDT',
+//            'ETHUSDT',
 //            'BCHUSDT',
-            'XRPUSDT',
+//            'XRPUSDT',
 //            'EOSUSDT',
 //            'LTCUSDT',
-            'TRXUSDT',
+//            'TRXUSDT',
 //            'ETCUSDT',
 //            'LINKUSDT',
 //            'XLMUSDT',
@@ -136,7 +135,7 @@ class ParitySeeder extends Seeder
 //            'C98USDT',
 //            'MASKUSDT',
 //            'ATAUSDT',
-            'DYDXUSDT',
+//            'DYDXUSDT',
 //            '1000XECUSDT',
 //            'GALAUSDT',
 //            'CELOUSDT',

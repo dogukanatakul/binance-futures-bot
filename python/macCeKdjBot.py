@@ -1,4 +1,4 @@
-import random, time, sys, os, requests, uuid, talib, numpy
+import time, sys, os, requests, uuid, talib, numpy
 from datetime import datetime
 from binance.client import Client
 import pandas as pd
@@ -161,6 +161,25 @@ def getOrderBalance(client, currenty, percent):
         return False
 
 
+def get_diff(previous, current):
+    try:
+        if previous == current:
+            percentage = 0
+        elif previous < 0 and current < 0:
+            percentage = ((previous - current) / min(previous, current)) * 100
+        elif previous < 0 and current > 0:
+            percentage = (((max(previous, current) - min(previous, current)) / max(previous, current)) * 100)
+        elif previous > 0 and current < 0:
+            percentage = (((max(previous, current) - min(previous, current)) / max(previous, current)) * 100) * -1
+        elif previous > current:
+            percentage = (((previous - current) / previous) * 100) * -1
+        else:
+            percentage = ((current - previous) / current) * 100
+    except ZeroDivisionError:
+        percentage = float('inf')
+    return percentage
+
+
 def getPosition(client, symbol, side):
     infos = client.futures_position_information(symbol=symbol)
     positions = {}
@@ -224,9 +243,21 @@ while True:
     lastCE = None
     lastMAC = None
     lastQuantity = None
-    triggerStatus = False
     profitTrigger = False
     klines = {}
+
+    # profit trigger
+    profits = []
+    profitDiff = []
+    profitDiffAverage = False
+    maxProfit = 0
+    minProfit = 0
+    beforeProfit = None
+    profitTurn = False
+    profitTriggerKey = None
+    maxDamage = 0
+    # profit trigger END
+
     while operationLoop:
         try:
             minutes = {
@@ -243,7 +274,7 @@ while True:
                     klines = client.futures_klines(symbol=getBot['parity'], interval=minutes[str(getBot['time'])], limit=100)
                     klineConnect = False
                 except Exception as e:
-                    if "Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e):
+                    if "Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e):
                         time.sleep(1)
                     elif "Way too many requests" in str(e) or "Read timed out." in str(e):
                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
@@ -310,8 +341,9 @@ while True:
                                     'D': getKDJ['D'],
                                     'J': getKDJ['J'],
                                     'side': lastSide,
-                                    'price': lastPrice,
+                                    'price': position['markPrice'],
                                     'profit': position['profit'],
+                                    'quantity': position['amount'],
                                     'action': 'CLOSE',
                                 }).status_code
                                 if setBot != 200:
@@ -330,11 +362,22 @@ while True:
                                 }).status_code
                                 raise Exception('manual_stop')
                         else:
-                            triggerStatus = False
                             profitTrigger = False
 
                         lastSide = getKDJ['side']
                         lastType = getKDJ['type']
+
+                        # profit trigger
+                        profits = []
+                        profitDiff = []
+                        profitDiffAverage = False
+                        maxProfit = 0
+                        minProfit = 0
+                        beforeProfit = None
+                        profitTurn = False
+                        profitTriggerKey = None
+                        maxDamage = 0
+                        # profit trigger END
 
                         # Binance
                         balance = getOrderBalance(client, "USDT", int(getBot['percent']))
@@ -375,14 +418,14 @@ while True:
                             }).status_code
                             if setBot != 200:
                                 raise Exception('set_bot_fail')
-                        elif getBot['profit'] > 0 and lastPrice != 0 and profitTrigger == False:
+                        elif lastPrice != 0 and profitTrigger == False:
                             # get Position
                             positionConnect = True
                             try:
                                 position = getPosition(client, getBot['parity'], lastType)
                                 positionConnect = False
                             except Exception as e:
-                                if "Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e):
+                                if "Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e):
                                     time.sleep(1)
                                 elif "Way too many requests" in str(e) or "Read timed out." in str(e):
                                     proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
@@ -391,9 +434,33 @@ while True:
                                     client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
                                 else:
                                     raise Exception(e)
-                            if position['profit'] > getBot['profit']:
+
+                            if beforeProfit is not None:
+                                profitDiff.append(round(get_diff(position['profit'], beforeProfit), 1))
+                                profitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 1))
+
+                            if position['profit'] > 0:
+                                maxDamage = 0
+                                if position['profit'] > maxProfit:
+                                    maxProfit = position['profit']
+                                elif get_diff(position['profit'], maxProfit) > profitDiffAverage and position['profit'] >= 5:
+                                    profitTurn = True
+                                    profitTriggerKey = "MAX_TRIGGER"
+                                else:
+                                    if profitDiffAverage and position['profit'] >= 5:
+                                        currentDiff = get_diff(position['profit'], beforeProfit)
+                                        if currentDiff > profitDiffAverage:
+                                            profitTurn = True
+                                            profitTriggerKey = "AVARAGE_TRIGGER"
+                                beforeProfit = position['profit']
+                            elif position['profit'] <= -5:
+                                maxDamage += 1
+                                if maxDamage == 2:
+                                    profitTurn = True
+                                    profitTriggerKey = "DAMAGE_TRIGGER"
+
+                            if profitTurn:
                                 profitTrigger = True
-                                triggerStatus = True
                                 client.futures_create_order(symbol=getBot['parity'], side='SELL' if lastType == 'LONG' else "BUY", positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                     'neresi': 'dogunun+billurlari'
@@ -404,11 +471,14 @@ while True:
                                     'D': getKDJ['D'],
                                     'J': getKDJ['J'],
                                     'side': lastSide,
+                                    'price': position['markPrice'],
                                     'profit': position['profit'],
-                                    'action': 'PROFIT_TRIGGER',
+                                    'quantity': position['amount'],
+                                    'action': profitTriggerKey,
                                 }).status_code
                                 if setBot != 200:
                                     raise Exception('set_bot_fail')
+
                                 # get Position END
                 # Max Request Sleep
                 if getBot['time'] == '30min':
