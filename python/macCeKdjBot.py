@@ -256,6 +256,7 @@ while True:
     profitTurn = False
     profitTriggerKey = None
     maxDamage = 0
+    maxDamageUSDT = 0
     # profit trigger END
 
     while operationLoop:
@@ -381,6 +382,11 @@ while True:
 
                         # Binance
                         balance = getOrderBalance(client, "USDT", int(getBot['percent']))
+
+                        # profit trigger
+                        maxDamageUSDT = round((balance / 100) * 30, 2) if round((balance / 100) * 30, 2) < 5 else 5
+                        # profit trigger END
+
                         lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
                         if float(lastQuantity) <= 0:
                             raise Exception("Bakiye hatası")
@@ -436,24 +442,25 @@ while True:
                                     raise Exception(e)
 
                             if beforeProfit is not None:
-                                profitDiff.append(round(get_diff(position['profit'], beforeProfit), 1))
-                                profitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 1))
+                                if position['profit'] != beforeProfit:
+                                    profitDiff.append(round(get_diff(position['profit'], beforeProfit), 2))
+                                    profitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
 
                             if position['profit'] > 0:
                                 maxDamage = 0
                                 if position['profit'] > maxProfit:
                                     maxProfit = position['profit']
-                                elif get_diff(position['profit'], maxProfit) > profitDiffAverage and position['profit'] >= 5:
+                                elif get_diff(position['profit'], maxProfit) > profitDiffAverage and len(profitDiff) > 10:
                                     profitTurn = True
                                     profitTriggerKey = "MAX_TRIGGER"
                                 else:
-                                    if profitDiffAverage and position['profit'] >= 5:
+                                    if len(profitDiff) > 10:
                                         currentDiff = get_diff(position['profit'], beforeProfit)
                                         if currentDiff > profitDiffAverage:
                                             profitTurn = True
                                             profitTriggerKey = "AVARAGE_TRIGGER"
                                 beforeProfit = position['profit']
-                            elif position['profit'] <= -5:
+                            elif abs(position['profit']) >= maxDamageUSDT:
                                 maxDamage += 1
                                 if maxDamage == 2:
                                     profitTurn = True
