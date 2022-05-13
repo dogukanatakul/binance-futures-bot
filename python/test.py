@@ -37,19 +37,28 @@ def terminalTable(data):
 
 profits = [
     0.02,
+    0.01,
     0.05,
+    0.02,
+    0.02,
+    0.03,
+    0.06,
+    0.08,
+    0.10,
+    0.15,
     0.1,
     0.2,
-    0.3,
+    0.15,
+    0.17,
+    0.15,
+    0.13,
+    0.10,
+    0.9,
+    0.7,
+    0.5,
+    0.15,
     0.2,
-    0.4,
-    0.1,
-    0.58,
-    0.30,
-    0.28,
-    0.25,
-    0.35,
-    0.40,
+    0.05,
     0.65,
     0.60,
     0.58,
@@ -62,7 +71,11 @@ profits = [
     0.75,
     0.80,
     0.80,
-    0.60,
+    1,
+    2,
+    3,
+    4,
+    2,
 ]
 
 profitDiff = []
@@ -80,8 +93,10 @@ currentDiff = 0
 for profit in profits:
     if beforeProfit is not None:
         if profit != beforeProfit:
-            profitDiff.append(round(abs(get_diff(profit, beforeProfit)), 2))
-            profitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
+            diffCurrent = round(abs(get_diff(profit, beforeProfit)), 2)
+            if diffCurrent not in profitDiff:
+                profitDiff.append(diffCurrent)
+                profitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
     if profit > 0:
         maxDamage = 0
         if profit > maxProfit:

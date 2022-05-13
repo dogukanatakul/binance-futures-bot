@@ -384,7 +384,7 @@ while True:
                         balance = getOrderBalance(client, "USDT", int(getBot['percent']))
 
                         # profit trigger
-                        maxDamageUSDT = round((balance / 100) * 30, 2) if round((balance / 100) * 30, 2) < 5 else 5
+                        maxDamageUSDT = round((balance / 100) * 5, 2) if round((balance / 100) * 5, 2) < 1 else 1
                         # profit trigger END
 
                         lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
