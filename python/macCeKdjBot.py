@@ -449,14 +449,17 @@ while True:
                                         profitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
 
                             if profit > 0:
+                                if profit not in profits:
+                                    profits.append(profit)
+
                                 maxDamage = 0
                                 if profit > maxProfit:
                                     maxProfit = profit
-                                elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(profitDiff) > 25:
+                                elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(profits) >= 10:
                                     profitTurn = True
                                     profitTriggerKey = "MAX_TRIGGER"
                                 else:
-                                    if len(profitDiff) > 20:
+                                    if len(profits) >= 10:
                                         currentDiff = abs(get_diff(profit, beforeProfit))
                                         if currentDiff > profitDiffAverage:
                                             profitTurn = True
@@ -469,6 +472,7 @@ while True:
                                     profitTriggerKey = "DAMAGE_TRIGGER"
                             else:
                                 profitDiff = []
+                                profits = []
                                 beforeProfit = None
                                 maxProfit = 0
 
