@@ -440,27 +440,27 @@ while True:
                                     client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
                                 else:
                                     raise Exception(e)
-
+                            profit = round(position['profit'], 2)
                             if beforeProfit is not None:
-                                if position['profit'] != beforeProfit:
-                                    profitDiff.append(round(get_diff(position['profit'], beforeProfit), 2))
+                                if profit != beforeProfit:
+                                    profitDiff.append(round(get_diff(profit, beforeProfit), 2))
                                     profitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
 
-                            if position['profit'] > 0:
+                            if profit > 0:
                                 maxDamage = 0
-                                if position['profit'] > maxProfit:
-                                    maxProfit = position['profit']
-                                elif get_diff(position['profit'], maxProfit) > profitDiffAverage and len(profitDiff) > 10:
+                                if profit > maxProfit:
+                                    maxProfit = profit
+                                elif get_diff(profit, maxProfit) > profitDiffAverage and len(profitDiff) > 20:
                                     profitTurn = True
                                     profitTriggerKey = "MAX_TRIGGER"
                                 else:
-                                    if len(profitDiff) > 10:
-                                        currentDiff = get_diff(position['profit'], beforeProfit)
+                                    if len(profitDiff) > 20:
+                                        currentDiff = get_diff(profit, beforeProfit)
                                         if currentDiff > profitDiffAverage:
                                             profitTurn = True
                                             profitTriggerKey = "AVARAGE_TRIGGER"
-                                beforeProfit = position['profit']
-                            elif abs(position['profit']) >= maxDamageUSDT:
+                                beforeProfit = profit
+                            elif abs(profit) >= maxDamageUSDT:
                                 maxDamage += 1
                                 if maxDamage == 2:
                                     profitTurn = True

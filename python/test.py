@@ -33,15 +33,15 @@ def terminalTable(data):
 
 
 profits = [
-    0.0,
+    0.02,
     0.05,
-    0.0,
+    0.1,
+    0.2,
     0.3,
     0.2,
+    0.4,
     0.1,
-    0.0,
-    0.10,
-    1,
+    0.58,
     0.30,
     0.28,
     0.25,
@@ -83,11 +83,11 @@ for profit in profits:
         maxDamage = 0
         if profit > maxProfit:
             maxProfit = profit
-        elif get_diff(profit, maxProfit) > profitDiffAverage and len(profitDiff) > 10:
+        elif get_diff(profit, maxProfit) > profitDiffAverage and len(profitDiff) > 15:
             turn = False
             trigger = "MaxTrigger"
         else:
-            if len(profitDiff) > 10:
+            if len(profitDiff) > 15:
                 currentDiff = get_diff(profit, beforeProfit)
                 if currentDiff > profitDiffAverage:
                     turn = False
