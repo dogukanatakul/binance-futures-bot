@@ -450,7 +450,7 @@ while True:
                                 maxDamage = 0
                                 if profit > maxProfit:
                                     maxProfit = profit
-                                elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(profitDiff) > 25:
+                                elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and maxProfit > profit and len(profitDiff) > 25:
                                     profitTurn = True
                                     profitTriggerKey = "MAX_TRIGGER"
                                 else:
