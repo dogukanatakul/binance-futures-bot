@@ -443,8 +443,10 @@ while True:
                             profit = round(position['profit'], 2)
                             if beforeProfit is not None:
                                 if profit != beforeProfit:
-                                    profitDiff.append(round(abs(get_diff(profit, beforeProfit)), 2))
-                                    profitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
+                                    diffCurrent = round(abs(get_diff(profit, beforeProfit)), 2)
+                                    if diffCurrent not in profitDiff:
+                                        profitDiff.append(diffCurrent)
+                                        profitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
 
                             if profit > 0:
                                 maxDamage = 0
