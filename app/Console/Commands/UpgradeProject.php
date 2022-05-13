@@ -31,6 +31,7 @@ class UpgradeProject extends Command
     {
         DB::table('jobs')->truncate();
         DB::table('failed_jobs')->truncate();
+        DB::table('bots')->truncate();
         Artisan::call('queue:flush');
         Artisan::call('queue:restart');
         Artisan::call('queue:clear', [
