@@ -443,19 +443,19 @@ while True:
                             profit = round(position['profit'], 2)
                             if beforeProfit is not None:
                                 if profit != beforeProfit:
-                                    profitDiff.append(round(get_diff(profit, beforeProfit), 2))
+                                    profitDiff.append(round(abs(get_diff(profit, beforeProfit)), 2))
                                     profitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
 
                             if profit > 0:
                                 maxDamage = 0
                                 if profit > maxProfit:
                                     maxProfit = profit
-                                elif get_diff(profit, maxProfit) > profitDiffAverage and len(profitDiff) > 20:
+                                elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(profitDiff) > 15:
                                     profitTurn = True
                                     profitTriggerKey = "MAX_TRIGGER"
                                 else:
-                                    if len(profitDiff) > 20:
-                                        currentDiff = get_diff(profit, beforeProfit)
+                                    if len(profitDiff) > 15:
+                                        currentDiff = abs(get_diff(profit, beforeProfit))
                                         if currentDiff > profitDiffAverage:
                                             profitTurn = True
                                             profitTriggerKey = "AVARAGE_TRIGGER"
@@ -465,6 +465,10 @@ while True:
                                 if maxDamage == 2:
                                     profitTurn = True
                                     profitTriggerKey = "DAMAGE_TRIGGER"
+                            else:
+                                profitDiff = []
+                                beforeProfit = None
+                                maxProfit = 0
 
                             if profitTurn:
                                 profitTrigger = True
