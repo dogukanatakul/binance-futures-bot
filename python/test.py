@@ -1,3 +1,5 @@
+import time
+
 import termtables as tt
 
 
@@ -30,6 +32,7 @@ def terminalTable(data):
             list(resultData),
             header=header,
         )
+
 
 
 profits = [
@@ -83,11 +86,11 @@ for profit in profits:
         maxDamage = 0
         if profit > maxProfit:
             maxProfit = profit
-        elif get_diff(profit, maxProfit) > profitDiffAverage and len(profitDiff) > 15:
+        elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(profitDiff) > 20:
             turn = False
             trigger = "MaxTrigger"
         else:
-            if len(profitDiff) > 15:
+            if len(profitDiff) > 20:
                 currentDiff = get_diff(profit, beforeProfit)
                 if currentDiff > profitDiffAverage:
                     turn = False
