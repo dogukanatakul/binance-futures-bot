@@ -21,6 +21,8 @@ class OrderOperation extends Model
         'K',
         'D',
         'J',
+        'MACD_DEMA',
+        'CE',
         'time',
         'line',
     ];

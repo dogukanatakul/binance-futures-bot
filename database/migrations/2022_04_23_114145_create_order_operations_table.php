@@ -26,6 +26,8 @@ return new class extends Migration {
             $table->decimal("K", 38, 22)->default(0);
             $table->decimal("D", 38, 22)->default(0);
             $table->decimal("J", 38, 22)->default(0);
+            $table->string("MACD_DEMA")->nullable()->default(null);
+            $table->string("CE")->nullable()->default(null);
             $table->dateTime("time");
             $table->integer('line')->default(0);
             $table->softDeletes();

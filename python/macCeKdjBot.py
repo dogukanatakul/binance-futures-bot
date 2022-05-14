@@ -420,6 +420,8 @@ while True:
                                 'K': getKDJ['K'],
                                 'D': getKDJ['D'],
                                 'J': getKDJ['J'],
+                                'MACD_DEMA': lastMAC,
+                                'CE': lastCE,
                                 'action': 'ORDER_START_WAITING',
                             }).status_code
                             if setBot != 200:
@@ -455,11 +457,11 @@ while True:
                                     profits.append(profit)
                                 if profit > maxProfit:
                                     maxProfit = profit
-                                elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(profits) >= 10:
+                                elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(profits) >= 20:
                                     profitTurn = True
                                     profitTriggerKey = "MAX_TRIGGER"
                                 else:
-                                    if len(profits) >= 10:
+                                    if len(profits) >= 15:
                                         currentDiff = abs(get_diff(profit, beforeProfit))
                                         if currentDiff > profitDiffAverage:
                                             profitTurn = True
