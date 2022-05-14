@@ -384,7 +384,7 @@ while True:
                         balance = getOrderBalance(client, "USDT", int(getBot['percent']))
 
                         # profit trigger
-                        maxDamageUSDT = round((balance / 100) * 5, 2) if round((balance / 100) * 5, 2) < 1 else 1
+                        maxDamageUSDT = round((balance / 100) * 15, 2) if round((balance / 100) * 15, 2) < 2 else 2
                         # profit trigger END
 
                         lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
@@ -449,10 +449,9 @@ while True:
                                         profitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
 
                             if profit > 0:
+                                maxDamage = 0
                                 if profit not in profits:
                                     profits.append(profit)
-
-                                maxDamage = 0
                                 if profit > maxProfit:
                                     maxProfit = profit
                                 elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(profits) >= 10:
@@ -467,7 +466,7 @@ while True:
                                 beforeProfit = profit
                             elif abs(profit) >= maxDamageUSDT:
                                 maxDamage += 1
-                                if maxDamage == 2:
+                                if maxDamage == 3:
                                     profitTurn = True
                                     profitTriggerKey = "DAMAGE_TRIGGER"
                             else:
