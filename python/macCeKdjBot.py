@@ -449,6 +449,24 @@ while True:
                                 raise Exception('set_bot_fail')
                         else:
                             openOrder = False
+                            setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                'neresi': 'dogunun+billurlari'
+                            }, json={
+                                'line': getframeinfo(currentframe()).lineno,
+                                'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                'K': getKDJ['K'],
+                                'D': getKDJ['D'],
+                                'J': getKDJ['J'],
+                                'side': lastSide,
+                                'position': lastType,
+                                'balance': balance,
+                                'quantity': lastQuantity,
+                                'price': lastPrice,
+                                'action': 'TOP_FAKE_OPEN',
+                            }).status_code
+                            if setBot != 200:
+                                raise Exception('set_bot_fail')
+
                     else:
                         if lastPrice == 0:
                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
@@ -496,11 +514,11 @@ while True:
                                 if profit > maxProfit:
                                     maxProfit = profit
                                     maxProfitMin = (maxProfit / 100) * 20
-                                elif abs(get_diff(profit, maxProfit)) > (profitDiffAverage if 50 < profitDiffAverage < 80 else 60) and len(profits) >= 20 and profit >= maxProfitMin:
+                                elif abs(get_diff(profit, maxProfit)) > (profitDiffAverage if 50 < profitDiffAverage < 80 else 60) and len(profits) >= 15 and profit >= maxProfitMin:
                                     profitTurn = True
                                     profitTriggerKey = "MAX_TRIGGER"
                                 else:
-                                    if len(profits) >= 20 and profit >= maxProfitMin:
+                                    if len(profits) >= 15 and profit >= maxProfitMin:
                                         currentDiff = abs(get_diff(profit, beforeProfit))
                                         if currentDiff > profitDiffAverage:
                                             profitTurn = True
