@@ -453,8 +453,7 @@ while True:
 
                             if profit > 0:
                                 maxDamage = 0
-                                if profit not in profits:
-                                    profits.append(profit)
+                                profits.append(profit)
                                 if profit > maxProfit:
                                     maxProfit = profit
                                 elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(profits) >= 20:
