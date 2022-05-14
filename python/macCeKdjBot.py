@@ -251,7 +251,7 @@ while True:
     profitDiff = []
     profitDiffAverage = False
     maxProfit = 0
-    minProfit = 0
+    maxProfitMin = 0
     beforeProfit = None
     profitTurn = False
     profitTriggerKey = None
@@ -373,7 +373,7 @@ while True:
                         profitDiff = []
                         profitDiffAverage = False
                         maxProfit = 0
-                        minProfit = 0
+                        maxProfitMin = 0
                         beforeProfit = None
                         profitTurn = False
                         profitTriggerKey = None
@@ -384,7 +384,8 @@ while True:
                         balance = getOrderBalance(client, "USDT", int(getBot['percent']))
 
                         # profit trigger
-                        maxDamageUSDT = round((balance / 100) * 15, 2) if round((balance / 100) * 15, 2) < 2 else 2
+                        maxDamageUSDT = round((balance / 100) * 10, 2)
+                        maxDamageUSDT = maxDamageUSDT if maxDamageUSDT < 2 else 2
                         # profit trigger END
 
                         lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
@@ -449,18 +450,19 @@ while True:
                                     if diffCurrent not in profitDiff:
                                         profitDiff.append(diffCurrent)
                                         cProfitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
-                                        profitDiffAverage = cProfitDiffAverage if cProfitDiffAverage < 50 else 50
+                                        profitDiffAverage = cProfitDiffAverage
 
                             if profit > 0:
                                 maxDamage = 0
                                 profits.append(profit)
                                 if profit > maxProfit:
                                     maxProfit = profit
-                                elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(profits) >= 20:
+                                    maxProfitMin = (maxProfit / 100) * 20
+                                elif abs(get_diff(profit, maxProfit)) > (profitDiffAverage if 50 < profitDiffAverage < 80 else 60) and len(profits) >= 20 and profit >= maxProfitMin:
                                     profitTurn = True
                                     profitTriggerKey = "MAX_TRIGGER"
                                 else:
-                                    if len(profits) >= 15:
+                                    if len(profits) >= 20 and profit >= maxProfitMin:
                                         currentDiff = abs(get_diff(profit, beforeProfit))
                                         if currentDiff > profitDiffAverage:
                                             profitTurn = True
@@ -476,6 +478,7 @@ while True:
                                 profits = []
                                 beforeProfit = None
                                 maxProfit = 0
+                                maxProfitMin = 0
 
                             if profitTurn:
                                 profitTrigger = True
