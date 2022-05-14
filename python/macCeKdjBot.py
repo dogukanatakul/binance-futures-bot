@@ -447,7 +447,7 @@ while True:
                                     if diffCurrent not in profitDiff:
                                         profitDiff.append(diffCurrent)
                                         cProfitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
-                                        profitDiffAverage = cProfitDiffAverage if cProfitDiffAverage < 40 else 40
+                                        profitDiffAverage = cProfitDiffAverage if cProfitDiffAverage < 50 else 50
 
                             if profit > 0:
                                 maxDamage = 0
