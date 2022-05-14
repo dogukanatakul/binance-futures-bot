@@ -446,7 +446,8 @@ while True:
                                     diffCurrent = round(abs(get_diff(profit, beforeProfit)), 2)
                                     if diffCurrent not in profitDiff:
                                         profitDiff.append(diffCurrent)
-                                        profitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
+                                        cProfitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
+                                        profitDiffAverage = cProfitDiffAverage if cProfitDiffAverage < 40 else 40
 
                             if profit > 0:
                                 maxDamage = 0
