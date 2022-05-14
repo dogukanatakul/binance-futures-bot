@@ -24,6 +24,8 @@
                                     <th scope="col">K</th>
                                     <th scope="col">D</th>
                                     <th scope="col">J</th>
+                                    <th scope="col">MACD</th>
+                                    <th scope="col">CE</th>
                                     <th scope="col">{{ __('app.order_detail_time') }}</th>
                                 @endif
                             </tr>
@@ -61,6 +63,12 @@
                                         </td>
                                         <td>
                                             {{ $operation->J }}
+                                        </td>
+                                        <td>
+                                            {{ $operation->MACD_DEMA }}
+                                        </td>
+                                        <td>
+                                            {{ $operation->CE }}
                                         </td>
                                         <td>
                                             {{ $operation->time }}
