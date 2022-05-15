@@ -37,17 +37,18 @@ def kdj(kline, N=9, M=2):
     df['K'] = rvs.ewm(com=M, min_periods=0, adjust=True, ignore_na=False).mean()
     df['D'] = df['K'].ewm(com=M, min_periods=0, adjust=True, ignore_na=False).mean()
     df['J'] = 3 * df['K'] - 2 * df['D']
-    return df.tail(1)['K'].item(), df.tail(1)['D'].item(), df.tail(1)['J'].item()
+    return df.tail(1)['K'].item(), df.tail(1)['D'].item(), df.tail(1)['J'].item(), df['Close'][0]
 
 
 def get_kdj(klines, period=9, signal=2):
     try:
-        k, d, j = kdj(klines, period, signal)
+        k, d, j, date = kdj(klines, period, signal)
         if float(j) > float(d) and float(d) < float(k):
             return {
                 'K': k,
                 'D': d,
                 'J': j,
+                'date': date,
                 'type': 'LONG',
                 'side': 'BUY'
             }
@@ -56,6 +57,7 @@ def get_kdj(klines, period=9, signal=2):
                 'K': k,
                 'D': d,
                 'J': j,
+                'date': date,
                 'type': 'SHORT',
                 'side': 'SELL'
             }
@@ -271,22 +273,26 @@ while True:
     lastMAC = None
     lastQuantity = None
     profitTrigger = False
+    closeDate = None
     klines = {}
     klines30 = {}
     klines15 = {}
+    newTriggerOrder = False
 
     # profit trigger
     profits = []
     profitDiff = []
     profitDiffAverage = False
     maxProfit = 0
-    maxProfitMin = 0
     beforeProfit = None
     profitTurn = False
     profitTriggerKey = None
     maxDamage = 0
     maxDamageUSDT = 0
     openOrder = False
+    orderStatus = False
+    sideProfits = []
+    maxTriggerCount = 0
     # profit trigger END
 
     while operationLoop:
@@ -360,12 +366,23 @@ while True:
                         raise Exception('set_bot_fail')
                     raise Exception('STOP')
                 else:
-                    if lastSide != getKDJ['side'] and lastCE == lastMAC and lastCE == getKDJ['type']:
+
+                    # Trigger after new same side order
+                    if closeDate is not None and closeDate != getKDJ['date'] and orderStatus == False:
+                        checkSide = topControl(klines, 0.20)
+                        if checkSide == lastSide:
+                            newTriggerOrder = True
+                    else:
+                        newTriggerOrder = False
+                    # END
+
+                    if (lastSide != getKDJ['side'] and lastCE == lastMAC and lastCE == getKDJ['type']) or newTriggerOrder:
                         lastPrice = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
                         if lastSide != 'HOLD' and profitTrigger == False and openOrder == True:
                             position = getPosition(client, getBot['parity'], lastType)
                             if position['amount'] > 0:
                                 # Binance
+                                orderStatus = False
                                 client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                 # Binance END
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
@@ -408,11 +425,12 @@ while True:
                         profitDiff = []
                         profitDiffAverage = False
                         maxProfit = 0
-                        maxProfitMin = 0
                         beforeProfit = None
                         profitTurn = False
                         profitTriggerKey = None
                         maxDamage = 0
+                        sideProfits = []
+                        maxTriggerCount = 0
                         # profit trigger END
 
                         # Binance
@@ -427,6 +445,8 @@ while True:
                             lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
                             if float(lastQuantity) <= 0:
                                 raise Exception("Bakiye hatası")
+                            orderStatus = True
+                            closeDate = None
                             client.futures_create_order(symbol=getBot['parity'], side=lastSide, type='MARKET', quantity=lastQuantity, positionSide=lastType)
                             # Binance END
 
@@ -499,45 +519,48 @@ while True:
                                     client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
                                 else:
                                     raise Exception(e)
+
                             profit = round(position['profit'], 2)
                             if beforeProfit is not None:
                                 if profit != beforeProfit:
                                     diffCurrent = round(abs(get_diff(profit, beforeProfit)), 2)
                                     if diffCurrent not in profitDiff:
                                         profitDiff.append(diffCurrent)
-                                        cProfitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
-                                        profitDiffAverage = cProfitDiffAverage
-
+                                        profitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
                             if profit > 0:
+                                if profit not in sideProfits:
+                                    sideProfits.append(profit)
                                 maxDamage = 0
-                                profits.append(profit)
                                 if profit > maxProfit:
                                     maxProfit = profit
-                                    maxProfitMin = (maxProfit / 100) * 20
-                                elif abs(get_diff(profit, maxProfit)) > (profitDiffAverage if 50 < profitDiffAverage < 80 else 60) and len(profits) >= 15 and profit >= maxProfitMin:
-                                    profitTurn = True
-                                    profitTriggerKey = "MAX_TRIGGER"
+                                    maxTriggerCount = 0
+                                elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(sideProfits) >= int(config('SETTING', 'MIN_PROFIT')):
+                                    maxTriggerCount += 1
+                                    if maxTriggerCount >= 2:
+                                        turn = False
+                                        trigger = "MaxTrigger"
                                 else:
-                                    if len(profits) >= 15 and profit >= maxProfitMin:
-                                        currentDiff = abs(get_diff(profit, beforeProfit))
-                                        if currentDiff > profitDiffAverage:
-                                            profitTurn = True
-                                            profitTriggerKey = "AVARAGE_TRIGGER"
-                                beforeProfit = profit
-                            elif abs(profit) >= maxDamageUSDT:
+                                    maxTriggerCount = 0
+
+                            elif profit <= maxDamageUSDT:
                                 maxDamage += 1
-                                if maxDamage == 3:
-                                    profitTurn = True
-                                    profitTriggerKey = "DAMAGE_TRIGGER"
+                                if maxDamage >= 2:
+                                    turn = False
+                                    trigger = "DamageTrigger"
                             else:
-                                profitDiff = []
                                 profits = []
-                                beforeProfit = None
+                                profitDiff = []
+                                profitDiffAverage = False
                                 maxProfit = 0
-                                maxProfitMin = 0
+                                beforeProfit = None
+                                maxDamage = 0
+                                sideProfits = []
+                                maxTriggerCount = 0
 
                             if profitTurn:
                                 profitTrigger = True
+                                orderStatus = False
+                                closeDate = getKDJ['date']
                                 client.futures_create_order(symbol=getBot['parity'], side='SELL' if lastType == 'LONG' else "BUY", positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                     'neresi': 'dogunun+billurlari'
