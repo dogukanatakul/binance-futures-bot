@@ -31,6 +31,7 @@ class OrderOperation extends Model
         'price' => 'float',
         'balance' => 'float',
         'quantity' => 'float',
+        'profit' => 'float',
         'time' => 'datetime',
         'line' => 'integer',
     ];

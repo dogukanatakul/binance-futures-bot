@@ -43,7 +43,7 @@
                                         {{ $operation->quantity }}
                                     </td>
                                     <td>
-                                        -
+                                        {{ $operation->profit }}
                                     </td>
                                     <td>
                                         {{ $operation->side }}
