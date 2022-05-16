@@ -191,6 +191,7 @@ def getPosition(client, symbol, side):
             'entryPrice': float(info['entryPrice']),
             'markPrice': float(info['markPrice']),
             'profit': float(info['unRealizedProfit']),
+            'fee': round(((abs(float(info['positionAmt'])) * 15) / 1000) * 0.0400, 2)
         }
     return positions[side]
 
@@ -243,7 +244,7 @@ version = None
 while True:
     botUuid = str(uuid.uuid4())
     while getBot['status'] == 0 or getBot['status'] == 2:
-        time.sleep(1)
+        time.sleep(0.5)
         getBot = requests.post(url + 'get-order/' + botUuid, headers={
             'neresi': 'dogunun+billurlari'
         }).json()
@@ -262,7 +263,7 @@ while True:
             print(str(e))
             clientConnectCount += 1
             if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and clientConnectCount < 3:
-                time.sleep(1)
+                time.sleep(0.5)
             elif "Way too many requests" in str(e) or "Read timed out." in str(e) or clientConnectCount >= 3:
                 proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                     'neresi': 'dogunun+billurlari'
@@ -313,6 +314,8 @@ while True:
     orderStatus = False
     sideProfits = []
     maxTriggerCount = 0
+    profitTriggerFee = False
+    avarageLoss = 0
     # profit trigger END
 
     while operationLoop:
@@ -336,7 +339,7 @@ while True:
                 except Exception as e:
                     klineConnectCount += 1
                     if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and klineConnectCount < 3:
-                        time.sleep(1)
+                        time.sleep(0.5)
                     elif "Way too many requests" in str(e) or "Read timed out." in str(e) or klineConnectCount >= 3:
                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                             'neresi': 'dogunun+billurlari'
@@ -410,7 +413,7 @@ while True:
                             except Exception as e:
                                 positionConnectCount += 1
                                 if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and positionConnectCount < 3:
-                                    time.sleep(1)
+                                    time.sleep(0.5)
                                 elif "Way too many requests" in str(e) or "Read timed out." in str(e) or positionConnectCount >= 3:
                                     proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                                         'neresi': 'dogunun+billurlari'
@@ -472,6 +475,8 @@ while True:
                         maxDamage = 0
                         sideProfits = []
                         maxTriggerCount = 0
+                        profitTriggerFee = False
+                        avarageLoss = 0
                         # profit trigger END
 
                         # Binance
@@ -479,7 +484,7 @@ while True:
 
                         # profit trigger
                         maxDamageUSDT = round((balance / 100) * float(config('SETTING', 'MAX_DAMAGE_USDT_PERCENT')), 2)
-                        maxDamageUSDT = maxDamageUSDT if maxDamageUSDT < 2 else 2
+                        maxDamageUSDT = maxDamageUSDT if maxDamageUSDT < float(config('SETTING', 'MAX_DAMAGE_USDT')) else float(config('SETTING', 'MAX_DAMAGE_USDT'))
                         # profit trigger END
                         openOrder = True
                         lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
@@ -536,7 +541,7 @@ while True:
                             except Exception as e:
                                 positionConnectCount += 1
                                 if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and positionConnectCount < 3:
-                                    time.sleep(1)
+                                    time.sleep(0.5)
                                 elif "Way too many requests" in str(e) or "Read timed out." in str(e) or positionConnectCount >= 3:
                                     proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                                         'neresi': 'dogunun+billurlari'
@@ -557,21 +562,30 @@ while True:
                                         elif profitDiffAverage < int(config('SETTING', 'PROFIT_DIFF_MIN')):
                                             profitDiffAverage = int(config('SETTING', 'PROFIT_DIFF_MIN'))
                             if profit > 0:
+                                beforeProfit = profit
+                                if profit >= (position['fee'] * 1.1):
+                                    profitTriggerFee = True
                                 if profit not in sideProfits:
                                     sideProfits.append(profit)
                                 maxDamage = 0
                                 if profit > maxProfit:
                                     maxProfit = profit
                                     maxTriggerCount = 0
-                                elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(sideProfits) >= int(config('SETTING', 'MIN_PROFIT')):
+                                elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(sideProfits) >= int(config('SETTING', 'MIN_PROFIT')) and profitTriggerFee == True:
                                     maxTriggerCount += 1
-                                    if maxTriggerCount >= 2:
+                                    if maxTriggerCount >= int(config('SETTING', 'MAX_TRIGGER_COUNT')):
                                         profitTurn = True
                                         profitTriggerKey = "MaxTrigger"
                                 else:
                                     maxTriggerCount = 0
                             elif abs(profit) >= maxDamageUSDT and profit < 0:
-                                maxDamage += 1
+                                if avarageLoss < abs(profit):
+                                    maxDamage += 1
+                                    avarageLoss = abs(profit)
+                                else:
+                                    maxDamage = 0
+                                    avarageLoss = abs(profit)
+
                                 if maxDamage >= int(config('SETTING', 'MAX_DAMAGE')):
                                     profitTurn = True
                                     profitTriggerKey = "DamageTrigger"
@@ -611,24 +625,10 @@ while True:
 
                                 # get Position END
                 # Max Request Sleep
-                if getBot['time'] == '30min':
-                    time.sleep(3)
-                elif getBot['time'] == '1hour':
-                    time.sleep(3)
-                elif getBot['time'] == '4hour':
-                    time.sleep(3)
-                else:
-                    time.sleep(1.5)
+                time.sleep(0.5)
                 # Max Request Sleep
             else:
-                if getBot['time'] == '30min':
-                    time.sleep(3)
-                elif getBot['time'] == '1hour':
-                    time.sleep(3)
-                elif getBot['time'] == '4hour':
-                    time.sleep(3)
-                else:
-                    time.sleep(1.5)
+                time.sleep(0.5)
         except Exception as exception:
             operationLoop = False
             getBot['status'] = 2

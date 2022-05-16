@@ -16,6 +16,7 @@
                         <th scope="col">Parite</th>
                         <th scope="col">Zaman</th>
                         <th scope="col">Kaldıraç</th>
+                        <th scope="col">Kâr</th>
                         <th scope="col">Başlama</th>
                         <th scope="col">Bitiş</th>
                         <th scope="col">İşlemler</th>
@@ -35,6 +36,9 @@
                             </td>
                             <td>
                                 {{ $order->leverage->leverage }}x
+                            </td>
+                            <td>
+                                {{ round($order->order_operation->sum('profit'), 2) }}
                             </td>
                             <td>
                                 {{ $order->start->format('y-m-d H:i') }}
