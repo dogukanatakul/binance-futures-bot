@@ -561,43 +561,43 @@ while True:
                                             profitDiffAverage = int(config('SETTING', 'PROFIT_DIFF_MAX'))
                                         elif profitDiffAverage < int(config('SETTING', 'PROFIT_DIFF_MIN')):
                                             profitDiffAverage = int(config('SETTING', 'PROFIT_DIFF_MIN'))
-                            if profit > 0:
-                                beforeProfit = profit
-                                if profit >= (position['fee'] * 1.1):
-                                    profitTriggerFee = True
-                                if profit not in sideProfits:
-                                    sideProfits.append(profit)
-                                maxDamage = 0
-                                if profit > maxProfit:
-                                    maxProfit = profit
-                                    maxTriggerCount = 0
-                                elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(sideProfits) >= int(config('SETTING', 'MIN_PROFIT')) and profitTriggerFee == True:
-                                    maxTriggerCount += 1
-                                    if maxTriggerCount >= int(config('SETTING', 'MAX_TRIGGER_COUNT')):
-                                        profitTurn = True
-                                        profitTriggerKey = "MaxTrigger"
-                                else:
-                                    maxTriggerCount = 0
-                            elif abs(profit) >= maxDamageUSDT and profit < 0:
-                                if avarageLoss < abs(profit):
-                                    maxDamage += 1
-                                    avarageLoss = abs(profit)
-                                else:
+                            if profit != beforeProfit:
+                                if profit > 0:
+                                    if profit >= (position['fee'] * float(config('SETTING', 'FEE_LEVERAGE'))):
+                                        profitTriggerFee = True
+                                    if profit not in sideProfits:
+                                        sideProfits.append(profit)
                                     maxDamage = 0
-                                    avarageLoss = abs(profit)
-
-                                if maxDamage >= int(config('SETTING', 'MAX_DAMAGE')):
-                                    profitTurn = True
-                                    profitTriggerKey = "DamageTrigger"
-                            else:
-                                profits = []
-                                profitDiff = []
-                                profitDiffAverage = False
-                                maxProfit = 0
-                                beforeProfit = None
-                                maxDamage = 0
-                                sideProfits = []
-                                maxTriggerCount = 0
+                                    if profit > maxProfit:
+                                        maxProfit = profit
+                                        maxTriggerCount = 0
+                                    elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(sideProfits) >= int(config('SETTING', 'MIN_PROFIT')) and profitTriggerFee == True:
+                                        maxTriggerCount += 1
+                                        if maxTriggerCount >= int(config('SETTING', 'MAX_TRIGGER_COUNT')):
+                                            profitTurn = True
+                                            profitTriggerKey = "MaxTrigger"
+                                    else:
+                                        maxTriggerCount = 0
+                                elif abs(profit) >= maxDamageUSDT and profit < 0:
+                                    if avarageLoss < abs(profit):
+                                        maxDamage += 1
+                                        avarageLoss = abs(profit)
+                                    else:
+                                        maxDamage = 0
+                                        avarageLoss = abs(profit)
+                                    if maxDamage >= int(config('SETTING', 'MAX_DAMAGE')):
+                                        profitTurn = True
+                                        profitTriggerKey = "DamageTrigger"
+                                else:
+                                    profits = []
+                                    profitDiff = []
+                                    profitDiffAverage = False
+                                    maxProfit = 0
+                                    beforeProfit = None
+                                    maxDamage = 0
+                                    sideProfits = []
+                                    maxTriggerCount = 0
+                            beforeProfit = profit
 
                             if profitTurn:
                                 profitTrigger = True
