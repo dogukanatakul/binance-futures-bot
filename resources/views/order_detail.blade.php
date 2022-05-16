@@ -21,11 +21,11 @@
                                 <th scope="col">{{ __('app.order_detail_position') }}</th>
                                 <th scope="col">{{ __('app.order_detail_action') }}</th>
                                 @if($user->admin)
-                                    <th scope="col">K</th>
-                                    <th scope="col">D</th>
-                                    <th scope="col">J</th>
+                                    <th scope="col">KDJ</th>
                                     <th scope="col">MACD</th>
                                     <th scope="col">CE</th>
+                                    <th scope="col">15M</th>
+                                    <th scope="col">30M</th>
                                     <th scope="col">{{ __('app.order_detail_time') }}</th>
                                 @endif
                             </tr>
@@ -56,19 +56,19 @@
                                     </td>
                                     @if($user->admin)
                                         <td>
-                                            {{ $operation->K }}
-                                        </td>
-                                        <td>
-                                            {{ $operation->D }}
-                                        </td>
-                                        <td>
-                                            {{ $operation->J }}
+                                            {{ $operation->KDJ }}
                                         </td>
                                         <td>
                                             {{ $operation->MACD_DEMA }}
                                         </td>
                                         <td>
                                             {{ $operation->CE }}
+                                        </td>
+                                        <td>
+                                            {{ $operation->TRIGGER_15_MIN }}
+                                        </td>
+                                        <td>
+                                            {{ $operation->TRIGGER_30_MIN }}
                                         </td>
                                         <td>
                                             {{ $operation->time }}

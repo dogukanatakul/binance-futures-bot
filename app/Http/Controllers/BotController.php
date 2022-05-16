@@ -68,6 +68,11 @@ class BotController extends Controller
                 'status' => false
             ]);
             $proxy = Proxy::whereNotIn('id', $activeOrders->toArray())->where('status', true)->orderByRaw("RAND()")->first();
+            if (empty($proxy)) {
+                return response()->json([
+                    'status' => 'fail'
+                ]);
+            }
             $order->proxies_id = $proxy->id;
             $order->save();
             return response()->json([
