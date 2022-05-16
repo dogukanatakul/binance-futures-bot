@@ -17,7 +17,7 @@ def get_diff(previous, current):
     return percentage
 
 
-print(get_diff(-10, -100))  # -90
+print(get_diff(0.5, 0.7))  # -90
 print(get_diff(100, 10))  # -90
 print(get_diff(100, -10))  # -110
 print(get_diff(-100, -10))  # 90

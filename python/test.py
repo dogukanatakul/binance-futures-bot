@@ -2,6 +2,8 @@ import time
 
 import termtables as tt
 
+print(round((5.32 / 100) * float(1.5), 2))
+time.sleep(999)
 
 def get_diff(previous, current):
     try:
@@ -34,48 +36,74 @@ def terminalTable(data):
         )
 
 
-
 profits = [
+    0.01,
+    0.03,
     0.02,
     0.01,
-    0.05,
+    0.01,
     0.02,
+    0.01,
+    0.03,
+    0.01,
+    0.02,
+    0.01,
+    0.03,
+    0.04,
+    0.01,
+    0.06,
     0.02,
     0.03,
+    0.05,
     0.06,
-    0.08,
+    0.06,
+    0.07,
+    0.09,
+    0.11,
+    0.12,
+    0.15,
+    0.15,
+    0.12,
+    0.15,
+    0.11,
     0.10,
+    0.12,
+    0.13,
     0.15,
-    0.1,
-    0.2,
+    0.11,
+    0.10,
+    0.12,
     0.15,
+    0.16,
     0.17,
+    0.19,
+    0.19,
+    0.18,
+    0.19,
+    0.20,
+    0.21,
     0.15,
     0.13,
+    0.11,
     0.10,
-    0.9,
-    0.7,
-    0.5,
+    0.11,
+    0.12,
     0.15,
-    0.2,
-    0.05,
-    0.65,
-    0.60,
-    0.58,
-    0.70,
-    0.65,
-    0.40,
-    0.45,
-    0.56,
-    0.70,
-    0.75,
-    0.80,
-    0.80,
-    1,
-    2,
-    3,
-    4,
-    2,
+    0.13,
+    0.15,
+    0.16,
+    0.17,
+    0.19,
+    0.25,
+    0.30,
+    0.33,
+    0.30,
+    0.25,
+    0.26,
+    0.26,
+    0.26,
+    0.21,
+    0.20,
 ]
 
 profitDiff = []
@@ -88,7 +116,8 @@ results = []
 turn = True
 trigger = None
 maxDamage = 0
-currentDiff = 0
+maxTriggerCount = 0
+profitss = []
 
 for profit in profits:
     if beforeProfit is not None:
@@ -98,18 +127,20 @@ for profit in profits:
                 profitDiff.append(diffCurrent)
                 profitDiffAverage = abs(round(sum(profitDiff) / len(profitDiff), 2))
     if profit > 0:
+        if profit not in profitss:
+            profitss.append(profit)
+
         maxDamage = 0
         if profit > maxProfit:
             maxProfit = profit
-        elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(profitDiff) > 20:
-            turn = False
-            trigger = "MaxTrigger"
+            maxTriggerCount = 0
+        elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(profitss) >= 15:
+            maxTriggerCount += 1
+            if maxTriggerCount >= 2:
+                turn = False
+                trigger = "MaxTrigger"
         else:
-            if len(profitDiff) > 20:
-                currentDiff = get_diff(profit, beforeProfit)
-                if currentDiff > profitDiffAverage:
-                    turn = False
-                    trigger = "AvarageTrigger"
+            maxTriggerCount = 0
 
     elif profit <= -5:
         maxDamage += 1
@@ -120,7 +151,6 @@ for profit in profits:
         'profit': profit,
         'maxProfit': maxProfit,
         'profitDiffAverage': profitDiffAverage,
-        'currentDiff': currentDiff,
         'turn': turn,
         'trigger': trigger
     })
