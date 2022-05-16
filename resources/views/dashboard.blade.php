@@ -39,6 +39,7 @@
                             <th scope="col">{{ __('app.time') }}</th>
                             <th scope="col">{{ __('app.leverage') }}</th>
                             <th scope="col">{{ __('app.percent') }}</th>
+                            <th scope="col">{{ __('app.order_detail_profit') }}</th>
                             <th scope="col">{{ __('app.starting') }}</th>
                             <th scope="col">{{ __('app.finish') }}</th>
                             <th scope="col">{{ __('app.operations') }}</th>
@@ -58,6 +59,9 @@
                                 </td>
                                 <td>
                                     {{ $order->percent }}%
+                                </td>
+                                <td>
+                                    {{ round($order->order_operation->sum('profit'), 2) }}
                                 </td>
                                 <td>
                                     {{ $order->start->format('y-m-d H:i') }}
