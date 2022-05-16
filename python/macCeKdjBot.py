@@ -326,6 +326,7 @@ while True:
                 '4hour': Client.KLINE_INTERVAL_4HOUR
             }
             klineConnect = True
+            klineConnectCount = 0
             while klineConnect:
                 try:
                     klines = client.futures_klines(symbol=getBot['parity'], interval=minutes[str(getBot['time'])], limit=100)
@@ -333,9 +334,10 @@ while True:
                     klines15 = client.futures_klines(symbol=getBot['parity'], interval=Client.KLINE_INTERVAL_15MINUTE, limit=2)
                     klineConnect = False
                 except Exception as e:
-                    if "Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e):
+                    klineConnectCount += 1
+                    if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and klineConnectCount < 3:
                         time.sleep(1)
-                    elif "Way too many requests" in str(e) or "Read timed out." in str(e):
+                    elif "Way too many requests" in str(e) or "Read timed out." in str(e) or klineConnectCount >= 3:
                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                             'neresi': 'dogunun+billurlari'
                         }).json()
@@ -400,7 +402,23 @@ while True:
                     if (lastSide != getKDJ['side'] and lastCE == getKDJ['type'] and topVerify == True) or newTriggerOrder:
                         lastPrice = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
                         if lastSide != 'HOLD' and profitTrigger == False and openOrder == True:
-                            position = getPosition(client, getBot['parity'], lastType)
+                            positionConnect = True
+                            positionConnectCount = 0
+                            try:
+                                position = getPosition(client, getBot['parity'], lastType)
+                                positionConnect = False
+                            except Exception as e:
+                                positionConnectCount += 1
+                                if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and positionConnectCount < 3:
+                                    time.sleep(1)
+                                elif "Way too many requests" in str(e) or "Read timed out." in str(e) or positionConnectCount >= 3:
+                                    proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
+                                        'neresi': 'dogunun+billurlari'
+                                    }).json()
+                                    client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
+                                else:
+                                    raise Exception(e)
+
                             if position['amount'] > 0:
                                 # Binance
                                 orderStatus = False
@@ -511,13 +529,15 @@ while True:
                         elif lastPrice != 0 and profitTrigger == False and openOrder == True:
                             # get Position
                             positionConnect = True
+                            positionConnectCount = 0
                             try:
                                 position = getPosition(client, getBot['parity'], lastType)
                                 positionConnect = False
                             except Exception as e:
-                                if "Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e):
+                                positionConnectCount += 1
+                                if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and positionConnectCount < 3:
                                     time.sleep(1)
-                                elif "Way too many requests" in str(e) or "Read timed out." in str(e):
+                                elif "Way too many requests" in str(e) or "Read timed out." in str(e) or positionConnectCount >= 3:
                                     proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                                         'neresi': 'dogunun+billurlari'
                                     }).json()
