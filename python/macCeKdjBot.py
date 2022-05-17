@@ -300,9 +300,13 @@ while True:
     klines15 = {}
     klines3 = {}
     newTriggerOrder = False
+    balance = 0
 
     # profit trigger
     profits = []
+    profitDiff = []
+    profitDiffAverage = int(config('SETTING', 'PROFIT_DIFF_MAX'))
+    maxProfit = 0
     beforeProfit = None
     profitTurn = False
     profitTriggerKey = None
@@ -311,7 +315,7 @@ while True:
     openOrder = False
     orderStatus = False
     sideProfits = []
-
+    maxTriggerCount = 0
     profitTriggerFee = False
     avarageLoss = 0
     last15Date = None
@@ -351,8 +355,8 @@ while True:
                 lastCE = ce(klines, getBot['atr_period'], getBot['atr_multiplier'], lastCE)
                 lastMAC = mac_dema(klines, getBot['dema_short'], getBot['dema_long'], getBot['dema_signal'], lastMAC)
                 last30 = topControl(klines30, float(config('SETTING', 'TRIGGER_30MIN')))
-                last15 = topControl(klines15, float(config('SETTING', 'TRIGGER_30MIN')))
-                topVerify = last30 == last15 and last30 == getKDJ['type'] and last30 == lastCE
+                last15 = topControl(klines15, float(config('SETTING', 'TRIGGER_15MIN')))
+                topVerify = last30 == last15 and last30 == getKDJ['type']
                 sameTest = {
                     'K': getKDJ['K'],
                     'D': getKDJ['D'],
@@ -416,7 +420,7 @@ while True:
                         else:
                             newTriggerOrder = False
                         # END
-                        if (lastSide != getKDJ['side'] and lastCE == getKDJ['type'] and topVerify == True) or newTriggerOrder:
+                        if (lastSide != getKDJ['side'] and topVerify == True) or newTriggerOrder:
                             lastPrice = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
                             if lastSide != 'HOLD' and profitTrigger == False and openOrder == True:
                                 positionConnect = True
@@ -497,16 +501,19 @@ while True:
 
                                 # profit trigger
                                 profits = []
-
+                                profitDiff = []
+                                profitDiffAverage = int(config('SETTING', 'PROFIT_DIFF_MAX'))
+                                maxProfit = 0
                                 beforeProfit = None
                                 profitTurn = False
                                 profitTriggerKey = None
                                 maxDamage = 0
+                                orderStatus = False
                                 sideProfits = []
-
+                                maxTriggerCount = 0
                                 profitTriggerFee = False
                                 avarageLoss = 0
-                                last3MinCE = None
+                                last15Date = None
                                 # profit trigger END
 
                                 # Binance
@@ -514,16 +521,14 @@ while True:
 
                                 # profit trigger
                                 maxDamageUSDT = round((balance / 100) * float(config('SETTING', 'MAX_DAMAGE_USDT_PERCENT')), 2)
-                                maxDamageUSDT = maxDamageUSDT if maxDamageUSDT < float(config('SETTING', 'MAX_DAMAGE_USDT')) else float(config('SETTING', 'MAX_DAMAGE_USDT'))
                                 # profit trigger END
 
-                                openOrder = True
                                 lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
                                 if float(lastQuantity) <= 0:
                                     raise Exception("Bakiye hatası")
-                                orderStatus = True
                                 client.futures_create_order(symbol=getBot['parity'], side=lastSide, type='MARKET', quantity=lastQuantity, positionSide=lastType)
                                 # Binance END
+                                openOrder = True
 
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                     'neresi': 'dogunun+billurlari'
@@ -566,7 +571,6 @@ while True:
                                 positionConnectCount = 0
                                 try:
                                     position = getPosition(client, getBot['parity'], lastType)
-                                    klines3 = client.futures_klines(symbol=getBot['parity'], interval=client.KLINE_INTERVAL_3MINUTE, limit=50)
                                     positionConnect = False
                                 except Exception as e:
                                     positionConnectCount += 1
@@ -580,21 +584,25 @@ while True:
                                     else:
                                         raise Exception(e)
 
-                                profit = round(position['profit'], 2)
+                                profit = round(position['profit'], 3)
                                 if profit != beforeProfit:
                                     if profit > 0:
-                                        maxDamage = 0
                                         if profit >= (position['fee'] * float(config('SETTING', 'FEE_LEVERAGE'))):
                                             profitTriggerFee = True
+                                        if profit not in sideProfits:
+                                            sideProfits.append(profit)
+                                        maxDamage = 0
+                                        if profit > maxProfit:
+                                            maxProfit = profit
+                                            maxTriggerCount = 0
+                                        elif abs(get_diff(profit, maxProfit)) > profitDiffAverage and len(sideProfits) >= int(config('SETTING', 'MIN_PROFIT')) and profitTriggerFee == True:
+                                            maxTriggerCount += 1
+                                            if maxTriggerCount >= int(config('SETTING', 'MAX_TRIGGER_COUNT')):
+                                                profitTurn = True
+                                                profitTriggerKey = "MaxTrigger"
                                         else:
-                                            profitTriggerFee = False
-
-                                        last3MinCE = ce(klines3, int(config('SETTING', 'TRIGGER_3MIN_PERIOD')), float(config('SETTING', 'TRIGGER_3MIN_MUL')), last3MinCE)
-
-                                        if profitTriggerFee and last3MinCE != lastType and last3MinCE != None:
-                                            profitTurn = True
-                                            profitTriggerKey = "TRIGGER_3MIN"
-                                    elif profit < 0:
+                                            maxTriggerCount = 0
+                                    elif abs(profit) >= maxDamageUSDT and profit < 0:
                                         if avarageLoss < abs(profit):
                                             maxDamage += 1
                                             avarageLoss = abs(profit)
@@ -606,11 +614,27 @@ while True:
                                             profitTriggerKey = "DamageTrigger"
                                     else:
                                         profits = []
+                                        profitDiff = []
+                                        profitDiffAverage = int(config('SETTING', 'PROFIT_DIFF_MAX'))
+                                        maxProfit = 0
                                         maxDamage = 0
                                         sideProfits = []
+                                        maxTriggerCount = 0
                                         profitTriggerFee = False
                                         avarageLoss = 0
-                                beforeProfit = profit
+
+                                    if beforeProfit is not None:
+                                        diffCurrent = round(abs(get_diff(profit, beforeProfit)), 2)
+                                        if diffCurrent not in profitDiff:
+                                            profitDiff.append(diffCurrent)
+                                            profitDiffAverage = (abs(round(sum(profitDiff) / len(profitDiff), 2)) / 100)
+                                            if profitDiffAverage > int(config('SETTING', 'PROFIT_DIFF_MAX')):
+                                                profitDiffAverage = int(config('SETTING', 'PROFIT_DIFF_MAX'))
+                                            elif profitDiffAverage < int(config('SETTING', 'PROFIT_DIFF_MIN')):
+                                                profitDiffAverage = int(config('SETTING', 'PROFIT_DIFF_MIN'))
+
+                                            profitDiffAverage = profitDiffAverage - int(10 - (get_diff(profit, balance) / 20))
+                                    beforeProfit = profit
 
                                 if profitTurn:
                                     profitTrigger = True

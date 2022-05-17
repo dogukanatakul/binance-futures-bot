@@ -1,20 +1,25 @@
-from binance.client import Client
+from math import *
+def get_diff(previous, current):
+    try:
+        if previous == current:
+            percentage = 0
+        elif previous < 0 and current < 0:
+            percentage = ((previous - current) / min(previous, current)) * 100
+        elif previous < 0 and current > 0:
+            percentage = (((max(previous, current) - min(previous, current)) / max(previous, current)) * 100)
+        elif previous > 0 and current < 0:
+            percentage = (((max(previous, current) - min(previous, current)) / max(previous, current)) * 100) * -1
+        elif previous > current:
+            percentage = (((previous - current) / previous) * 100) * -1
+        else:
+            percentage = ((current - previous) / current) * 100
+    except ZeroDivisionError:
+        percentage = float('inf')
+    return percentage
 
 
-def getPosition(client, symbol, side):
-    infos = client.futures_position_information(symbol=symbol)
-    print(infos)
-    positions = {}
-    for info in infos:
-        positions[info['positionSide']] = {
-            'amount': abs(float(info['positionAmt'])),
-            'entryPrice': float(info['entryPrice']),
-            'markPrice': float(info['markPrice']),
-            'profit': float(info['unRealizedProfit']),
-        }
-    return positions[side]
+aralik = 40
+bakiye = 5
+kar = 30
 
-
-client = Client(str("l8FqzEGOW91yP139vjZKDMs6oZJse4Isl3emol6dAMwVwKhHvOwH5irOVBvBhsVc"), str("eMlTWnJKQypSF2nlpCoWqTv6zyXej2hjDt2e7iqTNQbMoRQW3mOp94bkowj1OAtg"))
-
-print(getPosition(client, "DOGEUSDT", "SHORT"))
+print()
