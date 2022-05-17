@@ -602,7 +602,7 @@ while True:
                                                 profitTriggerKey = "MaxTrigger"
                                         else:
                                             maxTriggerCount = 0
-                                    elif abs(profit) >= maxDamageUSDT and profit < 0:
+                                    elif profit < 0:
                                         if avarageLoss < abs(profit):
                                             maxDamage += 1
                                             avarageLoss = abs(profit)
