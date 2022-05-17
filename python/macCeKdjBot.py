@@ -295,7 +295,6 @@ while True:
     lastMAC = None
     lastQuantity = None
     profitTrigger = False
-    closeDate = None
     klines = {}
     klines30 = {}
     klines15 = {}
@@ -410,7 +409,7 @@ while True:
                             raise Exception('close')
                     else:
                         # Trigger after new same side order
-                        if closeDate is not None and closeDate != getKDJ['date'] and orderStatus == False and topVerify and last15Date is not None and last15Date != last15[0][0]:
+                        if orderStatus == False and topVerify == True and last15Date is not None and last15Date != last15[0][0]:
                             checkSide = topControl(klines, float(config('SETTING', 'NEW_TRIGGER')))
                             if checkSide == lastType:
                                 newTriggerOrder = True
@@ -440,6 +439,7 @@ while True:
                                 if position['amount'] > 0:
                                     # Binance
                                     orderStatus = False
+                                    last15Date = last15[0][0]
                                     client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                     # Binance END
                                     setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
@@ -494,7 +494,6 @@ while True:
                             else:
                                 lastSide = getKDJ['side']
                                 lastType = getKDJ['type']
-                                last15Date = last15[0][0]
 
                                 # profit trigger
                                 profits = []
@@ -523,7 +522,6 @@ while True:
                                 if float(lastQuantity) <= 0:
                                     raise Exception("Bakiye hatası")
                                 orderStatus = True
-                                closeDate = None
                                 client.futures_create_order(symbol=getBot['parity'], side=lastSide, type='MARKET', quantity=lastQuantity, positionSide=lastType)
                                 # Binance END
 
@@ -591,13 +589,12 @@ while True:
                                         else:
                                             profitTriggerFee = False
 
-                                        if profitTriggerFee:
-                                            last3MinCE = ce(klines3, int(config('SETTING', 'TRIGGER_3MIN_PERIOD')), float(config('SETTING', 'TRIGGER_3MIN_MUL')), last3MinCE)
+                                        last3MinCE = ce(klines3, int(config('SETTING', 'TRIGGER_3MIN_PERIOD')), float(config('SETTING', 'TRIGGER_3MIN_MUL')), last3MinCE)
 
                                         if profitTriggerFee and last3MinCE != lastType and last3MinCE != None:
                                             profitTurn = True
                                             profitTriggerKey = "TRIGGER_3MIN"
-                                    elif abs(profit) >= maxDamageUSDT and profit < 0:
+                                    elif profit < 0:
                                         if avarageLoss < abs(profit):
                                             maxDamage += 1
                                             avarageLoss = abs(profit)
@@ -618,7 +615,7 @@ while True:
                                 if profitTurn:
                                     profitTrigger = True
                                     orderStatus = False
-                                    closeDate = getKDJ['date']
+                                    last15Date = last15[0][0]
                                     client.futures_create_order(symbol=getBot['parity'], side='SELL' if lastType == 'LONG' else "BUY", positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                     setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                         'neresi': 'dogunun+billurlari'
