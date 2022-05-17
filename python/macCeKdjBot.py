@@ -352,7 +352,7 @@ while True:
                 lastMAC = mac_dema(klines, getBot['dema_short'], getBot['dema_long'], getBot['dema_signal'], lastMAC)
                 last30 = topControl(klines30, float(config('SETTING', 'TRIGGER_30MIN')))
                 last15 = topControl(klines15, float(config('SETTING', 'TRIGGER_30MIN')))
-                topVerify = last30 == last15 and last30 == getKDJ['type'] and last30 == lastCE
+                topVerify = last30 == last15 and last30 == getKDJ['type']
                 sameTest = {
                     'K': getKDJ['K'],
                     'D': getKDJ['D'],
@@ -416,7 +416,7 @@ while True:
                         else:
                             newTriggerOrder = False
                         # END
-                        if (lastSide != getKDJ['side'] and lastCE == getKDJ['type'] and topVerify == True) or newTriggerOrder:
+                        if (lastSide != getKDJ['side'] and topVerify == True) or newTriggerOrder:
                             lastPrice = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
                             if lastSide != 'HOLD' and profitTrigger == False and openOrder == True:
                                 positionConnect = True
