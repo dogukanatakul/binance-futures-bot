@@ -304,9 +304,6 @@ while True:
 
     # profit trigger
     profits = []
-
-    profitDiffAverage = False
-
     beforeProfit = None
     profitTurn = False
     profitTriggerKey = None
@@ -502,8 +499,6 @@ while True:
                                 # profit trigger
                                 profits = []
 
-                                profitDiffAverage = False
-
                                 beforeProfit = None
                                 profitTurn = False
                                 profitTriggerKey = None
@@ -512,6 +507,7 @@ while True:
 
                                 profitTriggerFee = False
                                 avarageLoss = 0
+                                last3MinCE = None
                                 # profit trigger END
 
                                 # Binance
@@ -550,8 +546,6 @@ while True:
                                 }).status_code
                                 if setBot != 200:
                                     raise Exception('set_bot_fail')
-
-
                         else:
                             if lastPrice == 0:
                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
@@ -594,6 +588,9 @@ while True:
                                         maxDamage = 0
                                         if profit >= (position['fee'] * float(config('SETTING', 'FEE_LEVERAGE'))):
                                             profitTriggerFee = True
+                                        else:
+                                            profitTriggerFee = False
+
                                         if profitTriggerFee:
                                             last3MinCE = ce(klines3, int(config('SETTING', 'TRIGGER_3MIN_PERIOD')), float(config('SETTING', 'TRIGGER_3MIN_MUL')), last3MinCE)
 
@@ -612,7 +609,6 @@ while True:
                                             profitTriggerKey = "DamageTrigger"
                                     else:
                                         profits = []
-                                        profitDiffAverage = False
                                         maxDamage = 0
                                         sideProfits = []
                                         profitTriggerFee = False
