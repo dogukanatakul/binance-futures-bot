@@ -414,7 +414,7 @@ while True:
                     else:
                         # Trigger after new same side order
                         if orderStatus == False and topVerify == True and last15Date is not None and last15Date != last15[0][0]:
-                            checkSide = topControl(klines, float(config('SETTING', 'NEW_TRIGGER')))
+                            checkSide = topControl(klines, float(config('SETTING', 'NEW_TRIGGER')), 10)
                             if checkSide == lastType:
                                 newTriggerOrder = True
                         else:
