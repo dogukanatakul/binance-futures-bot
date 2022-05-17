@@ -208,7 +208,7 @@ def terminalTable(data):
         )
 
 
-def topControl(klines, diff):
+def topControl(klines, diff, diff_max):
     cols = [
         'Date',
         'Open',
@@ -230,9 +230,9 @@ def topControl(klines, diff):
     side = None
     close = df['Close']
     close = list(filter(lambda v: v == v, close))
-    if get_diff(close[-2], close[-1]) >= diff:
+    if diff <= get_diff(close[-2], close[-1]) <= diff_max:
         side = 'LONG'
-    elif get_diff(close[-1], close[-2]) >= diff:
+    elif diff <= get_diff(close[-1], close[-2]) <= diff_max:
         side = 'SHORT'
     return side
 
@@ -354,8 +354,8 @@ while True:
             if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
                 lastCE = ce(klines, getBot['atr_period'], getBot['atr_multiplier'], lastCE)
                 lastMAC = mac_dema(klines, getBot['dema_short'], getBot['dema_long'], getBot['dema_signal'], lastMAC)
-                last30 = topControl(klines30, float(config('SETTING', 'TRIGGER_30MIN')))
-                last15 = topControl(klines15, float(config('SETTING', 'TRIGGER_15MIN')))
+                last30 = topControl(klines30, float(config('SETTING', 'TRIGGER_30MIN')), float(config('SETTING', 'TRIGGER_30MIN_MAX')))
+                last15 = topControl(klines15, float(config('SETTING', 'TRIGGER_15MIN')), float(config('SETTING', 'TRIGGER_15MIN_MAX')))
                 topVerify = last30 == last15 and last30 == getKDJ['type']
                 sameTest = {
                     'K': getKDJ['K'],
@@ -443,7 +443,7 @@ while True:
                                 if position['amount'] > 0:
                                     # Binance
                                     orderStatus = False
-                                    last15Date = last15[0][0]
+                                    last15Date = klines15[0][0]
                                     client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                     # Binance END
                                     setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
@@ -639,7 +639,7 @@ while True:
                                 if profitTurn:
                                     profitTrigger = True
                                     orderStatus = False
-                                    last15Date = last15[0][0]
+                                    last15Date = klines15[0][0]
                                     client.futures_create_order(symbol=getBot['parity'], side='SELL' if lastType == 'LONG' else "BUY", positionSide=lastType, type="MARKET", quantity=lastQuantity)
                                     setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                         'neresi': 'dogunun+billurlari'
