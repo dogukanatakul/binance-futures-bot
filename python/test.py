@@ -1,4 +1,6 @@
 from math import *
+
+
 def get_diff(previous, current):
     try:
         if previous == current:
@@ -19,7 +21,7 @@ def get_diff(previous, current):
 
 
 aralik = 40
-bakiye = 5
-kar = 30
+bakiye = (5 / 100) * 15
+kar = 0.4
 
-print()
+print(aralik - int(10 - (get_diff(kar, bakiye) / 10)))
