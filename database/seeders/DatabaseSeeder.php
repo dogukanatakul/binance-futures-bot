@@ -14,10 +14,11 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call(ReferenceSeeder::class);
-        $this->call(ParitySeeder::class);
+//        $this->call(ParitySeeder::class);
         $this->call(LeverageSeeder::class);
-        $this->call(TimeSeeder::class);
+//        $this->call(TimeSeeder::class);
         $this->call(ProxySeeder::class);
+        $this->call(ImportSeeder::class);
 //        \App\Models\User::factory(50)->create();
 //        \App\Models\User::create([
 //            'email' => 'datakul@yandex.com',

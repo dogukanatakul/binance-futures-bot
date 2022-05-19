@@ -30,7 +30,7 @@ class ParitySeeder extends Seeder
 //            'DASHUSDT',
 //            'ZECUSDT',
 //            'XTZUSDT',
-            'BNBUSDT',
+//            'BNBUSDT',
 //            'ATOMUSDT',
 //            'ONTUSDT',
 //            'IOTAUSDT',
