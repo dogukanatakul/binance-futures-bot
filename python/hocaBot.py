@@ -4,7 +4,6 @@ from binance.client import Client
 import pandas as pd
 import termtables as tt
 from helper import config
-import talib as ta
 from inspect import currentframe, getframeinfo
 
 url = config('API', 'SITE')
@@ -194,7 +193,7 @@ getBot = {
 }
 version = None
 while True:
-    botUuid = "X"  # str(uuid.uuid4())
+    botUuid = str(uuid.uuid4())
     while getBot['status'] == 0 or getBot['status'] == 2:
         time.sleep(0.5)
         getBot = requests.post(url + 'get-order/' + botUuid, headers={
