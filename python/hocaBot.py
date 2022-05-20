@@ -193,7 +193,7 @@ getBot = {
 }
 version = None
 while True:
-    botUuid = str(uuid.uuid4())
+    botUuid = "X"  # str(uuid.uuid4())
     while getBot['status'] == 0 or getBot['status'] == 2:
         time.sleep(0.5)
         getBot = requests.post(url + 'get-order/' + botUuid, headers={
@@ -284,14 +284,14 @@ while True:
             if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
                 # first side check
                 if firstTypeTrigger <= int(config('SETTING', 'FIRST_FAKE')):
-                    if lastSide == getKDJ['type']:
+                    if lastSide == getKDJ['side']:
                         firstTypeTrigger += 1
                     else:
                         firstTypeTrigger = 0
                     # first side check END
                     lastSide = getKDJ['side']
 
-                if fakeTriggerSide == getKDJ['side']:
+                if fakeTriggerSide == getKDJ['side'] and firstTypeTrigger >= int(config('SETTING', 'FIRST_FAKE')):
                     fakeTrigger += 1
                 else:
                     fakeTrigger = 0

@@ -130,14 +130,6 @@ class ImportSeeder extends Seeder
                 'dema_long' => 80,
                 'dema_signal' => 30,
             ],
-
-            'PNTUSDT' => [
-                'kdj_period' => 58,
-                'kdj_signal' => 8,
-                'dema_short' => 50,
-                'dema_long' => 10,
-                'dema_signal' => 30,
-            ],
             'NEARUSDT' => [
                 'kdj_period' => 40,
                 'kdj_signal' => 3,
