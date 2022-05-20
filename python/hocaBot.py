@@ -193,7 +193,7 @@ getBot = {
 }
 version = None
 while True:
-    botUuid = "X"  # str(uuid.uuid4())
+    botUuid = str(uuid.uuid4())
     while getBot['status'] == 0 or getBot['status'] == 2:
         time.sleep(0.5)
         getBot = requests.post(url + 'get-order/' + botUuid, headers={
