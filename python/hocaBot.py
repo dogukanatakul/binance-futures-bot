@@ -475,7 +475,7 @@ while True:
                                 macdConnectCount = 0
                                 try:
                                     position = getPosition(client, getBot['parity'], lastType)
-                                    klines = client.futures_klines(symbol=getBot['parity'], interval=client.KLINE_INTERVAL_15MINUTE, limit=300)
+                                    klines = client.futures_klines(symbol=getBot['parity'], interval=client.KLINE_INTERVAL_15MINUTE, limit=350)
                                     # short / long
                                     lastMAC = mac_dema(klines, min(getBot['dema_short'], getBot['dema_long']) if lastType == 'LONG' else max(getBot['dema_short'], getBot['dema_long']), min(getBot['dema_short'], getBot['dema_long']) if lastType == 'SHORT' else max(getBot['dema_short'], getBot['dema_long']), getBot['dema_signal'], lastMAC)
                                     macdConnect = False
