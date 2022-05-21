@@ -351,7 +351,7 @@ while True:
                             raise Exception('close')
                     else:
                         # START ORDER
-                        if lastSide != getKDJ['side'] and firstTypeTrigger >= int(config('SETTING', 'FIRST_FAKE')) and fakeTrigger >= int(config('SETTING', 'FAKE_TRIGGER')):
+                        if lastSide != getKDJ['side'] and firstTypeTrigger >= int(config('SETTING', 'FIRST_FAKE')) and fakeTrigger >= int(config('SETTING', 'FAKE_TRIGGER')) and orderStatus == False:
                             lastPrice = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
                             if lastSide != 'HOLD' and profitTrigger == False and orderStatus == True:
                                 positionConnect = True
