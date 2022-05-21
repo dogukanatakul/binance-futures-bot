@@ -427,6 +427,7 @@ while True:
                             else:
                                 lastSide = getKDJ['side']
                                 lastType = getKDJ['type']
+                                lastMAC = None
 
                                 # Binance
                                 balance = getOrderBalance(client, "USDT", int(getBot['percent']))
@@ -477,7 +478,7 @@ while True:
                                     position = getPosition(client, getBot['parity'], lastType)
                                     klines = client.futures_klines(symbol=getBot['parity'], interval=client.KLINE_INTERVAL_15MINUTE, limit=350)
                                     # short / long
-                                    lastMAC = mac_dema(klines, min(getBot['dema_short'], getBot['dema_long']) if lastType == 'LONG' else max(getBot['dema_short'], getBot['dema_long']), min(getBot['dema_short'], getBot['dema_long']) if lastType == 'SHORT' else max(getBot['dema_short'], getBot['dema_long']), getBot['dema_signal'], lastMAC)
+                                    lastMAC = mac_dema(klines, getBot['dema_short'], getBot['dema_long'], getBot['dema_signal'], lastMAC)
                                     macdConnect = False
                                 except Exception as e:
                                     macdConnectCount += 1
@@ -494,7 +495,7 @@ while True:
                                 if position['profit'] >= balance:
                                     profitTriggerKey = "TRIGGER_PROFIT_100"
                                     profitTurn = True
-                                elif lastMAC == reverseType[lastType]:
+                                elif lastMAC is not None:
                                     profitTriggerKey = "TRIGGER_MACDDEMA"
                                     profitTurn = True
                                 elif position['amount'] <= 0:
