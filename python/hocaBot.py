@@ -248,6 +248,9 @@ while True:
     firstTypeTrigger = 0
     fakeTrigger = 0
     fakeTriggerSide = 0
+    maxDamageUSDT = 0
+    maxDamageCount = 0
+    maxDamageBefore = 0
 
     lastCE = None
     lastMAC = None
@@ -432,6 +435,12 @@ while True:
                                 # Binance
                                 balance = getOrderBalance(client, "USDT", int(getBot['percent']))
 
+                                # profit trigger
+                                maxDamageUSDT = round((balance / 100) * float(config('SETTING', 'MAX_DAMAGE_USDT_PERCENT')), 2)
+                                maxDamageCount = 0
+                                maxDamageBefore = 0
+                                # profit trigger END
+
                                 lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
                                 if float(lastQuantity) <= 0:
                                     raise Exception("Bakiye hatası")
@@ -476,7 +485,7 @@ while True:
                                 macdConnectCount = 0
                                 try:
                                     position = getPosition(client, getBot['parity'], lastType)
-                                    klines = client.futures_klines(symbol=getBot['parity'], interval=client.KLINE_INTERVAL_15MINUTE, limit=350)
+                                    klines = client.futures_klines(symbol=getBot['parity'], interval=client.KLINE_INTERVAL_3MINUTE, limit=300)
                                     # short / long
                                     lastMAC = mac_dema(klines, getBot['dema_short'], getBot['dema_long'], getBot['dema_signal'], lastMAC)
                                     macdConnect = False
@@ -491,15 +500,26 @@ while True:
                                         client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
                                     else:
                                         raise Exception(e)
-
-                                if position['profit'] >= balance:
-                                    profitTriggerKey = "TRIGGER_PROFIT_100"
-                                    profitTurn = True
-                                elif lastMAC is not None:
-                                    profitTriggerKey = "TRIGGER_MACDDEMA"
-                                    profitTurn = True
-                                elif position['amount'] <= 0:
+                                if position['amount'] <= 0:
                                     raise Exception('close')
+                                elif position['profit'] > 0:
+                                    if position['profit'] >= balance:
+                                        profitTriggerKey = "TRIGGER_PROFIT_100"
+                                        profitTurn = True
+                                    elif lastMAC is not None:
+                                        profitTriggerKey = "TRIGGER_MACDDEMA"
+                                        profitTurn = True
+                                elif position['profit'] < 0:
+                                    if abs(position['profit']) >= maxDamageUSDT:
+                                        if maxDamageBefore < abs(position['profit']):
+                                            maxDamageCount += 1
+                                            if maxDamageCount >= int(config('SETTING', 'PROFIT_DIFF_MAX')):
+                                                profitTriggerKey = "MAX_DAMAGE"
+                                                profitTurn = True
+                                        else:
+                                            maxDamageCount = 0
+
+                                        maxDamageBefore = abs(position['profit'])
 
                                 if profitTurn:
                                     profitTrigger = True

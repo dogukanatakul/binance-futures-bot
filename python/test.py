@@ -1,20 +1,10 @@
-import time, sys, os, requests, uuid, talib, numpy
-from datetime import datetime
 from binance.client import Client
+from datetime import datetime
 import pandas as pd
-import termtables as tt
-from helper import config
-from inspect import currentframe, getframeinfo
-
-getBot = requests.post('http://127.0.0.1:8000/api/get-order/173abdab-9153-4e14-a9ec-1c382f7ae494', headers={
-    'neresi': 'dogunun+billurlari'
-}).json()
-lastType = 'SHORT'
-lastMAC = 'SHORT'
+import time, sys, os, requests, uuid, talib, numpy
 
 
 def mac_dema(kline, dema_short=12, dema_long=26, dema_signal=9, lastMAC=None):
-    print(dema_short, dema_long, dema_signal)
     df = pd.DataFrame(kline)
     df.columns = ['Datetime',
                   'Open', 'High', 'Low', 'Close', 'volume',
@@ -34,9 +24,13 @@ def mac_dema(kline, dema_short=12, dema_long=26, dema_signal=9, lastMAC=None):
     DEMAfast = ((2 * MMEfasta) - MMEfastb)
 
     LigneMACD = DEMAfast - DEMAslow
+
     MMEsignala = talib.EMA(LigneMACD, timeperiod=dema_signal)
     MMEsignalb = talib.EMA(MMEsignala, timeperiod=dema_signal)
     Lignesignal = ((2 * MMEsignala) - MMEsignalb)
+
+    MACDZeroLag = (LigneMACD - Lignesignal)
+    print(MACDZeroLag[-1], LigneMACD[-1], Lignesignal[-1])
 
     if LigneMACD[-2] <= Lignesignal[-2] and LigneMACD[-1] >= Lignesignal[-1]:
         dir = 'LONG'
@@ -48,7 +42,6 @@ def mac_dema(kline, dema_short=12, dema_long=26, dema_signal=9, lastMAC=None):
 
 
 client = Client()
-klines = client.futures_klines(symbol=getBot['parity'], interval=client.KLINE_INTERVAL_15MINUTE, limit=300)
-lastMAC = mac_dema(klines, min(getBot['dema_short'], getBot['dema_long']) if lastType == 'LONG' else max(getBot['dema_short'], getBot['dema_long']), min(getBot['dema_short'], getBot['dema_long']) if lastType == 'SHORT' else max(getBot['dema_short'], getBot['dema_long']), 50, lastMAC)
+klines = client.futures_klines(symbol="BTCUSDT", interval=client.KLINE_INTERVAL_5MINUTE, limit=300)
 
-print(lastMAC)
+print(mac_dema(klines, 20, 40, 20))
