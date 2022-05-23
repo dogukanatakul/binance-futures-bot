@@ -270,7 +270,7 @@ while True:
             klineConnectCount = 0
             while klineConnect:
                 try:
-                    klines = client.futures_klines(symbol=getBot['parity'], interval=client.KLINE_INTERVAL_30MINUTE, limit=300)
+                    klines = client.futures_klines(symbol=getBot['parity'], interval=client.KLINE_INTERVAL_5MINUTE, limit=300)
                     klineConnect = False
                 except Exception as e:
                     klineConnectCount += 1
