@@ -525,6 +525,8 @@ while True:
                                         maxDamageBefore = abs(position['profit'])
 
                                 if profitTurn:
+                                    lastSide = getKDJ['side']
+                                    fakeTrigger = 0
                                     profitTrigger = True
                                     orderStatus = False
                                     client.futures_create_order(symbol=getBot['parity'], side='SELL' if lastType == 'LONG' else "BUY", positionSide=lastType, type="MARKET", quantity=lastQuantity)
