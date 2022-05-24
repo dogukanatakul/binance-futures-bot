@@ -42,7 +42,7 @@ def kdj(kline, N=9, M=2):
 def get_kdj(klines, period=9, signal=2):
     try:
         k, d, j, date = kdj(klines, period, signal)
-        if float(j) > float(d) and float(d) < float(k):
+        if float(j) > float(d):
             return {
                 'K': k,
                 'D': d,
