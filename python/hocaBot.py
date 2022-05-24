@@ -510,7 +510,10 @@ while True:
                                         profitTriggerKey = "TRIGGER_MACDDEMA"
                                         profitTurn = True
                                 elif position['profit'] < 0:
-                                    if abs(position['profit']) >= maxDamageUSDT:
+                                    if lastMAC is not None:
+                                        profitTriggerKey = "TRIGGER_MACDDEMA"
+                                        profitTurn = True
+                                    elif abs(position['profit']) >= maxDamageUSDT:
                                         if maxDamageBefore < abs(position['profit']):
                                             maxDamageCount += 1
                                             if maxDamageCount >= int(config('SETTING', 'MAX_DAMAGE_COUNT')):
