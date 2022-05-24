@@ -513,7 +513,7 @@ while True:
                                     if abs(position['profit']) >= maxDamageUSDT:
                                         if maxDamageBefore < abs(position['profit']):
                                             maxDamageCount += 1
-                                            if maxDamageCount >= int(config('SETTING', 'PROFIT_DIFF_MAX')):
+                                            if maxDamageCount >= int(config('SETTING', 'MAX_DAMAGE_COUNT')):
                                                 profitTriggerKey = "MAX_DAMAGE"
                                                 profitTurn = True
                                         else:
