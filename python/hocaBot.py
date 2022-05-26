@@ -39,9 +39,14 @@ def kdj(kline, N=9, M=2):
     return df.tail(1)['K'].item(), df.tail(1)['D'].item(), df.tail(1)['J'].item(), df['Date'][0]
 
 
-def get_kdj(klines, period=9, signal=2):
+def get_kdj(klines, period=9, signal=2, lastSide=None, multiplier: float = 1.1):
+    print(multiplier)
     try:
         k, d, j, date = kdj(klines, period, signal)
+        if lastSide == 'BUY':
+            d = d * multiplier
+        elif lastSide == 'SELL':
+            j = j * multiplier
         if float(j) > float(d):
             return {
                 'K': k,
@@ -283,7 +288,7 @@ while True:
                         client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 300, 'proxies': proxyOrder})
                     else:
                         raise Exception(e)
-            getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'])
+            getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'], lastSide)
             if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
                 # first side check
                 if firstTypeTrigger <= int(config('SETTING', 'FIRST_FAKE')):

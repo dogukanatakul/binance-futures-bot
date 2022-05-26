@@ -2,46 +2,72 @@ from binance.client import Client
 from datetime import datetime
 import pandas as pd
 import time, sys, os, requests, uuid, talib, numpy
+import numpy as np
 
 
-def mac_dema(kline, dema_short=12, dema_long=26, dema_signal=9, lastMAC=None):
-    df = pd.DataFrame(kline)
-    df.columns = ['Datetime',
-                  'Open', 'High', 'Low', 'Close', 'volume',
-                  'close_time', 'qav', 'num_trades',
-                  'taker_base_vol', 'taker_quote_vol', 'ignore']
-    df.index = [datetime.fromtimestamp(x / 1000.0) for x in df.close_time]
-    df.drop(['close_time', 'qav', 'num_trades', 'taker_base_vol', 'taker_quote_vol', 'ignore'], axis=1, inplace=True)
-    df["Close"] = pd.to_numeric(df["Close"], downcast="float")
-    close = df['Close']
-    close = list(filter(lambda v: v == v, close))
-    MMEslowa = talib.EMA(numpy.asarray(close), timeperiod=dema_long)
-    MMEslowb = talib.EMA(MMEslowa, timeperiod=dema_long)
-    DEMAslow = ((2 * MMEslowa) - MMEslowb)
+def kdj(kline, N=9, M=2):
+    cols = [
+        'Date',
+        'Open',
+        'High',
+        'Low',
+        'Close',
+        'Volume',
+        'CloseTime',
+        'QuoteVolume',
+        'NumberTrades',
+        'TakerBuyBaseVolume',
+        'TakerBuyQuoteVolume',
+        'Ignore'
+    ]
+    num_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
+    df = pd.DataFrame(kline, columns=cols)
+    df = df.drop(columns=['CloseTime', 'QuoteVolume', 'NumberTrades', 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume', 'Ignore'])
+    df[num_cols] = df[num_cols].apply(pd.to_numeric, errors='coerce')
+    low_list = df['Low'].rolling(window=N).min()
+    low_list.fillna(value=df['Low'].expanding(min_periods=1).min(), inplace=True)
+    high_list = df['High'].rolling(window=N).max()
+    high_list.fillna(value=df['High'].expanding(min_periods=1).max(), inplace=True)
+    rvs = (df['Close'] - low_list) / (high_list - low_list) * 100
+    df['K'] = rvs.ewm(com=M, min_periods=0, adjust=True, ignore_na=False).mean()
+    df['D'] = df['K'].ewm(com=M, min_periods=0, adjust=True, ignore_na=False).mean()
+    df['J'] = 3 * df['K'] - 2 * df['D']
+    return df.tail(1)['K'].item(), df.tail(1)['D'].item(), df.tail(1)['J'].item(), df['Date'][0]
 
-    MMEfasta = talib.EMA(numpy.asarray(close), timeperiod=dema_short)
-    MMEfastb = talib.EMA(MMEfasta, timeperiod=dema_short)
-    DEMAfast = ((2 * MMEfasta) - MMEfastb)
 
-    LigneMACD = DEMAfast - DEMAslow
-
-    MMEsignala = talib.EMA(LigneMACD, timeperiod=dema_signal)
-    MMEsignalb = talib.EMA(MMEsignala, timeperiod=dema_signal)
-    Lignesignal = ((2 * MMEsignala) - MMEsignalb)
-
-    MACDZeroLag = (LigneMACD - Lignesignal)
-    print(MACDZeroLag[-1], LigneMACD[-1], Lignesignal[-1])
-
-    if LigneMACD[-2] <= Lignesignal[-2] and LigneMACD[-1] >= Lignesignal[-1]:
-        dir = 'LONG'
-    elif LigneMACD[-2] >= Lignesignal[-2] and LigneMACD[-1] <= Lignesignal[-1]:
-        dir = 'SHORT'
-    else:
-        dir = lastMAC
-    return dir
+def get_kdj(klines, period=9, signal=2, lastSide=None, multiplier: float = 1):
+    print(multiplier)
+    try:
+        k, d, j, date = kdj(klines, period, signal)
+        if lastSide == 'LONG':
+            d = d * multiplier
+        elif lastSide == 'SHORT':
+            j = j * multiplier
+        if float(j) > float(d):
+            return {
+                'K': k,
+                'D': d,
+                'J': j,
+                'date': date,
+                'type': 'LONG',
+                'side': 'BUY'
+            }
+        else:
+            return {
+                'K': k,
+                'D': d,
+                'J': j,
+                'date': date,
+                'type': 'SHORT',
+                'side': 'SELL'
+            }
+    except Exception as e:
+        return False
 
 
 client = Client()
-klines = client.futures_klines(symbol="BTCUSDT", interval=client.KLINE_INTERVAL_5MINUTE, limit=300)
-
-print(mac_dema(klines, 20, 40, 20))
+while True:
+    klines = client.futures_klines(symbol="BNBUSDT", interval=client.KLINE_INTERVAL_1MINUTE, limit=300)
+    print(get_kdj(klines, 60, 5, 'LONG', 1.1))
+    print("--------------------")
+    time.sleep(0.5)

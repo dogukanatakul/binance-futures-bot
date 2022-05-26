@@ -16,152 +16,51 @@ class ImportSeeder extends Seeder
      */
     public function run()
     {
-//        $tokens = [
-//            'XRPUSDT' => [
-//                'kdj_period' => 60,
-//                'kdj_signal' => 5,
-//                'dema_short' => 20,
-//                'dema_long' => 40,
-//                'dema_signal' => 20,
-//            ],
-//            'BANDUSDT' => [
-//                'kdj_period' => 60,
-//                'kdj_signal' => 4,
-//                'dema_short' => 50,
-//                'dema_long' => 100,
-//                'dema_signal' => 50,
-//            ],
-//            'AXSUSDT' => [
-//                'kdj_period' => 45,
-//                'kdj_signal' => 5,
-//                'dema_short' => 50,
-//                'dema_long' => 100,
-//                'dema_signal' => 25,
-//            ],
-//            'CRVUSDT' => [
-//                'kdj_period' => 60,
-//                'kdj_signal' => 4,
-//                'dema_short' => 50,
-//                'dema_long' => 100,
-//                'dema_signal' => 50,
-//            ],
-//            'APEUSDT' => [
-//                'kdj_period' => 60,
-//                'kdj_signal' => 7,
-//                'dema_short' => 50,
-//                'dema_long' => 100,
-//                'dema_signal' => 50,
-//            ],
-//            'GMTUSDT' => [
-//                'kdj_period' => 70,
-//                'kdj_signal' => 6,
-//                'dema_short' => 50,
-//                'dema_long' => 100,
-//                'dema_signal' => 25,
-//            ],
-//            'DYDXUSDT' => [
-//                'kdj_period' => 60,
-//                'kdj_signal' => 3,
-//                'dema_short' => 25,
-//                'dema_long' => 50,
-//                'dema_signal' => 25,
-//            ],
-//
-//            'LTCUSDT' => [
-//                'kdj_period' => 60,
-//                'kdj_signal' => 3,
-//                'dema_short' => 20,
-//                'dema_long' => 40,
-//                'dema_signal' => 20,
-//            ],
-//            'MATICUSDT' => [
-//                'kdj_period' => 60,
-//                'kdj_signal' => 3,
-//                'dema_short' => 25,
-//                'dema_long' => 50,
-//                'dema_signal' => 25,
-//            ],
-//            'ETHUSDT' => [
-//                'kdj_period' => 30,
-//                'kdj_signal' => 4,
-//                'dema_short' => 50,
-//                'dema_long' => 100,
-//                'dema_signal' => 25,
-//            ],
-//            '1INCHUSDT' => [
-//                'kdj_period' => 60,
-//                'kdj_signal' => 6,
-//                'dema_short' => 25,
-//                'dema_long' => 50,
-//                'dema_signal' => 25,
-//            ],
-//            'ALGOUSDT' => [
-//                'kdj_period' => 40,
-//                'kdj_signal' => 4,
-//                'dema_short' => 12,
-//                'dema_long' => 26,
-//                'dema_signal' => 21,
-//            ],
-//            'ALICEUSDT' => [
-//                'kdj_period' => 40,
-//                'kdj_signal' => 5,
-//                'dema_short' => 25,
-//                'dema_long' => 50,
-//                'dema_signal' => 25,
-//            ],
-//            'BLZUSDT' => [
-//                'kdj_period' => 40,
-//                'kdj_signal' => 3,
-//                'dema_short' => 20,
-//                'dema_long' => 40,
-//                'dema_signal' => 20,
-//            ],
-//            'TRXUSDT' => [
-//                'kdj_period' => 60,
-//                'kdj_signal' => 7,
-//                'dema_short' => 20,
-//                'dema_long' => 40,
-//                'dema_signal' => 20,
-//            ],
-//            'SOLUSDT' => [
-//                'kdj_period' => 60,
-//                'kdj_signal' => 4,
-//                'dema_short' => 40,
-//                'dema_long' => 80,
-//                'dema_signal' => 30,
-//            ],
-//            'NEARUSDT' => [
-//                'kdj_period' => 40,
-//                'kdj_signal' => 3,
-//                'dema_short' => 25,
-//                'dema_long' => 50,
-//                'dema_signal' => 25,
-//            ],
-//            'IOTAUSDT' => [
-//                'kdj_period' => 40,
-//                'kdj_signal' => 3,
-//                'dema_short' => 25,
-//                'dema_long' => 50,
-//                'dema_signal' => 25,
-//            ],
-//        ];
-
         $tokens = [
+            'BTCUSDT' => [
+                'kdj_period' => 20,
+                'kdj_signal' => 6,
+                'dema_short' => 21,
+                'dema_long' => 42,
+                'dema_signal' => 80,
+            ],
             'BNBUSDT' => [
-                'kdj_period' => 60,
+                'kdj_period' => 30,
                 'kdj_signal' => 5,
-                'dema_short' => 9,
+                'dema_short' => 12,
                 'dema_long' => 26,
-                'dema_signal' => 21,
+                'dema_signal' => 30,
+            ],
+            'XRPUSDT' => [
+                'kdj_period' => 21,
+                'kdj_signal' => 5,
+                'dema_short' => 14,
+                'dema_long' => 21,
+                'dema_signal' => 50,
+            ],
+            'ETHUSDT' => [
+                'kdj_period' => 26,
+                'kdj_signal' => 5,
+                'dema_short' => 25,
+                'dema_long' => 50,
+                'dema_signal' => 50,
+            ],
+            'XLMUSDT' => [
+                'kdj_period' => 21,
+                'kdj_signal' => 4,
+                'dema_short' => 21,
+                'dema_long' => 26,
+                'dema_signal' => 50,
             ],
         ];
+
         foreach ($tokens as $token => $data) {
             $parity = Parity::create([
                 'parity' => $token,
                 'status' => true
             ]);
             $data['parities_id'] = $parity->id;
-            $data['time'] = "5min";
+            $data['time'] = "1hour";
             $data['status'] = true;
             Time::create($data);
         }
