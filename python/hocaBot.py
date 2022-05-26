@@ -275,7 +275,7 @@ while True:
             klineConnectCount = 0
             while klineConnect:
                 try:
-                    klines = client.futures_klines(symbol=getBot['parity'], interval=client.KLINE_INTERVAL_5MINUTE, limit=300)
+                    klines = client.futures_klines(symbol=getBot['parity'], interval=client.KLINE_INTERVAL_1HOUR, limit=300)
                     klineConnect = False
                 except Exception as e:
                     klineConnectCount += 1
@@ -490,7 +490,7 @@ while True:
                                 macdConnectCount = 0
                                 try:
                                     position = getPosition(client, getBot['parity'], lastType)
-                                    klines = client.futures_klines(symbol=getBot['parity'], interval=client.KLINE_INTERVAL_3MINUTE, limit=300)
+                                    klines = client.futures_klines(symbol=getBot['parity'], interval=client.KLINE_INTERVAL_30MINUTE, limit=300)
                                     # short / long
                                     lastMAC = mac_dema(klines, getBot['dema_short'], getBot['dema_long'], getBot['dema_signal'], lastMAC)
                                     macdConnect = False
