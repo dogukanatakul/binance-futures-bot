@@ -541,7 +541,7 @@ while True:
                                         else:
                                             maxProfitCount += 1
                                 elif position['profit'] < 0:
-                                    if lastMAC == reverseType[getKDJ['type']]:
+                                    if lastMAC == reverseType[lastType]:
                                         profitTriggerKey = "TRIGGER_MACDDEMA"
                                         profitTurn = True
                                     elif abs(position['profit']) >= maxDamageUSDT:
