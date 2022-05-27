@@ -528,7 +528,7 @@ while True:
                                     if position['profit'] >= balance:
                                         profitTriggerKey = "TRIGGER_PROFIT_100"
                                         profitTurn = True
-                                    elif lastMAC == reverseType[getKDJ['type']]:
+                                    elif lastMAC == reverseType[lastType]:
                                         profitTriggerKey = "TRIGGER_MACDDEMA"
                                         profitTurn = True
                                     elif maxProfitMax >= position['profit'] and maxProfitStatus == True:
