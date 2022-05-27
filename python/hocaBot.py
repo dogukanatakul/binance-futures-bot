@@ -256,6 +256,10 @@ while True:
     maxDamageUSDT = 0
     maxDamageCount = 0
     maxDamageBefore = 0
+    maxProfit = 100
+    maxProfitCount = 0
+    maxProfitStatus = False
+    maxProfitMax = 0
 
     lastCE = None
     lastMAC = None
@@ -288,7 +292,7 @@ while True:
                         client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 300, 'proxies': proxyOrder})
                     else:
                         raise Exception(e)
-            getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'], lastSide)
+            getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'], lastSide, float(config('SETTING', 'KDJ_X')))
             if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
                 # first side check
                 if firstTypeTrigger <= int(config('SETTING', 'FIRST_FAKE')):
@@ -444,6 +448,12 @@ while True:
                                 maxDamageUSDT = round((balance / 100) * float(config('SETTING', 'MAX_DAMAGE_USDT_PERCENT')), 2)
                                 maxDamageCount = 0
                                 maxDamageBefore = 0
+
+                                maxProfit = round((balance / 100) * float(config('SETTING', 'MAX_PROFIT')), 2)
+                                maxProfitCount = 0
+                                maxProfitStatus = False
+                                maxProfitMax = 0
+
                                 # profit trigger END
 
                                 lastQuantity = "{:0.0{}f}".format(float((balance / lastPrice) * getBot['leverage']), fractions[getBot['parity']])
@@ -490,7 +500,6 @@ while True:
                                 macdConnectCount = 0
                                 try:
                                     position = getPosition(client, getBot['parity'], lastType)
-                                    klines = client.futures_klines(symbol=getBot['parity'], interval=client.KLINE_INTERVAL_30MINUTE, limit=300)
                                     # short / long
                                     lastMAC = mac_dema(klines, getBot['dema_short'], getBot['dema_long'], getBot['dema_signal'], lastMAC)
                                     macdConnect = False
@@ -508,14 +517,28 @@ while True:
                                 if position['amount'] <= 0:
                                     raise Exception('close')
                                 elif position['profit'] > 0:
+
+                                    # Max Profit
+                                    if position['profit'] >= maxProfit:
+                                        maxProfitStatus = True
+                                    if position['profit'] > maxProfitMax:
+                                        maxProfitMax = position['profit']
+                                        maxProfitCount = 0
+                                    # Max Profit Max
                                     if position['profit'] >= balance:
                                         profitTriggerKey = "TRIGGER_PROFIT_100"
                                         profitTurn = True
-                                    elif lastMAC is not None:
+                                    elif lastMAC == reverseType[getKDJ['type']]:
                                         profitTriggerKey = "TRIGGER_MACDDEMA"
                                         profitTurn = True
+                                    elif maxProfitMax >= position['profit'] and maxProfitStatus == True:
+                                        if maxProfitCount >= int(config('SETTING', 'MAX_PROFIT_COUNT')):
+                                            profitTriggerKey = "TRIGGER_PROFIT_EXIT"
+                                            profitTurn = True
+                                        else:
+                                            maxProfitCount += 1
                                 elif position['profit'] < 0:
-                                    if lastMAC is not None:
+                                    if lastMAC == reverseType[getKDJ['type']]:
                                         profitTriggerKey = "TRIGGER_MACDDEMA"
                                         profitTurn = True
                                     elif abs(position['profit']) >= maxDamageUSDT:
