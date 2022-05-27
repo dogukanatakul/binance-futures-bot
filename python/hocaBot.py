@@ -260,6 +260,7 @@ while True:
     maxProfitCount = 0
     maxProfitStatus = False
     maxProfitMax = 0
+    maxProfitMin = 0
 
     lastCE = None
     lastMAC = None
@@ -453,6 +454,7 @@ while True:
                                 maxProfitCount = 0
                                 maxProfitStatus = False
                                 maxProfitMax = 0
+                                maxProfitMin = 0
 
                                 # profit trigger END
 
@@ -523,6 +525,7 @@ while True:
                                         maxProfitStatus = True
                                     if position['profit'] > maxProfitMax:
                                         maxProfitMax = position['profit']
+                                        maxProfitMin = round(maxProfitMax - ((maxProfitMax / 100) * int(config('SETTING', 'MAX_PROFIT_PERCENT'))), 2)
                                         maxProfitCount = 0
                                     # Max Profit Max
                                     if position['profit'] >= balance:
@@ -531,7 +534,7 @@ while True:
                                     elif lastMAC == reverseType[lastType]:
                                         profitTriggerKey = "TRIGGER_MACDDEMA"
                                         profitTurn = True
-                                    elif maxProfitMax >= position['profit'] and maxProfitStatus == True:
+                                    elif maxProfitMin >= position['profit'] and maxProfitStatus == True:
                                         if maxProfitCount >= int(config('SETTING', 'MAX_PROFIT_COUNT')):
                                             profitTriggerKey = "TRIGGER_PROFIT_EXIT"
                                             profitTurn = True
