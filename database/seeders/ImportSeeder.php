@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Parity;
 use App\Models\Time;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class ImportSeeder extends Seeder
@@ -65,6 +64,41 @@ class ImportSeeder extends Seeder
                 'dema_short' => 14,
                 'dema_long' => 26,
                 'dema_signal' => 15,
+            ],
+            'FTMUSDT' => [
+                'kdj_period' => 25,
+                'kdj_signal' => 5,
+                'dema_short' => 12,
+                'dema_long' => 26,
+                'dema_signal' => 15,
+            ],
+            'MATICUSDT' => [
+                'kdj_period' => 30,
+                'kdj_signal' => 5,
+                'dema_short' => 14,
+                'dema_long' => 21,
+                'dema_signal' => 26,
+            ],
+            'ALICEUSDT' => [
+                'kdj_period' => 24,
+                'kdj_signal' => 8,
+                'dema_short' => 21,
+                'dema_long' => 26,
+                'dema_signal' => 20,
+            ],
+            'ETCUSDT' => [
+                'kdj_period' => 21,
+                'kdj_signal' => 5,
+                'dema_short' => 14,
+                'dema_long' => 21,
+                'dema_signal' => 15,
+            ],
+            'GALAUSDT' => [
+                'kdj_period' => 21,
+                'kdj_signal' => 11,
+                'dema_short' => 26,
+                'dema_long' => 35,
+                'dema_signal' => 30,
             ],
         ];
 
