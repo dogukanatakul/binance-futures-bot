@@ -164,6 +164,35 @@ def terminalTable(data):
         )
 
 
+def profitMax(klines):
+    cols = [
+        'Date',
+        'Open',
+        'High',
+        'Low',
+        'Close',
+        'Volume',
+        'CloseTime',
+        'QuoteVolume',
+        'NumberTrades',
+        'TakerBuyBaseVolume',
+        'TakerBuyQuoteVolume',
+        'Ignore'
+    ]
+    num_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
+    df = pd.DataFrame(klines, columns=cols)
+    df = df.drop(columns=['CloseTime', 'QuoteVolume', 'NumberTrades', 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume', 'Ignore'])
+    high = list(df['High'])
+    high.reverse()
+    low = list(df['Low'])
+    low.reverse()
+    diffs = []
+    for key in range(0, 3):
+        diffs.append(get_diff(float(low[key]), float(high[key])))
+    calc = int((sum(diffs) / len(diffs)) * 10)
+    return calc if float(config('SETTING', 'MAX_PROFIT')) > calc else float(config('SETTING', 'MAX_PROFIT'))
+
+
 def topControl(klines, diff, diff_max):
     cols = [
         'Date',
@@ -200,7 +229,7 @@ version = None
 while True:
     botUuid = str(uuid.uuid4())
     while getBot['status'] == 0 or getBot['status'] == 2:
-        time.sleep(0.5)
+        time.sleep(float(config('SETTING', 'TIME_SLEEP')))
         getBot = requests.post(url + 'get-order/' + botUuid, headers={
             'neresi': 'dogunun+billurlari'
         }).json()
@@ -219,7 +248,7 @@ while True:
             print(str(e))
             clientConnectCount += 1
             if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and clientConnectCount < 3:
-                time.sleep(0.5)
+                time.sleep(float(config('SETTING', 'TIME_SLEEP')))
             elif "Way too many requests" in str(e) or "Read timed out." in str(e) or clientConnectCount >= 3:
                 proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                     'neresi': 'dogunun+billurlari'
@@ -285,7 +314,7 @@ while True:
                 except Exception as e:
                     klineConnectCount += 1
                     if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and klineConnectCount < 3:
-                        time.sleep(0.5)
+                        time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                     elif "Way too many requests" in str(e) or "Read timed out." in str(e) or klineConnectCount >= 3:
                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                             'neresi': 'dogunun+billurlari'
@@ -375,7 +404,7 @@ while True:
                                 except Exception as e:
                                     positionConnectCount += 1
                                     if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and positionConnectCount < 3:
-                                        time.sleep(0.5)
+                                        time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                                     elif "Way too many requests" in str(e) or "Read timed out." in str(e) or positionConnectCount >= 3:
                                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                                             'neresi': 'dogunun+billurlari'
@@ -450,7 +479,7 @@ while True:
                                 maxDamageCount = 0
                                 maxDamageBefore = 0
 
-                                maxProfit = round((balance / 100) * float(config('SETTING', 'MAX_PROFIT')), 2)
+                                maxProfit = round((balance / 100) * profitMax(klines), 2)
                                 maxProfitCount = 0
                                 maxProfitStatus = False
                                 maxProfitMax = 0
@@ -508,7 +537,7 @@ while True:
                                 except Exception as e:
                                     macdConnectCount += 1
                                     if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and macdConnectCount < 3:
-                                        time.sleep(0.5)
+                                        time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                                     elif "Way too many requests" in str(e) or "Read timed out." in str(e) or macdConnectCount >= 3:
                                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                                             'neresi': 'dogunun+billurlari'
@@ -519,13 +548,14 @@ while True:
                                 if position['amount'] <= 0:
                                     raise Exception('close')
                                 elif position['profit'] > 0:
-
+                                    maxDamageCount = 0
                                     # Max Profit
                                     if position['profit'] >= maxProfit:
                                         maxProfitStatus = True
                                     if position['profit'] > maxProfitMax:
                                         maxProfitMax = position['profit']
-                                        maxProfitMin = round(maxProfitMax - ((maxProfitMax / 100) * int(config('SETTING', 'MAX_PROFIT_PERCENT'))), 2)
+                                        maxProfitPercent = int(config('SETTING', 'MAX_PROFIT_PERCENT'))
+                                        maxProfitMin = round(maxProfitMax - ((maxProfitMax / 100) * maxProfitPercent), 2)
                                         maxProfitCount = 0
                                     # Max Profit Max
                                     if position['profit'] >= balance:
@@ -577,14 +607,12 @@ while True:
                                     }).status_code
                                     if setBot != 200:
                                         raise Exception('set_bot_fail')
-
                                 # emir bozma yeri
-
                 # Max Request Sleep
-                time.sleep(0.5)
+                time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                 # Max Request Sleep
             else:
-                time.sleep(0.5)
+                time.sleep(float(config('SETTING', 'TIME_SLEEP')))
         except Exception as exception:
             operationLoop = False
             getBot['status'] = 2
