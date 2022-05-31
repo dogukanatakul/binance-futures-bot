@@ -179,7 +179,6 @@ def profitMax(klines):
         'TakerBuyQuoteVolume',
         'Ignore'
     ]
-    num_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
     df = pd.DataFrame(klines, columns=cols)
     df = df.drop(columns=['CloseTime', 'QuoteVolume', 'NumberTrades', 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume', 'Ignore'])
     high = list(df['High'])
@@ -187,7 +186,7 @@ def profitMax(klines):
     low = list(df['Low'])
     low.reverse()
     diffs = []
-    for key in range(0, 3):
+    for key in range(0, 5):
         diffs.append(get_diff(float(low[key]), float(high[key])))
     calc = int((sum(diffs) / len(diffs)) * 10)
     return calc if float(config('SETTING', 'MAX_PROFIT')) > calc else float(config('SETTING', 'MAX_PROFIT'))
@@ -571,6 +570,7 @@ while True:
                                         else:
                                             maxProfitCount += 1
                                 elif position['profit'] < 0:
+                                    maxProfitStatus = False
                                     if lastMAC == reverseType[lastType]:
                                         profitTriggerKey = "TRIGGER_MACDDEMA"
                                         profitTurn = True
@@ -586,6 +586,7 @@ while True:
                                         maxDamageBefore = abs(position['profit'])
 
                                 if profitTurn:
+                                    profitTurn = False
                                     lastSide = getKDJ['side']
                                     fakeTrigger = 0
                                     profitTrigger = True
