@@ -147,7 +147,8 @@ def getPosition(client, symbol, side):
             'entryPrice': float(info['entryPrice']),
             'markPrice': float(info['markPrice']),
             'profit': float(info['unRealizedProfit']),
-            'fee': round(((abs(float(info['positionAmt'])) * 15) / 1000) * 0.0400, 2)
+            'fee': round(((abs(float(info['positionAmt'])) * 15) / 1000) * 0.0400, 2),
+            'leverage': int(info['leverage'])
         }
     return positions[side]
 
@@ -297,6 +298,7 @@ while True:
     klines = {}
     newTriggerOrder = False
     balance = 0
+    setLeverage = True
     reverseType = {
         'LONG': 'SHORT',
         'SHORT': 'LONG'
@@ -469,7 +471,6 @@ while True:
                                 lastSide = getKDJ['side']
                                 lastType = getKDJ['type']
                                 lastMAC = None
-
                                 # Binance
                                 balance = getOrderBalance(client, "USDT", int(getBot['percent']))
 
@@ -478,7 +479,7 @@ while True:
                                 maxDamageCount = 0
                                 maxDamageBefore = 0
 
-                                maxProfit = round((balance / 100) * profitMax(klines), 2)
+                                maxProfit = round((balance / 100) * int(config('SETTING', 'MAX_PROFIT')), 2)
                                 maxProfitCount = 0
                                 maxProfitStatus = False
                                 maxProfitMax = 0
@@ -525,7 +526,6 @@ while True:
                                 if setBot != 200:
                                     raise Exception('set_bot_fail')
                             elif lastPrice != 0 and profitTrigger == False and orderStatus == True:
-
                                 macdConnect = True
                                 macdConnectCount = 0
                                 try:
@@ -544,6 +544,9 @@ while True:
                                         client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
                                     else:
                                         raise Exception(e)
+                                if setLeverage:
+                                    maxDamageUSDT = maxDamageUSDT * position['leverage']
+                                    setLeverage = False
                                 if position['amount'] <= 0:
                                     raise Exception('close')
                                 elif position['profit'] > 0:
