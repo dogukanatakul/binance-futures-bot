@@ -484,6 +484,7 @@ while True:
                                 maxProfitStatus = False
                                 maxProfitMax = 0
                                 maxProfitMin = 0
+                                setLeverage = True
 
                                 # profit trigger END
 
