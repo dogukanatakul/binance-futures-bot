@@ -209,11 +209,11 @@ def sideCalc(klines):
 
 def jsonData(bot, status='GET', data={}):
     if status == 'SET':
-        with open("datas/" + bot + '.json', 'w') as outfile:
+        with open(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json', 'w') as outfile:
             outfile.write(json.dumps(data))
         return True
     else:
-        return json.loads(open("datas/" + bot + '.json', "r").read())
+        return json.loads(open(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json', "r").read())
 
 
 getBot = {
