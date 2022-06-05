@@ -37,12 +37,13 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
     {
         $orders = Order::where('status', 0)->get();
         foreach ($orders as $order) {
-            if (!empty($bot = Bot::orderBy('id', 'DESC')->where('version', config('app.bot_version'))->first())) {
+            if (!empty($bot = Bot::orderBy('datetime', 'DESC')->where('version', config('app.bot_version'))->first())) {
                 $order->bot = $bot->uuid;
                 $order->status = 1;
                 $order->save();
                 sleep(1);
-                $bot->delete();
+                $bot->status = true;
+                $bot->save();
             }
         }
         Proxy::where('status', false)
@@ -50,7 +51,20 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
             ->update([
                 'status' => true
             ]);
-        Bot::where('version', '!=', config('app.bot_version'))->delete();
+        Bot::where('version', '!=', config('app.bot_version'))->where('status', false)->delete();
+        $fails = Bot::where('signal', '<', now()->tz('Europe/Istanbul')->subMinutes(3)->toDateTimeLocalString())->get();
+        foreach ($fails as $fail) {
+            if (!empty($order = Order::where('bot', $fail->uuid)->first())) {
+                if (!empty($bot = Bot::orderBy('datetime', 'DESC')->where('version', config('app.bot_version'))->first())) {
+                    $order->bot = $bot->uuid;
+                    $order->save();
+                    $bot->status = true;
+                    $bot->transfer = $fail->uuid;
+                    $bot->save();
+                    $fail->delete();
+                }
+            }
+        }
         return true;
     }
 }

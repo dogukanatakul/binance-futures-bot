@@ -12,7 +12,16 @@ class Bot extends Model
 
     protected $fillable = [
         'uuid',
-        'version'
+        'transfer',
+        'version',
+        'status',
+        'signal'
+    ];
+    protected $casts = [
+        'uuid' => 'string',
+        'version' => 'string',
+        'status' => 'boolean',
+        'signal' => 'datetime',
     ];
 
 
@@ -22,6 +31,7 @@ class Bot extends Model
         // auto-sets values on creation
         static::creating(function ($query) {
             $query->version = config('app.bot_version');
+            $query->signal = now()->tz('Europe/Istanbul')->toDateTimeLocalString();
         });
     }
 }

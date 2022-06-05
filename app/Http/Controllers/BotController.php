@@ -16,14 +16,15 @@ class BotController extends Controller
 {
     public function getOrder($bot): \Illuminate\Http\JsonResponse
     {
-        if (!empty($order = Order::with(['user', 'leverage', 'parity', 'time' => function ($q) {
+        Bot::where('uuid', $bot)->update(['signal' => now()->tz('Europe/Istanbul')->toDateTimeLocalString()]);
+        if (!empty($order = Order::with(['user', 'parity', 'time' => function ($q) {
             $q->with('sub_time');
-        }, 'proxy'])->where('bot', $bot)->first())) {
+        }, 'proxy', 'bots'])->where('bot', $bot)->first())) {
             return response()->json([
                 'bot' => $order->bot,
                 'api_key' => $order->user->api_key,
                 'api_secret' => $order->user->api_secret,
-                'leverage' => $order->leverage->leverage,
+                'leverage' => $order->leverage,
                 'percent' => $order->percent,
                 'profit' => $order->profit,
                 'parity' => $order->parity->parity,
@@ -31,20 +32,18 @@ class BotController extends Controller
                 'reverse_delay' => $order->time->reverse_delay,
                 'kdj_period' => $order->time->kdj_period,
                 'kdj_signal' => $order->time->kdj_signal,
-
                 'atr_period' => $order->time->atr_period,
                 'atr_multiplier' => $order->time->atr_multiplier,
-
                 'dema_short' => $order->time->dema_short,
                 'dema_long' => $order->time->dema_long,
                 'dema_signal' => $order->time->dema_signal,
-
                 'time' => $order->time->time,
                 'proxy' => [
                     'http' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port,
                     'https' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port
                 ],
                 'status' => $order->status,
+                'transfer' => $order->bots->transfer,
                 'version' => config('app.bot_version')
             ]);
         } else {

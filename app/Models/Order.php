@@ -29,11 +29,6 @@ class Order extends Model
         'finish' => 'datetime',
     ];
 
-    public function leverage(): \Illuminate\Database\Eloquent\Relations\HasOne
-    {
-        return $this->hasOne(Leverage::class, 'id', 'leverages_id');
-    }
-
     public function parity(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Parity::class, 'id', 'parities_id');
@@ -47,6 +42,11 @@ class Order extends Model
     public function user(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(User::class, 'id', 'users_id');
+    }
+
+    public function bots(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Bot::class, 'uuid', 'bot');
     }
 
     public function order_operation(): \Illuminate\Database\Eloquent\Relations\HasMany

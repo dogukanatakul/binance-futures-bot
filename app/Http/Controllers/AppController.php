@@ -163,14 +163,13 @@ class AppController extends Controller
             $proxy = Proxy::whereNotIn('id', $activeOrders->toArray())->where('status', true)->orderByRaw("RAND()")->first();
             if (!empty($proxy)) {
                 $parity = Parity::where('parity', $request->parity)->first();
-                $leverage = Leverage::where('leverage', $request->leverage)->first();
                 $time = Time::where('time', $request->time)->where('parities_id', $parity->id)->first();
                 $user = User::where('login_key', $this->user)->first();
                 Order::create([
                     'proxies_id' => $proxy->id,
                     'users_id' => $user->id,
                     'parities_id' => $parity->id,
-                    'leverages_id' => $leverage->id,
+                    'leverage' => $request->leverage,
                     'times_id' => $time->id,
                     'percent' => $request->percent,
                 ]);
