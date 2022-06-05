@@ -35,13 +35,13 @@
                                 {{ $order->time->time }}
                             </td>
                             <td>
-                                {{ $order->leverage->leverage }}x
+                                {{ $order->leverage }}x
                             </td>
                             <td>
                                 {{ round($order->order_operation->sum('profit'), 2) }}
                             </td>
                             <td>
-                                {{ $order->start->format('y-m-d H:i') }}
+                                {{ $order->created_at->format('y-m-d H:i') }}
                             </td>
                             <td>
                                 @if($order->status == 1 or $order->status == 0)

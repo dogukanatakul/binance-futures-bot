@@ -40,7 +40,6 @@ def kdj(kline, N=9, M=2):
 
 
 def get_kdj(klines, period=9, signal=2, lastSide=None, multiplier: float = 1.1):
-    print(multiplier)
     try:
         k, d, j, date = kdj(klines, period, signal)
         if lastSide == 'BUY':
@@ -640,3 +639,5 @@ while True:
             if getBot['version'] != version:
                 print("yeniden başlatma")
                 os.execl(sys.executable, sys.executable, *sys.argv)
+        except KeyboardInterrupt:
+            sys.exit(0)
