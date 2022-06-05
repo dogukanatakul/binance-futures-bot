@@ -85,7 +85,7 @@ class AppController extends Controller
             })
             ->first();
         $user = User::with(['order' => function ($q) {
-            $q->with(['leverage', 'parity', 'time', 'order_operation'])->orderBy('id', 'DESC');
+            $q->with(['parity', 'time', 'order_operation'])->orderBy('id', 'DESC');
         }])
             ->where('login_key', $this->user)
             ->first();

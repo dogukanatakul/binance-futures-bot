@@ -55,7 +55,7 @@
                                     {{ $order->time->time }}
                                 </td>
                                 <td>
-                                    {{ $order->leverage->leverage }}x
+                                    {{ $order->leverage }}x
                                 </td>
                                 <td>
                                     {{ $order->percent }}%
