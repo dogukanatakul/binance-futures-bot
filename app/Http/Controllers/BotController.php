@@ -231,4 +231,12 @@ class BotController extends Controller
             }
         }
     }
+
+    public function deleteBots(): \Illuminate\Http\JsonResponse
+    {
+        Bot::where('status', false)->delete();
+        return response()->json([
+            'status' => 'success'
+        ]);
+    }
 }

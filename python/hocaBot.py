@@ -416,7 +416,7 @@ while True:
                                     # Binance
                                     botElements['orderStatus'] = False
                                     jsonData(getBot['bot'], 'SET', botElements)
-                                    # client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
+                                    client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
                                     # Binance END
                                     setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                         'neresi': 'dogunun+billurlari'
@@ -487,7 +487,7 @@ while True:
                                 botElements['lastQuantity'] = "{:0.0{}f}".format(float((botElements['balance'] / botElements['lastPrice']) * getBot['leverage']), fractions[getBot['parity']])
                                 if float(botElements['lastQuantity']) <= 0:
                                     raise Exception("Bakiye hatası")
-                                # client.futures_create_order(symbol=getBot['parity'], side=botElements['lastSide'], type='MARKET', quantity=botElements['lastQuantity'], positionSide=botElements['lastType'])
+                                client.futures_create_order(symbol=getBot['parity'], side=botElements['lastSide'], type='MARKET', quantity=botElements['lastQuantity'], positionSide=botElements['lastType'])
                                 # Binance END
                                 botElements['orderStatus'] = True
                                 jsonData(getBot['bot'], 'SET', botElements)
@@ -597,7 +597,7 @@ while True:
                                     botElements['profitTrigger'] = True
                                     botElements['orderStatus'] = False
                                     jsonData(getBot['bot'], 'SET', botElements)
-                                    # client.futures_create_order(symbol=getBot['parity'], side='SELL' if botElements['lastType'] == 'LONG' else "BUY", positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
+                                    client.futures_create_order(symbol=getBot['parity'], side='SELL' if botElements['lastType'] == 'LONG' else "BUY", positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
                                     setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
                                         'neresi': 'dogunun+billurlari'
                                     }, json={
@@ -640,4 +640,7 @@ while True:
                 print("yeniden başlatma")
                 os.execl(sys.executable, sys.executable, *sys.argv)
         except KeyboardInterrupt:
+            requests.post(url + 'delete-bots', headers={
+                'neresi': 'dogunun+billurlari'
+            })
             sys.exit(0)

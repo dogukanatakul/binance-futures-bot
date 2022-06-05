@@ -14,4 +14,5 @@ Route::group([
     Route::post('/set-req-user', [\App\Http\Controllers\BotController::class, 'setReqUser']);
     Route::post('/set-error', [\App\Http\Controllers\BotController::class, 'setError']);
     Route::post('/update-parity', [\App\Http\Controllers\BotController::class, 'updateParity']);
+    Route::post('/delete-bots', [\App\Http\Controllers\BotController::class, 'deleteBots']);
 });
