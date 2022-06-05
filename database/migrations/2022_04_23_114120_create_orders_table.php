@@ -20,14 +20,12 @@ return new class extends Migration {
             $table->foreign('users_id')->references('id')->on('users');
             $table->bigInteger('parities_id')->unsigned();
             $table->foreign('parities_id')->references('id')->on('parities');
-            $table->bigInteger('leverages_id')->unsigned();
-            $table->foreign('leverages_id')->references('id')->on('leverages');
+            $table->integer('leverage');
             $table->bigInteger('times_id')->unsigned();
             $table->foreign('times_id')->references('id')->on('times');
             $table->integer('percent')->default(0);
             $table->integer('profit')->default(0);
-            $table->timestamp('start');
-            $table->timestamp('finish')->nullable()->default(null);
+            $table->dateTime('finish')->nullable()->default(null);
             $table->tinyInteger('status')->default(0);
             $table->string('bot')->nullable()->default(null);
             $table->softDeletes();

@@ -24,7 +24,7 @@ return new class extends Migration {
             $table->string("action")->nullable()->default(null);
             $table->decimal("profit", 38, 22)->default(0);
             $table->string("KDJ")->nullable()->default(null);
-            $table->string("MACD_DEMA")->nullable()->default(null);
+            $table->string("MACD")->nullable()->default(null);
             $table->string("CE")->nullable()->default(null);
             $table->dateTime("time");
             $table->integer('line')->default(0);
