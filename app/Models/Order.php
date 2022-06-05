@@ -13,7 +13,7 @@ class Order extends Model
         'proxies_id',
         'users_id',
         'parities_id',
-        'leverages_id',
+        'leverage',
         'times_id',
         'percent',
         'profit',
