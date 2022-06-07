@@ -45,7 +45,7 @@
                             </td>
                             <td>
                                 @if($order->status == 1 or $order->status == 0)
-                                {{ $order->order_operation->last()->action }}
+                                    {{ $order->order_operation->count()>0?$order->order_operation->last()->action:'Devam Ediyor' }}
                                 @elseif($order->status == 2)
                                     Durmayı Bekliyor
                                 @else
