@@ -311,7 +311,8 @@ while True:
             'newTriggerOrder': False,
             'balance': 0,
             'setLeverage': True,
-            'DEMATriggerStatus': False
+            'DEMATriggerStatus': False,
+            'firstLogin': True
         }
         jsonData(getBot['bot'], 'SET', botElements)
     klines = {}
@@ -347,49 +348,50 @@ while True:
             if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
 
                 # first side check
-                if botElements['guessSide'] == 'HOLD':
-                    if botElements['firstTypeTrigger'] <= int(config('SETTING', 'FIRST_FAKE')):
-                        if botElements['lastSide'] == getKDJ['side']:
-                            botElements['firstTypeTrigger'] += 1
-                        else:
-                            botElements['firstTypeTrigger'] = 0
-                        # first side check END
-                        botElements['lastSide'] = getKDJ['side']
+                if botElements['firstLogin']:
+                    if botElements['guessSide'] == 'HOLD':
+                        if botElements['firstTypeTrigger'] <= int(config('SETTING', 'FIRST_FAKE')):
+                            if botElements['lastSide'] == getKDJ['side']:
+                                botElements['firstTypeTrigger'] += 1
+                            else:
+                                botElements['firstTypeTrigger'] = 0
+                            # first side check END
+                            botElements['lastSide'] = getKDJ['side']
 
-                    if botElements['fakeTriggerSide'] == getKDJ['side'] and botElements['firstTypeTrigger'] >= int(config('SETTING', 'FIRST_FAKE')):
-                        botElements['fakeTrigger'] += 1
+                        if botElements['fakeTriggerSide'] == getKDJ['side'] and botElements['firstTypeTrigger'] >= int(config('SETTING', 'FIRST_FAKE')):
+                            botElements['fakeTrigger'] += 1
+                        else:
+                            botElements['fakeTrigger'] = 0
+                        botElements['fakeTriggerSide'] = getKDJ['side']
+                        jsonData(getBot['bot'], 'SET', botElements)
                     else:
-                        botElements['fakeTrigger'] = 0
-                    botElements['fakeTriggerSide'] = getKDJ['side']
-                    jsonData(getBot['bot'], 'SET', botElements)
-                else:
-                    if botElements['guessSide'] == getKDJ['side'] and abs(get_diff(getKDJ['D'], getKDJ['J'])) < 20:
-                        botElements['lastSide'] = reverseSide[botElements['guessSide']]
-                        botElements['firstTypeTrigger'] = int(config('SETTING', 'FIRST_FAKE'))
-                        botElements['fakeTrigger'] = int(config('SETTING', 'FAKE_TRIGGER'))
-                    else:
-                        botElements['guessSideRetry'] += 1
-                        if botElements['guessSideRetry'] == int(config('SETTING', 'GUESS_SIDE_RETRY')):
-                            klineConnect = True
-                            klineConnectCount = 0
-                            klines1DAY = {}
-                            while klineConnect:
-                                try:
-                                    klines1DAY = client.futures_klines(symbol=getBot['parity'], interval=Client.KLINE_INTERVAL_1DAY, limit=2)
-                                    klineConnect = False
-                                except Exception as e:
-                                    klineConnectCount += 1
-                                    if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and klineConnectCount < 3:
-                                        time.sleep(float(config('SETTING', 'TIME_SLEEP')))
-                                    elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= klineConnectCount <= 6):
-                                        proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                            'neresi': 'dogunun+billurlari'
-                                        }).json()
-                                        client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 300, 'proxies': proxyOrder})
-                                    else:
-                                        raise Exception(e)
-                            botElements['guessSide'] = sideCalc(klines1DAY)
-                            botElements['guessSideRetry'] = 0
+                        if botElements['guessSide'] == getKDJ['side'] and abs(get_diff(getKDJ['D'], getKDJ['J'])) < 20:
+                            botElements['firstTypeTrigger'] = int(config('SETTING', 'FIRST_FAKE'))
+                            botElements['fakeTrigger'] = int(config('SETTING', 'FAKE_TRIGGER'))
+                        else:
+                            botElements['guessSideRetry'] += 1
+                            botElements['lastSide'] = reverseSide[botElements['guessSide']]
+                            if botElements['guessSideRetry'] == int(config('SETTING', 'GUESS_SIDE_RETRY')):
+                                klineConnect = True
+                                klineConnectCount = 0
+                                klines1DAY = {}
+                                while klineConnect:
+                                    try:
+                                        klines1DAY = client.futures_klines(symbol=getBot['parity'], interval=Client.KLINE_INTERVAL_1DAY, limit=2)
+                                        klineConnect = False
+                                    except Exception as e:
+                                        klineConnectCount += 1
+                                        if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and klineConnectCount < 3:
+                                            time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                                        elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= klineConnectCount <= 6):
+                                            proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
+                                                'neresi': 'dogunun+billurlari'
+                                            }).json()
+                                            client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 300, 'proxies': proxyOrder})
+                                        else:
+                                            raise Exception(e)
+                                botElements['guessSide'] = sideCalc(klines1DAY)
+                                botElements['guessSideRetry'] = 0
 
                 sameTest = {
                     'K': getKDJ['K'],
@@ -562,6 +564,7 @@ while True:
                                 botElements['lastSide'] = getKDJ['side']
                                 botElements['lastType'] = getKDJ['type']
                                 botElements['lastMAC'] = None
+                                botElements['firstLogin'] = False
                                 # Binance
                                 botElements['balance'] = getOrderBalance(client, "USDT", int(getBot['percent']))
 
