@@ -27,7 +27,7 @@ return new class extends Migration {
             $table->integer('profit')->default(0);
             $table->dateTime('finish')->nullable()->default(null);
             $table->tinyInteger('status')->default(0);
-            $table->string('bot')->nullable()->default(null);
+            $table->string('bot')->nullable()->default(null)->unique();
             $table->softDeletes();
             $table->timestamps();
         });
