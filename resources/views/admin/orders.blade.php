@@ -18,7 +18,7 @@
                         <th scope="col">Kaldıraç</th>
                         <th scope="col">Kâr</th>
                         <th scope="col">Başlama</th>
-                        <th scope="col">Bitiş</th>
+                        <th scope="col">Durum</th>
                         <th scope="col">İşlemler</th>
                     </tr>
                     </thead>
@@ -45,7 +45,7 @@
                             </td>
                             <td>
                                 @if($order->status == 1 or $order->status == 0)
-                                    Devam Ediyor.
+                                {{ $order->order_operation->last()->action }}
                                 @elseif($order->status == 2)
                                     Durmayı Bekliyor
                                 @else

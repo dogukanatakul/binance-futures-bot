@@ -288,6 +288,7 @@ while True:
             'lastPrice': 0,
             'lastSide': 'HOLD',
             'guessSide': sideCalc(klines1DAY),
+            'guessSideStatus': False,
             'guessSideRetry': 0,
             'lastType': None,
             'orderStatus': False,
@@ -365,10 +366,12 @@ while True:
                         botElements['fakeTriggerSide'] = getKDJ['side']
                         jsonData(getBot['bot'], 'SET', botElements)
                     else:
-                        if botElements['guessSide'] == getKDJ['side'] and abs(get_diff(getKDJ['D'], getKDJ['J'])) < 20:
+                        if botElements['guessSide'] == getKDJ['side'] and abs(get_diff(getKDJ['D'], getKDJ['J'])) < 20 and botElements['guessSideStatus'] == True:
                             botElements['firstTypeTrigger'] = int(config('SETTING', 'FIRST_FAKE'))
                             botElements['fakeTrigger'] = int(config('SETTING', 'FAKE_TRIGGER'))
                         else:
+                            if getKDJ['side'] == reverseSide[botElements['guessSide']]:
+                                botElements['guessSideStatus'] = True
                             botElements['guessSideRetry'] += 1
                             botElements['lastSide'] = reverseSide[botElements['guessSide']]
                             if botElements['guessSideRetry'] == int(config('SETTING', 'GUESS_SIDE_RETRY')):
