@@ -404,8 +404,11 @@ while True:
                         'neresi': 'dogunun+billurlari'
                     })
                     if syncBot.status_code == 200:
-                        for bt in syncBot.json().keys():
-                            getBot[bt] = syncBot.json()[bt]
+                        if syncBot.json()['status'] == 0:
+                            raise Exception('bot_change')
+                        else:
+                            for bt in syncBot.json().keys():
+                                getBot[bt] = syncBot.json()[bt]
                         syncBotWhile = False
                     elif syncBotCount >= int(config('API', 'ERR_COUNT')):
                         raise Exception('server_error')
