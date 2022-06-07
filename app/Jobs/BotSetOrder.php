@@ -56,7 +56,7 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
             ->where('status', true)
             ->get();
         foreach ($fails as $fail) {
-            if (!empty($order = Order::where('bot', $fail->uuid)->first())) {
+            if (!empty($order = Order::where('bot', $fail->uuid)->whereIn('status', [0, 1, 2])->first())) {
                 if (!empty($bot = Bot::orderBy('signal', 'DESC')->where('version', config('app.bot_version'))->first())) {
                     $order->bot = $bot->uuid;
                     $order->save();
@@ -65,6 +65,8 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
                     $bot->save();
                     $fail->delete();
                 }
+            } else {
+                $fail->delete();
             }
         }
         return true;
