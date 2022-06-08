@@ -287,7 +287,7 @@ while True:
         botElements = {
             'lastPrice': 0,
             'lastSide': 'HOLD',
-            'guessSide': sideCalc(klines1DAY),
+            'guessSide': 'HOLD', # sideCalc(klines1DAY)
             'guessSideStatus': False,
             'guessSideRetry': 0,
             'lastType': None,
