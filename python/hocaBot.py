@@ -209,6 +209,8 @@ def jsonData(bot, status='GET', data={}):
         with open(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json', 'w') as outfile:
             outfile.write(json.dumps(data))
         return True
+    elif status == 'DELETE':
+        os.remove((os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json'))
     else:
         return json.loads(open(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json', "r").read())
 
@@ -265,6 +267,8 @@ while True:
     operationLoop = True
     if getBot['transfer'] is not None:
         botElements = jsonData(getBot['transfer'], 'GET')
+        jsonData(getBot['bot'], 'SET', botElements)
+        jsonData(getBot['transfer'], 'DELETE')
     else:
         klineConnect = True
         klineConnectCount = 0
@@ -287,7 +291,7 @@ while True:
         botElements = {
             'lastPrice': 0,
             'lastSide': 'HOLD',
-            'guessSide': 'HOLD', # sideCalc(klines1DAY)
+            'guessSide': sideCalc(klines1DAY),
             'guessSideStatus': False,
             'guessSideRetry': 0,
             'lastType': None,

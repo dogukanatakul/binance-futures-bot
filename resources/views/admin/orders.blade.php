@@ -1,6 +1,6 @@
 @extends('layout.app')
 @section('container')
-    <div class="col-12 col-md-10">
+    <div class="col-12 ">
         <div class="row">
 
             <div class="col-12">
@@ -13,6 +13,9 @@
                     <thead>
                     <tr>
                         <th scope="col">Kullanıcı</th>
+                        @if($user->developer)
+                            <th scope="col">Uuid</th>
+                        @endif
                         <th scope="col">Parite</th>
                         <th scope="col">Zaman</th>
                         <th scope="col">Kaldıraç</th>
@@ -28,6 +31,11 @@
                             <td>
                                 {{ explode("@",$order->user->email)[0] }}
                             </td>
+                            @if($user->developer)
+                                <td>
+                                    {{ $order->bot }}
+                                </td>
+                            @endif
                             <td>
                                 {{ $order->parity->parity }}
                             </td>

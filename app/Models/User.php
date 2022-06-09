@@ -15,6 +15,7 @@ class User extends Model
         'email',
         'binance_id',
         'admin',
+        'developer',
         'login_key',
         'reference_codes_id',
         'subscription_period',
@@ -26,6 +27,7 @@ class User extends Model
 
     protected $casts = [
         'admin' => 'boolean',
+        'developer' => 'boolean',
         'api_status' => 'boolean',
         'api_permissions' => 'array',
     ];

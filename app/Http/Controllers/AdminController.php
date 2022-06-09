@@ -12,6 +12,21 @@ use Illuminate\Support\Facades\Session;
 
 class AdminController extends Controller
 {
+
+    protected $user;
+
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            if (session()->has('u2317')) {
+                $this->user = Session::get('u2317');
+            } else {
+                $this->user = false;
+            }
+            return $next($request);
+        });
+    }
+
     public function dashboard(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
         return view('admin.dashboard');
@@ -76,9 +91,10 @@ class AdminController extends Controller
 
     public function orders(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
+        $user = User::where('login_key', $this->user)->first();
         $orders = Order::with('user', 'order_operation')->orderBy('status', 'ASC')->orderBy('id', 'DESC')->get();
         header("Refresh: 5;");
-        return view('admin.orders', compact('orders'));
+        return view('admin.orders', compact('orders', 'user'));
     }
 
     public function leverages(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
