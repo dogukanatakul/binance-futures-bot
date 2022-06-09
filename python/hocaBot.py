@@ -231,7 +231,7 @@ while True:
             os.execl(sys.executable, sys.executable, *sys.argv)
         else:
             version = getBot['version']
-    logging.basicConfig(filename=os.path.dirname(os.path.realpath(__file__))+"/datas/" + str(getBot['bot']) + '.log', level=logging.DEBUG)
+    logging.basicConfig(filename=os.path.dirname(os.path.realpath(__file__)) + "/datas/" + str(getBot['bot']) + '.log', level=logging.DEBUG)
     try:
         client = {}
         clientConnect = True
@@ -378,9 +378,14 @@ while True:
                                 botElements['fakeTrigger'] = int(config('SETTING', 'FAKE_TRIGGER'))
                             else:
                                 if getKDJ['side'] == reverseSide[botElements['guessSide']]:
-                                    botElements['guessSideStatus'] = True
+                                    botElements['firstTypeTrigger'] += 1
+                                    if botElements['firstTypeTrigger'] >= int(config('SETTING', 'FIRST_FAKE')):
+                                        botElements['guessSideStatus'] = True
+                                        botElements['lastSide'] = reverseSide[botElements['guessSide']]
+                                elif not botElements['guessSideStatus'] and getKDJ['side'] != reverseSide[botElements['guessSide']]:
+                                    botElements['firstTypeTrigger'] = 0
                                 botElements['guessSideRetry'] += 1
-                                botElements['lastSide'] = reverseSide[botElements['guessSide']]
+
                                 if botElements['guessSideRetry'] == int(config('SETTING', 'GUESS_SIDE_RETRY')):
                                     klineConnect = True
                                     klineConnectCount = 0
