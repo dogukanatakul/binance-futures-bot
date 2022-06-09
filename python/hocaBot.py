@@ -231,7 +231,7 @@ while True:
             os.execl(sys.executable, sys.executable, *sys.argv)
         else:
             version = getBot['version']
-    logging.basicConfig(filename="python/datas/" + str(getBot['bot']) + '.log', level=logging.DEBUG)
+    logging.basicConfig(filename=os.path.dirname(os.path.realpath(__file__))+"/datas/" + str(getBot['bot']) + '.log', level=logging.DEBUG)
     try:
         client = {}
         clientConnect = True
