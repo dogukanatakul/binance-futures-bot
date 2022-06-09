@@ -25,6 +25,7 @@ return new class extends Migration {
             $table->dateTime('subscription_period')->nullable()->default(null);
             $table->tinyInteger('status')->default(0); # 0: Yeni üye | 1: binance onaylı | 2: admin onaylı
             $table->boolean('admin')->default(false);
+            $table->boolean('developer')->default(false);
             $table->bigInteger('reference_codes_id')->unsigned()->nullable()->default(null);
             $table->foreign('reference_codes_id')->references('id')->on('reference_codes');
             $table->softDeletes();

@@ -52,6 +52,7 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
                 'status' => true
             ]);
         Bot::where('version', '!=', config('app.bot_version'))->where('status', false)->delete();
+        Bot::where('signal', '<', now()->tz('Europe/Istanbul')->subSeconds(30))->where('status', false)->delete();
         $fails = Bot::where('signal', '<', now()->tz('Europe/Istanbul')->subSeconds(30)->toDateTimeLocalString())
             ->where('status', true)
             ->get();
