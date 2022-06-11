@@ -27,6 +27,7 @@ return new class extends Migration {
             $table->integer('dema_signal')->default(9);
 
             $table->integer('MAX_DAMAGE_USDT_PERCENT')->default(10);
+            $table->float('KDJ_X')->default(1.07);
 
             $table->boolean('status')->default(false);
             $table->softDeletes();

@@ -75,6 +75,7 @@ class AdminController extends Controller
             'update.dema_long' => 'required|filled|integer',
             'update.dema_signal' => 'required|filled|integer',
             'update.MAX_DAMAGE_USDT_PERCENT' => 'required|filled|integer',
+            'update.KDJ_X' => 'required|filled|numaric',
         ]);
         if ($validator->fails()) {
             Session::flash('error', 'Hatalı girişler!');

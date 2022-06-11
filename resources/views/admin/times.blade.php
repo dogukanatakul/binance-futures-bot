@@ -42,7 +42,8 @@
                         <thead>
                         <tr>
                             <th scope="col">Zaman</th>
-                            <th scope="col">Zarar</th>
+                            <th scope="col">Max. Zarar</th>
+                            <th scope="col">KDJ Çarpan</th>
                             <th scope="col">KDJ Period</th>
                             <th scope="col">KDJ Signal</th>
                             <th scope="col">MACD Short</th>
@@ -64,6 +65,11 @@
                                     <td>
                                         <div class="input-group input-group-sm">
                                             <input type="number" class="form-control" name="update[MAX_DAMAGE_USDT_PERCENT]" value="{{ $time->MAX_DAMAGE_USDT_PERCENT }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" min="0" step="0.01" name="update[KDJ_X]" value="{{ $time->KDJ_X }}">
                                         </div>
                                     </td>
                                     <td>

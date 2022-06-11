@@ -19,6 +19,7 @@ class Time extends Model
         'dema_signal',
 
         'MAX_DAMAGE_USDT_PERCENT',
+        'KDJ_X',
 
         'status',
     ];
@@ -31,6 +32,7 @@ class Time extends Model
         'dema_signal' => 'float',
 
         'MAX_DAMAGE_USDT_PERCENT' => 'integer',
+        'KDJ_X' => 'float',
 
         'status' => 'boolean',
     ];

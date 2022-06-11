@@ -335,16 +335,13 @@ while True:
                 'maxProfitStatus': False,
                 'maxProfitMax': 0,
                 'maxProfitMin': 0,
-                'lastCE': None,
-                'lastMAC': None,
                 'lastQuantity': None,
                 'profitTrigger': False,
                 'newTriggerOrder': False,
                 'balance': 0,
                 'setLeverage': True,
-                'DEMATriggerStatus': False,
                 'firstLogin': True,
-                'firstJoin': 0,
+                'KDJtriggerCheck': 0,
             }
             jsonData(getBot['bot'], 'SET', botElements)
         klines = {}
@@ -375,7 +372,7 @@ while True:
                             client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 300, 'proxies': proxyOrder})
                         else:
                             raise Exception(e)
-                getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'], botElements['lastSide'], float(config('SETTING', 'KDJ_X')))
+                getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'], botElements['lastSide'], float(getBot['KDJ_X']))
                 if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
                     # first side check
                     if botElements['firstLogin']:
@@ -423,7 +420,6 @@ while True:
                                     botElements['guessSide'] = sideCalc(klines1DAY)
                                     botElements['guessSideRetry'] = 0
                             jsonData(getBot['bot'], 'SET', botElements)
-
                     if botElements['fakeTriggerSide'] == getKDJ['side'] and botElements['firstTypeTrigger'] >= int(config('SETTING', 'FIRST_FAKE')):
                         botElements['fakeTrigger'] += 1
                     else:
@@ -464,7 +460,7 @@ while True:
                                 'line': getframeinfo(currentframe()).lineno,
                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 'KDJ': getKDJ['type'],
-                                'MACD': botElements['lastMAC'],
+
                                 'action': 'STOP',
                             })
                             if setBot.status_code == 200:
@@ -487,7 +483,7 @@ while True:
                                     'line': getframeinfo(currentframe()).lineno,
                                     'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                     'KDJ': getKDJ['type'],
-                                    'MACD': botElements['lastMAC'],
+
                                     'side': botElements['lastSide'],
                                     'action': 'CLOSE',
                                 })
@@ -534,7 +530,7 @@ while True:
                                                 'line': getframeinfo(currentframe()).lineno,
                                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                                 'KDJ': getKDJ['type'],
-                                                'MACD': botElements['lastMAC'],
+
                                                 'side': botElements['lastSide'],
                                                 'price': position['markPrice'],
                                                 'profit': position['profit'],
@@ -558,7 +554,7 @@ while True:
                                                 'line': getframeinfo(currentframe()).lineno,
                                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                                 'KDJ': getKDJ['type'],
-                                                'MACD': botElements['lastMAC'],
+
                                                 'side': botElements['lastSide'],
                                                 'action': 'MANUAL_STOP',
                                             })
@@ -583,7 +579,7 @@ while True:
                                             'line': getframeinfo(currentframe()).lineno,
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                             'KDJ': getKDJ['type'],
-                                            'MACD': botElements['lastMAC'],
+
                                             'side': botElements['lastSide'],
                                             'action': 'CLOSE',
                                         })
@@ -597,7 +593,6 @@ while True:
                                 else:
                                     botElements['lastSide'] = getKDJ['side']
                                     botElements['lastType'] = getKDJ['type']
-                                    botElements['lastMAC'] = None
                                     botElements['firstLogin'] = False
                                     # Binance
                                     botElements['balance'] = getOrderBalance(client, "USDT", int(getBot['percent']))
@@ -613,7 +608,6 @@ while True:
                                     botElements['maxProfitMax'] = 0
                                     botElements['maxProfitMin'] = 0
                                     botElements['setLeverage'] = True
-                                    botElements['DEMATriggerStatus'] = False
 
                                     # profit trigger END
 
@@ -633,7 +627,7 @@ while True:
                                             'line': getframeinfo(currentframe()).lineno,
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                             'KDJ': getKDJ['type'],
-                                            'MACD': botElements['lastMAC'],
+
                                             'side': botElements['lastSide'],
                                             'position': botElements['lastType'],
                                             'balance': botElements['balance'],
@@ -659,7 +653,7 @@ while True:
                                             'line': getframeinfo(currentframe()).lineno,
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                             'KDJ': getKDJ['type'],
-                                            'MACD': botElements['lastMAC'],
+
                                             'action': 'ORDER_START_WAITING',
                                         })
                                         if setBot.status_code == 200:
@@ -670,25 +664,10 @@ while True:
                                             time.sleep(1)
                                             setBotCount += 1
                                 elif botElements['lastPrice'] != 0 and botElements['profitTrigger'] == False and botElements['orderStatus'] == True:
-                                    macdConnect = True
-                                    macdConnectCount = 0
-                                    try:
-                                        position = getPosition(client, getBot['parity'], botElements['lastType'])
-                                        # short / long
-                                        botElements['lastMAC'] = mac_dema(klines, getBot['dema_short'], getBot['dema_long'], getBot['dema_signal'], botElements['lastMAC'])
-                                        jsonData(getBot['bot'], 'SET', botElements)
-                                        macdConnect = False
-                                    except Exception as e:
-                                        macdConnectCount += 1
-                                        if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and macdConnectCount < 3:
-                                            time.sleep(float(config('SETTING', 'TIME_SLEEP')))
-                                        elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= macdConnectCount <= 6):
-                                            proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                                'neresi': 'dogunun+billurlari'
-                                            }).json()
-                                            client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
-                                        else:
-                                            raise Exception(e)
+
+                                    if botElements['lastSide'] == getKDJ['side']:
+                                        botElements['KDJtriggerCheck'] += 1
+
                                     if botElements['setLeverage']:
                                         botElements['maxDamageUSDT'] = botElements['maxDamageUSDT'] * position['leverage']
                                         botElements['setLeverage'] = False
@@ -697,10 +676,6 @@ while True:
                                         raise Exception('close')
                                     elif position['profit'] > 0:
                                         botElements['maxDamageCount'] = 0
-                                        if position['profit'] >= int((botElements['balance'] / 100) * int(config('SETTING', 'DEMA_TRIGGER_PROFIT'))):
-                                            botElements['DEMATriggerStatus'] = True
-                                        elif not botElements['DEMATriggerStatus']:
-                                            botElements['lastMAC'] = None
 
                                         # Max Profit
                                         if position['profit'] >= botElements['maxProfit']:
@@ -710,10 +685,7 @@ while True:
                                             botElements['maxProfitMin'] = round(botElements['maxProfitMax'] - ((botElements['maxProfitMax'] / 100) * int(config('SETTING', 'MAX_PROFIT_PERCENT'))), 2)
                                             botElements['maxProfitCount'] = 0
                                         # Max Profit Max
-                                        if botElements['lastMAC'] == reverseType[botElements['lastType']] and botElements['DEMATriggerStatus'] == True:
-                                            botElements['profitTriggerKey'] = "TRIGGER_MACDDEMA"
-                                            botElements['profitTurn'] = True
-                                        elif botElements['maxProfitMin'] >= position['profit'] and botElements['maxProfitStatus'] == True:
+                                        if botElements['maxProfitMin'] >= position['profit'] and botElements['maxProfitStatus'] == True:
                                             if botElements['maxProfitCount'] >= int(config('SETTING', 'MAX_PROFIT_COUNT')):
                                                 botElements['profitTriggerKey'] = "TRIGGER_PROFIT_EXIT"
                                                 botElements['profitTurn'] = True
@@ -721,14 +693,7 @@ while True:
                                                 botElements['maxProfitCount'] += 1
                                     elif position['profit'] < 0:
                                         botElements['maxProfitStatus'] = False
-                                        if abs(position['profit']) >= int((botElements['balance'] / 100) * int(config('SETTING', 'DEMA_TRIGGER_DAMAGE'))):
-                                            botElements['DEMATriggerStatus'] = True
-                                        elif not botElements['DEMATriggerStatus']:
-                                            botElements['lastMAC'] = None
-                                        if botElements['lastMAC'] == reverseType[botElements['lastType']] and botElements['DEMATriggerStatus'] == True:
-                                            botElements['profitTriggerKey'] = "TRIGGER_MACDDEMA"
-                                            botElements['profitTurn'] = True
-                                        elif abs(position['profit']) >= botElements['maxDamageUSDT']:
+                                        if abs(position['profit']) >= botElements['maxDamageUSDT']:
                                             if botElements['maxDamageBefore'] < abs(position['profit']):
                                                 botElements['maxDamageCount'] += 1
                                                 if botElements['maxDamageCount'] >= int(config('SETTING', 'MAX_DAMAGE_COUNT')):
@@ -738,9 +703,12 @@ while True:
                                                 botElements['maxDamageCount'] = 0
                                             botElements['maxDamageBefore'] = abs(position['profit'])
                                     jsonData(getBot['bot'], 'SET', botElements)
+
+                                    if botElements['lastSide'] != getKDJ['side'] and botElements['KDJtriggerCheck'] >= int(config('SETTING', 'CLOSE_ORDER_KDJ')):
+                                        botElements['profitTurn'] = True
+                                        botElements['profitTriggerKey'] = "KDJ_TRIGGER"
                                     if botElements['profitTurn']:
                                         botElements['profitTurn'] = False
-                                        botElements['lastSide'] = getKDJ['side']
                                         botElements['fakeTrigger'] = 0
                                         botElements['profitTrigger'] = True
                                         botElements['orderStatus'] = False
@@ -755,7 +723,6 @@ while True:
                                                 'line': getframeinfo(currentframe()).lineno,
                                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                                 'KDJ': getKDJ['type'],
-                                                'MACD': botElements['lastMAC'],
                                                 'side': botElements['lastSide'],
                                                 'price': position['markPrice'],
                                                 'profit': position['profit'],
