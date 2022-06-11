@@ -42,13 +42,12 @@
                         <thead>
                         <tr>
                             <th scope="col">Zaman</th>
-                            <th scope="col">Kâr</th>
+                            <th scope="col">Zarar</th>
                             <th scope="col">KDJ Period</th>
                             <th scope="col">KDJ Signal</th>
                             <th scope="col">MACD Short</th>
                             <th scope="col">MACD Long</th>
                             <th scope="col">MACD Signal</th>
-
                             <th scope="col">Durum</th>
                             <th scope="col"><i class="bi bi-arrow-clockwise"></i></th>
                         </tr>
