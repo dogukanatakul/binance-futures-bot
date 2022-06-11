@@ -28,15 +28,12 @@ class BotController extends Controller
                 'percent' => $order->percent,
                 'profit' => $order->profit,
                 'parity' => $order->parity->parity,
-                'fake_reverse' => $order->time->fake_reverse,
-                'reverse_delay' => $order->time->reverse_delay,
                 'kdj_period' => $order->time->kdj_period,
                 'kdj_signal' => $order->time->kdj_signal,
-                'atr_period' => $order->time->atr_period,
-                'atr_multiplier' => $order->time->atr_multiplier,
                 'dema_short' => $order->time->dema_short,
                 'dema_long' => $order->time->dema_long,
                 'dema_signal' => $order->time->dema_signal,
+                'MAX_DAMAGE_USDT_PERCENT' => $order->time->MAX_DAMAGE_USDT_PERCENT,
                 'time' => $order->time->time,
                 'proxy' => [
                     'http' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port,
@@ -184,7 +181,7 @@ class BotController extends Controller
         try {
             $order = Order::where('bot', $request->bot)->first();
             $order->status = 3;
-            $order->finish = now()->toDateTimeString();
+            $order->finish = now()->tz('Europe/Istanbul')->toDateTimeString();
             $order->save();
             OrderError::create([
                 'orders_id' => $order->id,

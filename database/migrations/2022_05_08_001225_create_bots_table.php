@@ -14,8 +14,8 @@ return new class extends Migration {
     {
         Schema::create('bots', function (Blueprint $table) {
             $table->id();
-            $table->string('uuid');
-            $table->string('transfer')->nullable()->default(null);
+            $table->string('uuid')->unique();
+            $table->string('transfer')->nullable()->default(null)->unique();
             $table->string('version');
             $table->boolean('status')->default(false);
             $table->dateTime('signal');

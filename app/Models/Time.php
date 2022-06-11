@@ -12,44 +12,25 @@ class Time extends Model
     protected $fillable = [
         'parities_id',
         'time',
-        'start_diff',
-        'trigger_diff',
-        'risk_percentage',
-        'start_trigger_min',
-        'fake_reverse',
-        't3_length',
-        't3_volume_factor',
-
         'kdj_period',
         'kdj_signal',
-
-        'atr_period',
-        'atr_multiplier',
-
         'dema_short',
         'dema_long',
         'dema_signal',
 
+        'MAX_DAMAGE_USDT_PERCENT',
 
-        'sub_times_id',
         'status',
     ];
 
     protected $casts = [
         'kdj_period' => 'integer',
         'kdj_signal' => 'integer',
-
-        't3_length' => 'integer',
-        't3_volume_factor' => 'float',
-
-        'atr_period' => 'integer',
-        'atr_multiplier' => 'float',
-
-
         'dema_short' => 'float',
         'dema_long' => 'float',
         'dema_signal' => 'float',
 
+        'MAX_DAMAGE_USDT_PERCENT' => 'integer',
 
         'status' => 'boolean',
     ];

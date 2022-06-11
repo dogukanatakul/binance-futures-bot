@@ -213,7 +213,10 @@ def jsonData(bot, status='GET', data={}):
     elif status == 'DELETE':
         os.remove((os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json'))
     else:
-        return json.loads(open(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json', "r").read())
+        if os.path.exists(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json'):
+            return json.loads(open(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json', "r").read())
+        else:
+            return False
 
 
 getBot = {
@@ -222,7 +225,7 @@ getBot = {
 version = None
 while True:
     botUuid = str(uuid.uuid4())
-    while getBot['status'] == 0 or getBot['status'] == 2:
+    while getBot['status'] == 0:
         time.sleep(float(config('SETTING', 'TIME_SLEEP')))
         getBot = requests.post(url + 'get-order/' + botUuid, headers={
             'neresi': 'dogunun+billurlari'
@@ -241,7 +244,6 @@ while True:
                 client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 300, 'proxies': getBot['proxy']})
                 clientConnect = False
             except Exception as e:
-                print(str(e))
                 clientConnectCount += 1
                 if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and clientConnectCount < 3:
                     time.sleep(float(config('SETTING', 'TIME_SLEEP')))
@@ -270,8 +272,29 @@ while True:
         operationLoop = True
         if getBot['transfer'] is not None:
             botElements = jsonData(getBot['transfer'], 'GET')
-            jsonData(getBot['bot'], 'SET', botElements)
-            jsonData(getBot['transfer'], 'DELETE')
+            if not botElements:
+                errBotWhile = True
+                errBotCount = 0
+                while errBotWhile:
+                    errBot = requests.post(url + 'set-error', headers={
+                        'neresi': 'dogunun+billurlari'
+                    }, json={
+                        'bot': getBot['bot'],
+                        'errors': [
+                            "ilerleme dosyası bulunamadı.",
+                        ]
+                    })
+                    if errBot.status_code == 200:
+                        errBotWhile = False
+                    elif errBotCount >= int(config('API', 'ERR_COUNT')):
+                        raise Exception('server_error')
+                    else:
+                        time.sleep(1)
+                        errBotCount += 1
+                sys.exit(0)
+            else:
+                jsonData(getBot['bot'], 'SET', botElements)
+                jsonData(getBot['transfer'], 'DELETE')
         else:
             klineConnect = True
             klineConnectCount = 0
@@ -584,7 +607,7 @@ while True:
                                     botElements['balance'] = getOrderBalance(client, "USDT", int(getBot['percent']))
 
                                     # profit trigger
-                                    botElements['maxDamageUSDT'] = round((botElements['balance'] / 100) * float(config('SETTING', 'MAX_DAMAGE_USDT_PERCENT')), 2)
+                                    botElements['maxDamageUSDT'] = round((botElements['balance'] / 100) * int(getBot['MAX_DAMAGE_USDT_PERCENT']), 2)
                                     botElements['maxDamageCount'] = 0
                                     botElements['maxDamageBefore'] = 0
 
@@ -758,11 +781,15 @@ while True:
                     time.sleep(float(config('SETTING', 'TIME_SLEEP')))
             except Exception as exception:
                 operationLoop = False
-                getBot['status'] = 2
+                getBot['status'] = 0
                 print("emir kapatıldı!!")
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                requests.post(url + 'set-error', headers={
+
+                errBotWhile = True
+                errBotCount = 0
+                while errBotWhile:
+                    errBot = requests.post(url + 'set-error', headers={
                     'neresi': 'dogunun+billurlari'
                 }, json={
                     'bot': getBot['bot'],
@@ -773,6 +800,13 @@ while True:
                         str(exception)
                     ]
                 })
+                    if errBot.status_code == 200:
+                        errBotWhile = False
+                    elif errBotCount >= int(config('API', 'ERR_COUNT')):
+                        raise Exception('server_error')
+                    else:
+                        time.sleep(1)
+                        errBotCount += 1
                 if getBot['version'] != version:
                     print("yeniden başlatma")
                     os.execl(sys.executable, sys.executable, *sys.argv)

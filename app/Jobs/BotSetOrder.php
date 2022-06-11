@@ -47,18 +47,18 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
             }
         }
         Proxy::where('status', false)
-            ->where('updated_at', '>', now()->tz('Europe/Istanbul')->subMinutes(15)->toDateTimeLocalString())
+            ->where('updated_at', '>', now()->tz('Europe/Istanbul')->subMinutes(1)->toDateTimeLocalString())
             ->update([
                 'status' => true
             ]);
         Bot::where('version', '!=', config('app.bot_version'))->where('status', false)->delete();
-        Bot::where('signal', '<', now()->tz('Europe/Istanbul')->subSeconds(30))->where('status', false)->delete();
-        $fails = Bot::where('signal', '<', now()->tz('Europe/Istanbul')->subSeconds(30)->toDateTimeLocalString())
+        Bot::where('signal', '<', now()->tz('Europe/Istanbul')->subMinutes(2))->where('status', false)->delete();
+        $fails = Bot::where('signal', '<', now()->tz('Europe/Istanbul')->subMinutes(2)->toDateTimeLocalString())
             ->where('status', true)
             ->get();
         foreach ($fails as $fail) {
             if (!empty($order = Order::where('bot', $fail->uuid)->whereIn('status', [1, 2])->first())) {
-                if (!empty($bot = Bot::orderBy('signal', 'DESC')->where('version', config('app.bot_version'))->where('status', 0)->first())) {
+                if (!empty($bot = Bot::orderBy('signal', 'DESC')->where('version', config('app.bot_version'))->where('status', false)->first())) {
                     $order->bot = $bot->uuid;
                     $order->save();
                     $bot->status = true;
