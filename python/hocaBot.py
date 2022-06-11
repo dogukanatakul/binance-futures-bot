@@ -355,7 +355,6 @@ while True:
             'BUY': 'SELL',
             'SELL': 'BUY'
         }
-
         while operationLoop:
             try:
                 klineConnect = True
@@ -377,7 +376,6 @@ while True:
                             raise Exception(e)
                 getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'], botElements['lastSide'], float(config('SETTING', 'KDJ_X')))
                 if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
-
                     # first side check
                     if botElements['firstLogin']:
                         if botElements['guessSide'] == 'HOLD':
@@ -408,7 +406,6 @@ while True:
                                 elif not botElements['guessSideStatus'] and getKDJ['side'] != reverseSide[botElements['guessSide']]:
                                     botElements['firstTypeTrigger'] = 0
                                 botElements['guessSideRetry'] += 1
-
                                 if botElements['guessSideRetry'] == int(config('SETTING', 'GUESS_SIDE_RETRY')):
                                     klineConnect = True
                                     klineConnectCount = 0
@@ -430,7 +427,6 @@ while True:
                                                 raise Exception(e)
                                     botElements['guessSide'] = sideCalc(klines1DAY)
                                     botElements['guessSideRetry'] = 0
-
                     sameTest = {
                         'K': getKDJ['K'],
                         'D': getKDJ['D'],
@@ -455,7 +451,6 @@ while True:
                         else:
                             syncBotCount += 1
                     # SYNC BOT END
-
                     if botElements['lastSide'] == 'HOLD' and getBot['status'] == 2 and botElements['lastPrice'] == 0:
                         setBotWhile = True
                         setBotCount = 0
@@ -521,7 +516,6 @@ while True:
                                             client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
                                         else:
                                             raise Exception(e)
-
                                     if position['amount'] > 0:
                                         # Binance
                                         botElements['orderStatus'] = False
@@ -575,7 +569,6 @@ while True:
                                         raise Exception('manual_stop')
                                 else:
                                     botElements['profitTrigger'] = False
-
                                 if getBot['status'] == 2:
                                     operationLoop = False
                                     setBotWhile = True
