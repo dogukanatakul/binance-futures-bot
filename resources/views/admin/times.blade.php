@@ -42,13 +42,9 @@
                         <thead>
                         <tr>
                             <th scope="col">Zaman</th>
+                            <th scope="col">Kâr</th>
                             <th scope="col">KDJ Period</th>
                             <th scope="col">KDJ Signal</th>
-
-                            <th scope="col">ATR Period</th>
-                            <th scope="col">ATR Multiplier</th>
-
-
                             <th scope="col">MACD Short</th>
                             <th scope="col">MACD Long</th>
                             <th scope="col">MACD Signal</th>
@@ -68,22 +64,17 @@
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" name="update[MAX_DAMAGE_USDT_PERCENT]" value="{{ $time->MAX_DAMAGE_USDT_PERCENT }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
                                             <input type="number" class="form-control" name="update[kdj_period]" value="{{ $time->kdj_period }}">
                                         </div>
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
                                             <input type="number" class="form-control" name="update[kdj_signal]" value="{{ $time->kdj_signal }}">
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[atr_period]" value="{{ $time->atr_period }}">
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" min="0" step="0.001" name="update[atr_multiplier]" value="{{ $time->atr_multiplier }}">
                                         </div>
                                     </td>
                                     <td>
