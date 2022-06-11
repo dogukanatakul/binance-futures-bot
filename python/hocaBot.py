@@ -708,6 +708,7 @@ while True:
                                         botElements['profitTurn'] = True
                                         botElements['profitTriggerKey'] = "KDJ_TRIGGER"
                                     if botElements['profitTurn']:
+                                        botElements['KDJtriggerCheck'] = 0
                                         botElements['profitTurn'] = False
                                         botElements['fakeTrigger'] = 0
                                         botElements['profitTrigger'] = True
