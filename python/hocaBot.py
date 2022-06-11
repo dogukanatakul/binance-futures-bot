@@ -319,7 +319,7 @@ while True:
                 'lastSide': 'HOLD',
                 'guessSide': sideCalc(klines1DAY),
                 'guessSideStatus': False,
-                'guessSideRetry': 0,
+                'guessSideRetry': int(config('SETTING', 'GUESS_SIDE_RETRY')),
                 'lastType': None,
                 'orderStatus': False,
                 'profitTurn': False,
@@ -343,7 +343,8 @@ while True:
                 'balance': 0,
                 'setLeverage': True,
                 'DEMATriggerStatus': False,
-                'firstLogin': True
+                'firstLogin': True,
+                'firstJoin': 0,
             }
             jsonData(getBot['bot'], 'SET', botElements)
         klines = {}
@@ -387,26 +388,20 @@ while True:
                                 # first side check END
                                 botElements['lastSide'] = getKDJ['side']
 
-                            if botElements['fakeTriggerSide'] == getKDJ['side'] and botElements['firstTypeTrigger'] >= int(config('SETTING', 'FIRST_FAKE')):
-                                botElements['fakeTrigger'] += 1
-                            else:
-                                botElements['fakeTrigger'] = 0
-                            botElements['fakeTriggerSide'] = getKDJ['side']
                             jsonData(getBot['bot'], 'SET', botElements)
                         else:
                             if botElements['guessSide'] == getKDJ['side'] and abs(get_diff(getKDJ['D'], getKDJ['J'])) < 20 and botElements['guessSideStatus'] == True:
-                                botElements['firstTypeTrigger'] = int(config('SETTING', 'FIRST_FAKE'))
-                                botElements['fakeTrigger'] = int(config('SETTING', 'FAKE_TRIGGER'))
+                                botElements['firstTypeTrigger'] = (int(config('SETTING', 'FIRST_FAKE')) + 5)
                             else:
                                 if getKDJ['side'] == reverseSide[botElements['guessSide']]:
                                     botElements['firstTypeTrigger'] += 1
                                     if botElements['firstTypeTrigger'] >= int(config('SETTING', 'FIRST_FAKE')):
                                         botElements['guessSideStatus'] = True
-                                        botElements['lastSide'] = reverseSide[botElements['guessSide']]
-                                elif not botElements['guessSideStatus'] and getKDJ['side'] != reverseSide[botElements['guessSide']]:
+                                elif botElements['guessSideStatus'] == False and getKDJ['side'] != reverseSide[botElements['guessSide']]:
                                     botElements['firstTypeTrigger'] = 0
                                 botElements['guessSideRetry'] += 1
                                 if botElements['guessSideRetry'] == int(config('SETTING', 'GUESS_SIDE_RETRY')):
+                                    botElements['lastSide'] = reverseSide[botElements['guessSide']]
                                     klineConnect = True
                                     klineConnectCount = 0
                                     klines1DAY = {}
@@ -427,6 +422,14 @@ while True:
                                                 raise Exception(e)
                                     botElements['guessSide'] = sideCalc(klines1DAY)
                                     botElements['guessSideRetry'] = 0
+                            jsonData(getBot['bot'], 'SET', botElements)
+
+                    if botElements['fakeTriggerSide'] == getKDJ['side'] and botElements['firstTypeTrigger'] >= int(config('SETTING', 'FIRST_FAKE')):
+                        botElements['fakeTrigger'] += 1
+                    else:
+                        botElements['fakeTrigger'] = 0
+                    botElements['fakeTriggerSide'] = getKDJ['side']
+
                     sameTest = {
                         'K': getKDJ['K'],
                         'D': getKDJ['D'],
@@ -775,7 +778,6 @@ while True:
             except Exception as exception:
                 operationLoop = False
                 getBot['status'] = 0
-                print("emir kapatıldı!!")
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 
@@ -810,3 +812,7 @@ while True:
                 sys.exit(0)
     except Exception as exception:
         logging.error(str(exception))
+        requests.post(url + 'delete-bots', headers={
+            'neresi': 'dogunun+billurlari'
+        })
+        sys.exit(0)
