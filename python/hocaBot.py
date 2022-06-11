@@ -790,16 +790,16 @@ while True:
                 errBotCount = 0
                 while errBotWhile:
                     errBot = requests.post(url + 'set-error', headers={
-                    'neresi': 'dogunun+billurlari'
-                }, json={
-                    'bot': getBot['bot'],
-                    'errors': [
-                        str(exc_type),
-                        str(fname),
-                        str(exc_tb.tb_lineno),
-                        str(exception)
-                    ]
-                })
+                        'neresi': 'dogunun+billurlari'
+                    }, json={
+                        'bot': getBot['bot'],
+                        'errors': [
+                            str(exc_type),
+                            str(fname),
+                            str(exc_tb.tb_lineno),
+                            str(exception)
+                        ]
+                    })
                     if errBot.status_code == 200:
                         errBotWhile = False
                     elif errBotCount >= int(config('API', 'ERR_COUNT')):
