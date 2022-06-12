@@ -1,8 +1,7 @@
 @extends('layout.app')
 @section('container')
-    <div class="col-12 ">
+    <div class="col-12">
         <div class="row">
-
             <div class="col-12">
                 <div class="d-grid gap-2">
                     <a href="{{ route('panel.admin.dashboard') }}" class="btn btn-outline-warning btn-sm">Geri Dön</a>
@@ -12,6 +11,9 @@
                 <table class="table table-striped table-dark">
                     <thead>
                     <tr>
+                        @if($user->developer)
+                            <th scope="col">#</th>
+                        @endif
                         <th scope="col">Kullanıcı</th>
                         @if($user->developer)
                             <th scope="col">Uuid</th>
@@ -28,6 +30,11 @@
                     <tbody>
                     @foreach($orders as $order)
                         <tr>
+                            @if($user->developer)
+                                <td>
+                                    {{ $order->id }}
+                                </td>
+                            @endif
                             <td>
                                 {{ explode("@",$order->user->email)[0] }}
                             </td>

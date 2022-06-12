@@ -14,7 +14,7 @@ return new class extends Migration {
     {
         Schema::create('order_errors', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger("orders_id")->unsigned()->nullable();
+            $table->bigInteger("orders_id")->unsigned()->nullable()->default(null);
             $table->foreign("orders_id")->references("id")->on("orders");
             $table->json('errors')->nullable()->default(null);
             $table->tinyInteger('status')->default(0);

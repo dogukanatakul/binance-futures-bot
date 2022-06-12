@@ -15,3 +15,7 @@
 1. İşlemde
 2. Durdurma Emri Verilmiş
 3. Durmuş
+
+
+### Zorunlu İşlemler
+sudo chmod -R 777 /var/www/binance-futures-bot/storage/logs/

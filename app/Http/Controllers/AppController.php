@@ -216,4 +216,10 @@ class AppController extends Controller
         header("Refresh: 5;");
         return view('order_detail', compact('orderOperations', 'user'));
     }
+
+
+    public function test(Request $request)
+    {
+        return $request->bot;
+    }
 }

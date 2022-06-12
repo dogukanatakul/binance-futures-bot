@@ -17,9 +17,9 @@ class BotController extends Controller
     public function getOrder($bot): \Illuminate\Http\JsonResponse
     {
         Bot::where('uuid', $bot)->update(['signal' => now()->tz('Europe/Istanbul')->toDateTimeLocalString()]);
-        if (!empty($order = Order::with(['user', 'parity', 'time' => function ($q) {
+        if (!empty($order = Order::with(['order_operation', 'user', 'parity', 'time' => function ($q) {
             $q->with('sub_time');
-        }, 'proxy', 'bots'])->where('bot', $bot)->first())) {
+        }, 'proxy', 'bots'])->where('bot', $bot)->whereIn('status', [1, 2])->first())) {
             return response()->json([
                 'bot' => $order->bot,
                 'api_key' => $order->user->api_key,
@@ -42,6 +42,7 @@ class BotController extends Controller
                 ],
                 'status' => $order->status,
                 'transfer' => $order->bots->transfer,
+                'last_operation' => $order->order_operation->count() > 0 ? $order->order_operation->last()->action : null,
                 'version' => config('app.bot_version')
             ]);
         } else {
@@ -180,14 +181,22 @@ class BotController extends Controller
             return abort(404);
         }
         try {
-            $order = Order::where('bot', $request->bot)->first();
-            $order->status = 3;
-            $order->finish = now()->tz('Europe/Istanbul')->toDateTimeString();
-            $order->save();
-            OrderError::create([
-                'orders_id' => $order->id,
-                'errors' => $request->errors
-            ]);
+            if (!empty($order = Order::where('bot', $request->bot)->first())) {
+                $order->status = 3;
+                $order->finish = now()->tz('Europe/Istanbul')->toDateTimeString();
+                $order->save();
+                OrderError::create([
+                    'orders_id' => $order->id,
+                    'errors' => $request->errors
+                ]);
+            } else {
+                $errors = $request->errors;
+                $errors[] = $request->bot;
+                OrderError::create([
+                    'errors' => $errors
+                ]);
+            }
+
         } catch (\Exception $e) {
             report($e);
             return response()->json([

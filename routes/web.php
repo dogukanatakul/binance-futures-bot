@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [\App\Http\Controllers\AppController::class, 'home'])->name('home')->middleware([\App\Http\Middleware\Auth::class, \App\Http\Middleware\CheckAuth::class,'language']);
 Route::post('/', [\App\Http\Controllers\AuthController::class, 'auth'])->name('login')->middleware([\App\Http\Middleware\CheckAuth::class,'language']);
-
 Route::group([
     'as' => 'panel.',
     'middleware' => [

@@ -282,6 +282,8 @@ while True:
                         'bot': getBot['bot'],
                         'errors': [
                             "ilerleme dosyası bulunamadı.",
+                            getBot['transfer'],
+                            getBot['bot'],
                         ]
                     })
                     if errBot.status_code == 200:
@@ -493,7 +495,6 @@ while True:
                                                 'line': getframeinfo(currentframe()).lineno,
                                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                                 'KDJ': getKDJ['type'],
-
                                                 'side': botElements['lastSide'],
                                                 'price': position['markPrice'],
                                                 'profit': position['profit'],
