@@ -328,7 +328,7 @@ while True:
                 'profitTriggerKey': None,
                 'firstTypeTrigger': 0,
                 'fakeTrigger': 0,
-                'fakeTriggerSide': 0,
+                'fakeTriggerSide': 'HOLD',
                 'maxDamageUSDT': 0,
                 'maxDamageCount': 0,
                 'maxDamageBefore': 0,
@@ -376,26 +376,27 @@ while True:
                             raise Exception(e)
                 getKDJ = get_kdj(klines, getBot['kdj_period'], getBot['kdj_signal'], botElements['lastSide'], float(getBot['KDJ_X']))
                 if getKDJ['K'] != sameTest['K'] or getKDJ['D'] != sameTest['D'] or getKDJ['J'] != sameTest['J']:
-                    # first side check
-                    if botElements['firstTypeTrigger'] <= int(config('SETTING', 'FIRST_FAKE')):
-                        if botElements['lastSide'] == getKDJ['side']:
-                            botElements['firstTypeTrigger'] += 1
-                        else:
-                            botElements['firstTypeTrigger'] = 0
-                        # first side check END
-                        botElements['lastSide'] = getKDJ['side']
-
-                    if botElements['fakeTriggerSide'] == getKDJ['side'] and botElements['firstTypeTrigger'] >= int(config('SETTING', 'FIRST_FAKE')):
-                        botElements['fakeTrigger'] += 1
-                    else:
-                        botElements['fakeTrigger'] = 0
-                    botElements['fakeTriggerSide'] = getKDJ['side']
-
                     sameTest = {
                         'K': getKDJ['K'],
                         'D': getKDJ['D'],
                         'J': getKDJ['J']
                     }
+                    if not botElements['orderStatus']:
+                        # first side check
+                        if botElements['firstTypeTrigger'] <= int(config('SETTING', 'FIRST_FAKE')):
+                            if botElements['lastSide'] == getKDJ['side']:
+                                botElements['firstTypeTrigger'] += 1
+                            else:
+                                botElements['firstTypeTrigger'] = 0
+                            botElements['lastSide'] = getKDJ['side']
+                        # first side check END
+                        if botElements['fakeTriggerSide'] == getKDJ['side'] and botElements['firstTypeTrigger'] >= int(config('SETTING', 'FIRST_FAKE')):
+                            botElements['fakeTrigger'] += 1
+                        else:
+                            botElements['fakeTrigger'] = 0
+                        botElements['fakeTriggerSide'] = getKDJ['side']
+                        jsonData(getBot['bot'], 'SET', botElements)
+
                     # SYNC BOT
                     syncBotWhile = True
                     syncBotCount = 0
@@ -415,7 +416,8 @@ while True:
                         else:
                             syncBotCount += 1
                     # SYNC BOT END
-                    if botElements['lastSide'] == 'HOLD' and getBot['status'] == 2 and botElements['lastPrice'] == 0:
+                    if getBot['status'] == 2 and botElements['orderStatus'] == False:
+                        operationLoop = False
                         setBotWhile = True
                         setBotCount = 0
                         while setBotWhile:
@@ -425,8 +427,8 @@ while True:
                                 'line': getframeinfo(currentframe()).lineno,
                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 'KDJ': getKDJ['type'],
-
-                                'action': 'STOP',
+                                'side': botElements['lastSide'],
+                                'action': 'CLOSE',
                             })
                             if setBot.status_code == 200:
                                 setBotWhile = False
@@ -435,105 +437,33 @@ while True:
                             else:
                                 time.sleep(1)
                                 setBotCount += 1
-                        raise Exception('STOP')
                     else:
-                        if getBot['status'] == 2 and botElements['orderStatus'] == False:
-                            operationLoop = False
-                            setBotWhile = True
-                            setBotCount = 0
-                            while setBotWhile:
-                                setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                    'neresi': 'dogunun+billurlari'
-                                }, json={
-                                    'line': getframeinfo(currentframe()).lineno,
-                                    'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                    'KDJ': getKDJ['type'],
-
-                                    'side': botElements['lastSide'],
-                                    'action': 'CLOSE',
-                                })
-                                if setBot.status_code == 200:
-                                    setBotWhile = False
-                                elif setBotCount >= int(config('API', 'ERR_COUNT')):
-                                    raise Exception('server_error')
-                                else:
-                                    time.sleep(1)
-                                    setBotCount += 1
-                        else:
-                            # START ORDER
-                            if botElements['lastSide'] != getKDJ['side'] and botElements['firstTypeTrigger'] >= int(config('SETTING', 'FIRST_FAKE')) and botElements['fakeTrigger'] >= int(config('SETTING', 'FAKE_TRIGGER')) and botElements['orderStatus'] == False:
-                                botElements['lastPrice'] = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
-                                if botElements['lastSide'] != 'HOLD' and botElements['profitTrigger'] == False and botElements['orderStatus'] == True:
-                                    positionConnect = True
-                                    positionConnectCount = 0
-                                    try:
-                                        position = getPosition(client, getBot['parity'], botElements['lastType'])
-                                        positionConnect = False
-                                    except Exception as e:
-                                        positionConnectCount += 1
-                                        if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and positionConnectCount < 3:
-                                            time.sleep(float(config('SETTING', 'TIME_SLEEP')))
-                                        elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= positionConnectCount <= 6):
-                                            proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                                'neresi': 'dogunun+billurlari'
-                                            }).json()
-                                            client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
-                                        else:
-                                            raise Exception(e)
-                                    if position['amount'] > 0:
-                                        # Binance
-                                        botElements['orderStatus'] = False
-                                        jsonData(getBot['bot'], 'SET', botElements)
-                                        client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
-                                        # Binance END
-                                        setBotWhile = True
-                                        setBotCount = 0
-                                        while setBotWhile:
-                                            setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                                'neresi': 'dogunun+billurlari'
-                                            }, json={
-                                                'line': getframeinfo(currentframe()).lineno,
-                                                'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                                'KDJ': getKDJ['type'],
-                                                'side': botElements['lastSide'],
-                                                'price': position['markPrice'],
-                                                'profit': position['profit'],
-                                                'quantity': position['amount'],
-                                                'action': 'CLOSE',
-                                            })
-                                            if setBot.status_code == 200:
-                                                setBotWhile = False
-                                            elif setBotCount >= int(config('API', 'ERR_COUNT')):
-                                                raise Exception('server_error')
-                                            else:
-                                                time.sleep(1)
-                                                setBotCount += 1
+                        # START ORDER
+                        if botElements['lastSide'] != getKDJ['side'] and botElements['firstTypeTrigger'] >= int(config('SETTING', 'FIRST_FAKE')) and botElements['fakeTrigger'] >= int(config('SETTING', 'FAKE_TRIGGER')) and botElements['orderStatus'] == False:
+                            botElements['lastPrice'] = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
+                            if botElements['lastSide'] != 'HOLD' and botElements['profitTrigger'] == False and botElements['orderStatus'] == True:
+                                positionConnect = True
+                                positionConnectCount = 0
+                                try:
+                                    position = getPosition(client, getBot['parity'], botElements['lastType'])
+                                    positionConnect = False
+                                except Exception as e:
+                                    positionConnectCount += 1
+                                    if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and positionConnectCount < 3:
+                                        time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                                    elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= positionConnectCount <= 6):
+                                        proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
+                                            'neresi': 'dogunun+billurlari'
+                                        }).json()
+                                        client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
                                     else:
-                                        setBotWhile = True
-                                        setBotCount = 0
-                                        while setBotWhile:
-                                            setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                                'neresi': 'dogunun+billurlari'
-                                            }, json={
-                                                'line': getframeinfo(currentframe()).lineno,
-                                                'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                                'KDJ': getKDJ['type'],
-
-                                                'side': botElements['lastSide'],
-                                                'action': 'MANUAL_STOP',
-                                            })
-                                            if setBot.status_code == 200:
-                                                setBotWhile = False
-                                            elif setBotCount >= int(config('API', 'ERR_COUNT')):
-                                                raise Exception('server_error')
-                                            else:
-                                                time.sleep(1)
-                                                setBotCount += 1
-                                        raise Exception('manual_stop')
-                                else:
-                                    botElements['profitTrigger'] = False
-                                if getBot['status'] == 2:
-                                    operationLoop = False
+                                        raise Exception(e)
+                                if position['amount'] > 0:
+                                    # Binance
+                                    botElements['orderStatus'] = False
+                                    jsonData(getBot['bot'], 'SET', botElements)
+                                    client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
+                                    # Binance END
                                     setBotWhile = True
                                     setBotCount = 0
                                     while setBotWhile:
@@ -543,8 +473,10 @@ while True:
                                             'line': getframeinfo(currentframe()).lineno,
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                             'KDJ': getKDJ['type'],
-
                                             'side': botElements['lastSide'],
+                                            'price': position['markPrice'],
+                                            'profit': position['profit'],
+                                            'quantity': position['amount'],
                                             'action': 'CLOSE',
                                         })
                                         if setBot.status_code == 200:
@@ -555,33 +487,6 @@ while True:
                                             time.sleep(1)
                                             setBotCount += 1
                                 else:
-                                    botElements['lastSide'] = getKDJ['side']
-                                    botElements['lastType'] = getKDJ['type']
-                                    botElements['firstLogin'] = False
-                                    # Binance
-                                    botElements['balance'] = getOrderBalance(client, "USDT", int(getBot['percent']))
-
-                                    # profit trigger
-                                    botElements['maxDamageUSDT'] = round((botElements['balance'] / 100) * int(getBot['MAX_DAMAGE_USDT_PERCENT']), 2)
-                                    botElements['maxDamageCount'] = 0
-                                    botElements['maxDamageBefore'] = 0
-
-                                    botElements['maxProfit'] = round((botElements['balance'] / 100) * profitMax(klines), 2)
-                                    botElements['maxProfitCount'] = 0
-                                    botElements['maxProfitStatus'] = False
-                                    botElements['maxProfitMax'] = 0
-                                    botElements['maxProfitMin'] = 0
-                                    botElements['setLeverage'] = True
-
-                                    # profit trigger END
-
-                                    botElements['lastQuantity'] = "{:0.0{}f}".format(float((botElements['balance'] / botElements['lastPrice']) * getBot['leverage']), fractions[getBot['parity']])
-                                    if float(botElements['lastQuantity']) <= 0:
-                                        raise Exception("Bakiye hatası")
-                                    client.futures_create_order(symbol=getBot['parity'], side=botElements['lastSide'], type='MARKET', quantity=botElements['lastQuantity'], positionSide=botElements['lastType'])
-                                    # Binance END
-                                    botElements['orderStatus'] = True
-                                    jsonData(getBot['bot'], 'SET', botElements)
                                     setBotWhile = True
                                     setBotCount = 0
                                     while setBotWhile:
@@ -593,11 +498,7 @@ while True:
                                             'KDJ': getKDJ['type'],
 
                                             'side': botElements['lastSide'],
-                                            'position': botElements['lastType'],
-                                            'balance': botElements['balance'],
-                                            'quantity': botElements['lastQuantity'],
-                                            'price': botElements['lastPrice'],
-                                            'action': 'OPEN',
+                                            'action': 'MANUAL_STOP',
                                         })
                                         if setBot.status_code == 200:
                                             setBotWhile = False
@@ -606,8 +507,172 @@ while True:
                                         else:
                                             time.sleep(1)
                                             setBotCount += 1
+                                    raise Exception('manual_stop')
                             else:
-                                if not botElements['orderStatus']:
+                                botElements['profitTrigger'] = False
+                            if getBot['status'] == 2:
+                                operationLoop = False
+                                setBotWhile = True
+                                setBotCount = 0
+                                while setBotWhile:
+                                    setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                        'neresi': 'dogunun+billurlari'
+                                    }, json={
+                                        'line': getframeinfo(currentframe()).lineno,
+                                        'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                        'KDJ': getKDJ['type'],
+
+                                        'side': botElements['lastSide'],
+                                        'action': 'CLOSE',
+                                    })
+                                    if setBot.status_code == 200:
+                                        setBotWhile = False
+                                    elif setBotCount >= int(config('API', 'ERR_COUNT')):
+                                        raise Exception('server_error')
+                                    else:
+                                        time.sleep(1)
+                                        setBotCount += 1
+                            else:
+                                botElements['lastSide'] = getKDJ['side']
+                                botElements['lastType'] = getKDJ['type']
+                                botElements['firstLogin'] = False
+                                # Binance
+                                botElements['balance'] = getOrderBalance(client, "USDT", int(getBot['percent']))
+
+                                # profit trigger
+                                botElements['maxDamageUSDT'] = round((botElements['balance'] / 100) * int(getBot['MAX_DAMAGE_USDT_PERCENT']), 2)
+                                botElements['maxDamageCount'] = 0
+                                botElements['maxDamageBefore'] = 0
+
+                                botElements['maxProfit'] = round((botElements['balance'] / 100) * profitMax(klines), 2)
+                                botElements['maxProfitCount'] = 0
+                                botElements['maxProfitStatus'] = False
+                                botElements['maxProfitMax'] = 0
+                                botElements['maxProfitMin'] = 0
+                                botElements['setLeverage'] = True
+
+                                # profit trigger END
+
+                                botElements['lastQuantity'] = "{:0.0{}f}".format(float((botElements['balance'] / botElements['lastPrice']) * getBot['leverage']), fractions[getBot['parity']])
+                                if float(botElements['lastQuantity']) <= 0:
+                                    raise Exception("Bakiye hatası")
+                                client.futures_create_order(symbol=getBot['parity'], side=botElements['lastSide'], type='MARKET', quantity=botElements['lastQuantity'], positionSide=botElements['lastType'])
+                                # Binance END
+                                botElements['orderStatus'] = True
+                                jsonData(getBot['bot'], 'SET', botElements)
+                                setBotWhile = True
+                                setBotCount = 0
+                                while setBotWhile:
+                                    setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                        'neresi': 'dogunun+billurlari'
+                                    }, json={
+                                        'line': getframeinfo(currentframe()).lineno,
+                                        'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                        'KDJ': getKDJ['type'],
+
+                                        'side': botElements['lastSide'],
+                                        'position': botElements['lastType'],
+                                        'balance': botElements['balance'],
+                                        'quantity': botElements['lastQuantity'],
+                                        'price': botElements['lastPrice'],
+                                        'action': 'OPEN',
+                                    })
+                                    if setBot.status_code == 200:
+                                        setBotWhile = False
+                                    elif setBotCount >= int(config('API', 'ERR_COUNT')):
+                                        raise Exception('server_error')
+                                    else:
+                                        time.sleep(1)
+                                        setBotCount += 1
+                        else:
+                            if not botElements['orderStatus']:
+                                setBotWhile = True
+                                setBotCount = 0
+                                while setBotWhile:
+                                    setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                        'neresi': 'dogunun+billurlari'
+                                    }, json={
+                                        'line': getframeinfo(currentframe()).lineno,
+                                        'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                        'KDJ': getKDJ['type'],
+
+                                        'action': 'ORDER_START_WAITING',
+                                    })
+                                    if setBot.status_code == 200:
+                                        setBotWhile = False
+                                    elif setBotCount >= int(config('API', 'ERR_COUNT')):
+                                        raise Exception('server_error')
+                                    else:
+                                        time.sleep(1)
+                                        setBotCount += 1
+                            elif botElements['lastPrice'] != 0 and botElements['profitTrigger'] == False and botElements['orderStatus'] == True:
+                                positionConnect = True
+                                positionConnectCount = 0
+                                try:
+                                    position = getPosition(client, getBot['parity'], botElements['lastType'])
+                                    positionConnect = False
+                                except Exception as e:
+                                    positionConnectCount += 1
+                                    if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and positionConnectCount < 3:
+                                        time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                                    elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= positionConnectCount <= 6):
+                                        proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
+                                            'neresi': 'dogunun+billurlari'
+                                        }).json()
+                                        client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
+                                    else:
+                                        raise Exception(e)
+
+                                if botElements['lastSide'] == getKDJ['side']:
+                                    botElements['KDJtriggerCheck'] += 1
+
+                                if botElements['setLeverage']:
+                                    botElements['maxDamageUSDT'] = botElements['maxDamageUSDT'] * position['leverage']
+                                    botElements['setLeverage'] = False
+                                    jsonData(getBot['bot'], 'SET', botElements)
+                                if position['amount'] <= 0:
+                                    raise Exception('close')
+                                elif position['profit'] > 0:
+                                    botElements['maxDamageCount'] = 0
+
+                                    # Max Profit
+                                    if position['profit'] >= botElements['maxProfit']:
+                                        botElements['maxProfitStatus'] = True
+                                    if position['profit'] > botElements['maxProfitMax']:
+                                        botElements['maxProfitMax'] = position['profit']
+                                        botElements['maxProfitMin'] = round(botElements['maxProfitMax'] - ((botElements['maxProfitMax'] / 100) * int(config('SETTING', 'MAX_PROFIT_PERCENT'))), 2)
+                                        botElements['maxProfitCount'] = 0
+                                    # Max Profit Max
+                                    if botElements['maxProfitMin'] >= position['profit'] and botElements['maxProfitStatus'] == True:
+                                        if botElements['maxProfitCount'] >= int(config('SETTING', 'MAX_PROFIT_COUNT')):
+                                            botElements['profitTriggerKey'] = "TRIGGER_PROFIT_EXIT"
+                                            botElements['profitTurn'] = True
+                                        else:
+                                            botElements['maxProfitCount'] += 1
+                                elif position['profit'] < 0:
+                                    botElements['maxProfitStatus'] = False
+                                    if abs(position['profit']) >= botElements['maxDamageUSDT']:
+                                        if botElements['maxDamageBefore'] < abs(position['profit']):
+                                            botElements['maxDamageCount'] += 1
+                                            if botElements['maxDamageCount'] >= int(config('SETTING', 'MAX_DAMAGE_COUNT')):
+                                                botElements['profitTriggerKey'] = "MAX_DAMAGE"
+                                                botElements['profitTurn'] = True
+                                        else:
+                                            botElements['maxDamageCount'] = 0
+                                        botElements['maxDamageBefore'] = abs(position['profit'])
+                                jsonData(getBot['bot'], 'SET', botElements)
+
+                                if botElements['lastSide'] != getKDJ['side'] and botElements['KDJtriggerCheck'] >= int(config('SETTING', 'CLOSE_ORDER_KDJ')):
+                                    botElements['profitTurn'] = True
+                                    botElements['profitTriggerKey'] = "KDJ_TRIGGER"
+                                if botElements['profitTurn']:
+                                    botElements['KDJtriggerCheck'] = 0
+                                    botElements['profitTurn'] = False
+                                    botElements['fakeTrigger'] = 0
+                                    botElements['profitTrigger'] = True
+                                    botElements['orderStatus'] = False
+                                    jsonData(getBot['bot'], 'SET', botElements)
+                                    client.futures_create_order(symbol=getBot['parity'], side='SELL' if botElements['lastType'] == 'LONG' else "BUY", positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
                                     setBotWhile = True
                                     setBotCount = 0
                                     while setBotWhile:
@@ -617,8 +682,11 @@ while True:
                                             'line': getframeinfo(currentframe()).lineno,
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                             'KDJ': getKDJ['type'],
-
-                                            'action': 'ORDER_START_WAITING',
+                                            'side': botElements['lastSide'],
+                                            'price': position['markPrice'],
+                                            'profit': position['profit'],
+                                            'quantity': position['amount'],
+                                            'action': botElements['profitTriggerKey'],
                                         })
                                         if setBot.status_code == 200:
                                             setBotWhile = False
@@ -627,97 +695,7 @@ while True:
                                         else:
                                             time.sleep(1)
                                             setBotCount += 1
-                                elif botElements['lastPrice'] != 0 and botElements['profitTrigger'] == False and botElements['orderStatus'] == True:
-                                    positionConnect = True
-                                    positionConnectCount = 0
-                                    try:
-                                        position = getPosition(client, getBot['parity'], botElements['lastType'])
-                                        positionConnect = False
-                                    except Exception as e:
-                                        positionConnectCount += 1
-                                        if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and positionConnectCount < 3:
-                                            time.sleep(float(config('SETTING', 'TIME_SLEEP')))
-                                        elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= positionConnectCount <= 6):
-                                            proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                                'neresi': 'dogunun+billurlari'
-                                            }).json()
-                                            client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
-                                        else:
-                                            raise Exception(e)
-
-                                    if botElements['lastSide'] == getKDJ['side']:
-                                        botElements['KDJtriggerCheck'] += 1
-
-                                    if botElements['setLeverage']:
-                                        botElements['maxDamageUSDT'] = botElements['maxDamageUSDT'] * position['leverage']
-                                        botElements['setLeverage'] = False
-                                        jsonData(getBot['bot'], 'SET', botElements)
-                                    if position['amount'] <= 0:
-                                        raise Exception('close')
-                                    elif position['profit'] > 0:
-                                        botElements['maxDamageCount'] = 0
-
-                                        # Max Profit
-                                        if position['profit'] >= botElements['maxProfit']:
-                                            botElements['maxProfitStatus'] = True
-                                        if position['profit'] > botElements['maxProfitMax']:
-                                            botElements['maxProfitMax'] = position['profit']
-                                            botElements['maxProfitMin'] = round(botElements['maxProfitMax'] - ((botElements['maxProfitMax'] / 100) * int(config('SETTING', 'MAX_PROFIT_PERCENT'))), 2)
-                                            botElements['maxProfitCount'] = 0
-                                        # Max Profit Max
-                                        if botElements['maxProfitMin'] >= position['profit'] and botElements['maxProfitStatus'] == True:
-                                            if botElements['maxProfitCount'] >= int(config('SETTING', 'MAX_PROFIT_COUNT')):
-                                                botElements['profitTriggerKey'] = "TRIGGER_PROFIT_EXIT"
-                                                botElements['profitTurn'] = True
-                                            else:
-                                                botElements['maxProfitCount'] += 1
-                                    elif position['profit'] < 0:
-                                        botElements['maxProfitStatus'] = False
-                                        if abs(position['profit']) >= botElements['maxDamageUSDT']:
-                                            if botElements['maxDamageBefore'] < abs(position['profit']):
-                                                botElements['maxDamageCount'] += 1
-                                                if botElements['maxDamageCount'] >= int(config('SETTING', 'MAX_DAMAGE_COUNT')):
-                                                    botElements['profitTriggerKey'] = "MAX_DAMAGE"
-                                                    botElements['profitTurn'] = True
-                                            else:
-                                                botElements['maxDamageCount'] = 0
-                                            botElements['maxDamageBefore'] = abs(position['profit'])
-                                    jsonData(getBot['bot'], 'SET', botElements)
-
-                                    if botElements['lastSide'] != getKDJ['side'] and botElements['KDJtriggerCheck'] >= int(config('SETTING', 'CLOSE_ORDER_KDJ')):
-                                        botElements['profitTurn'] = True
-                                        botElements['profitTriggerKey'] = "KDJ_TRIGGER"
-                                    if botElements['profitTurn']:
-                                        botElements['KDJtriggerCheck'] = 0
-                                        botElements['profitTurn'] = False
-                                        botElements['fakeTrigger'] = 0
-                                        botElements['profitTrigger'] = True
-                                        botElements['orderStatus'] = False
-                                        jsonData(getBot['bot'], 'SET', botElements)
-                                        client.futures_create_order(symbol=getBot['parity'], side='SELL' if botElements['lastType'] == 'LONG' else "BUY", positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
-                                        setBotWhile = True
-                                        setBotCount = 0
-                                        while setBotWhile:
-                                            setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                                'neresi': 'dogunun+billurlari'
-                                            }, json={
-                                                'line': getframeinfo(currentframe()).lineno,
-                                                'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                                'KDJ': getKDJ['type'],
-                                                'side': botElements['lastSide'],
-                                                'price': position['markPrice'],
-                                                'profit': position['profit'],
-                                                'quantity': position['amount'],
-                                                'action': botElements['profitTriggerKey'],
-                                            })
-                                            if setBot.status_code == 200:
-                                                setBotWhile = False
-                                            elif setBotCount >= int(config('API', 'ERR_COUNT')):
-                                                raise Exception('server_error')
-                                            else:
-                                                time.sleep(1)
-                                                setBotCount += 1
-                                    # emir bozma yeri
+                                # emir bozma yeri
                     # Max Request Sleep
                     time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                     # Max Request Sleep

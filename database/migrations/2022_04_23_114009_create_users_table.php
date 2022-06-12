@@ -28,6 +28,7 @@ return new class extends Migration {
             $table->boolean('developer')->default(false);
             $table->bigInteger('reference_codes_id')->unsigned()->nullable()->default(null);
             $table->foreign('reference_codes_id')->references('id')->on('reference_codes');
+            $table->tinyText('language')->default('tr');
             $table->softDeletes();
             $table->timestamps();
         });
