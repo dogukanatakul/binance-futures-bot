@@ -406,7 +406,7 @@ while True:
                         })
                         if syncBot.status_code == 200:
                             if syncBot.json()['status'] == 0:
-                                raise Exception('bot_change')
+                                sys.exit(0)
                             else:
                                 for bt in syncBot.json().keys():
                                     getBot[bt] = syncBot.json()[bt]
