@@ -207,11 +207,15 @@ def sideCalc(klines):
 
 def jsonData(bot, status='GET', data={}):
     if status == 'SET':
-        with open(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json', 'w') as outfile:
+        with open(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json', 'w+') as outfile:
             outfile.write(json.dumps(data))
         return True
     elif status == 'DELETE':
-        os.remove((os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json'))
+        try:
+            os.remove((os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json'))
+            return True
+        except:
+            return False
     else:
         if os.path.exists(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json'):
             return json.loads(open(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + bot + '.json', "r").read())
