@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
 
 class BotSetOrder implements ShouldQueue, ShouldBeUnique
 {
@@ -57,6 +58,7 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
             ->where('status', true)
             ->get();
         foreach ($fails as $fail) {
+            DB::beginTransaction();
             if (!empty($order = Order::where('bot', $fail->uuid)->whereIn('status', [1, 2])->first())) {
                 if (!empty($bot = Bot::orderBy('signal', 'DESC')->where('version', config('app.bot_version'))->where('status', false)->first())) {
                     $order->bot = $bot->uuid;
@@ -65,9 +67,11 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
                     $bot->transfer = $fail->uuid;
                     $bot->save();
                     $fail->delete();
+                    DB::commit();
                 }
             } else {
                 $fail->delete();
+                DB::commit();
             }
         }
         return true;
