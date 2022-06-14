@@ -150,7 +150,7 @@ def getPosition(client, symbol, side):
     return positions[side]
 
 
-def profitMax(klines):
+def profitMax(klines, leverage):
     cols = [
         'Date',
         'Open',
@@ -169,13 +169,33 @@ def profitMax(klines):
     df = df.drop(columns=['CloseTime', 'QuoteVolume', 'NumberTrades', 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume', 'Ignore'])
     high = list(df['High'])
     high.reverse()
+    high.pop(0)
     low = list(df['Low'])
     low.reverse()
+    low.pop(0)
     diffs = []
-    for key in range(0, 5):
+    for key in range(0, 10):
         diffs.append(get_diff(float(low[key]), float(high[key])))
-    calc = int((sum(diffs) / len(diffs)) * 10)
-    return calc if float(config('SETTING', 'MAX_PROFIT')) > calc else float(config('SETTING', 'MAX_PROFIT'))
+    minDiff = int(min(diffs) * leverage)
+    maxDiff = int(max(diffs) * leverage)
+    averageDiff = int((sum(diffs) / len(diffs)) * leverage)
+    return {
+        'profit': {
+            maxDiff: {
+                'count': 1,
+                'percent': 15,
+            },
+            averageDiff: {
+                'count': 2,
+                'percent': 20,
+            },
+            minDiff: {
+                'count': 3,
+                'percent': 40,
+            },
+        },
+        'default': minDiff
+    }
 
 
 def sideCalc(klines):
@@ -249,7 +269,7 @@ while True:
                 clientConnect = False
             except Exception as e:
                 clientConnectCount += 1
-                if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and clientConnectCount < 3:
+                if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and clientConnectCount < 3:
                     time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                 elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= clientConnectCount <= 6):
                     proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
@@ -285,7 +305,7 @@ while True:
                     }, json={
                         'bot': getBot['bot'],
                         'errors': [
-                            "ilerleme dosyası bulunamadı.",
+                            "ilerleme dosyasi bulunamadi.",
                             getBot['transfer'],
                             getBot['bot'],
                         ]
@@ -311,7 +331,7 @@ while True:
                     klineConnect = False
                 except Exception as e:
                     klineConnectCount += 1
-                    if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and klineConnectCount < 3:
+                    if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and klineConnectCount < 3:
                         time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                     elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= klineConnectCount <= 6):
                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
@@ -338,6 +358,7 @@ while True:
                 'maxDamageBefore': 0,
                 'maxProfit': 100,
                 'maxProfitCount': 0,
+                'maxProfitCountMax': 0,
                 'maxProfitStatus': False,
                 'maxProfitMax': 0,
                 'maxProfitMin': 0,
@@ -369,7 +390,7 @@ while True:
                         klineConnect = False
                     except Exception as e:
                         klineConnectCount += 1
-                        if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and klineConnectCount < 3:
+                        if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and klineConnectCount < 3:
                             time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                         elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= klineConnectCount <= 6):
                             proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
@@ -453,7 +474,7 @@ while True:
                                     positionConnect = False
                                 except Exception as e:
                                     positionConnectCount += 1
-                                    if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and positionConnectCount < 3:
+                                    if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and positionConnectCount < 3:
                                         time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                                     elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= positionConnectCount <= 6):
                                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
@@ -466,7 +487,25 @@ while True:
                                     # Binance
                                     botElements['orderStatus'] = False
                                     jsonData(getBot['bot'], 'SET', botElements)
-                                    client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
+
+                                    orderCreate = True
+                                    orderCreateCount = 0
+                                    while orderCreate:
+                                        try:
+                                            client.futures_create_order(symbol=getBot['parity'], side=getKDJ['side'], positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
+                                            orderCreate = False
+                                        except Exception as e:
+                                            orderCreateCount += 1
+                                            if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and orderCreateCount < 3:
+                                                time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                                            elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= orderCreateCount <= 6):
+                                                proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
+                                                    'neresi': 'dogunun+billurlari'
+                                                }).json()
+                                                getBot['proxy'] = proxyOrder['proxy']
+                                            else:
+                                                raise Exception(e)
+
                                     # Binance END
                                     setBotWhile = True
                                     setBotCount = 0
@@ -500,7 +539,6 @@ while True:
                                             'line': getframeinfo(currentframe()).lineno,
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                             'KDJ': getKDJ['type'],
-
                                             'side': botElements['lastSide'],
                                             'action': 'MANUAL_STOP',
                                         })
@@ -547,9 +585,11 @@ while True:
                                 botElements['maxDamageUSDT'] = round((botElements['balance'] / 100) * int(getBot['MAX_DAMAGE_USDT_PERCENT']), 2)
                                 botElements['maxDamageCount'] = 0
                                 botElements['maxDamageBefore'] = 0
+                                botElements['profitMax'] = profitMax(klines, int(getBot['leverage']))
 
-                                botElements['maxProfit'] = round((botElements['balance'] / 100) * profitMax(klines), 2)
+                                botElements['maxProfit'] = round((botElements['balance'] / 100) * botElements['profitMax']['default'], 2)
                                 botElements['maxProfitCount'] = 0
+                                botElements['maxProfitCountMax'] = 0
                                 botElements['maxProfitStatus'] = False
                                 botElements['maxProfitMax'] = 0
                                 botElements['maxProfitMin'] = 0
@@ -560,7 +600,25 @@ while True:
                                 botElements['lastQuantity'] = "{:0.0{}f}".format(float((botElements['balance'] / botElements['lastPrice']) * getBot['leverage']), fractions[getBot['parity']])
                                 if float(botElements['lastQuantity']) <= 0:
                                     raise Exception("Bakiye hatası")
-                                client.futures_create_order(symbol=getBot['parity'], side=botElements['lastSide'], type='MARKET', quantity=botElements['lastQuantity'], positionSide=botElements['lastType'])
+
+                                orderCreate = True
+                                orderCreateCount = 0
+                                while orderCreate:
+                                    try:
+                                        client.futures_create_order(symbol=getBot['parity'], side=botElements['lastSide'], type='MARKET', quantity=botElements['lastQuantity'], positionSide=botElements['lastType'])
+                                        orderCreate = False
+                                    except Exception as e:
+                                        orderCreateCount += 1
+                                        if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and orderCreateCount < 3:
+                                            time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                                        elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= orderCreateCount <= 6):
+                                            proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
+                                                'neresi': 'dogunun+billurlari'
+                                            }).json()
+                                            getBot['proxy'] = proxyOrder['proxy']
+                                        else:
+                                            raise Exception(e)
+
                                 # Binance END
                                 botElements['orderStatus'] = True
                                 jsonData(getBot['bot'], 'SET', botElements)
@@ -573,7 +631,6 @@ while True:
                                         'line': getframeinfo(currentframe()).lineno,
                                         'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                         'KDJ': getKDJ['type'],
-
                                         'side': botElements['lastSide'],
                                         'position': botElements['lastType'],
                                         'balance': botElements['balance'],
@@ -599,7 +656,6 @@ while True:
                                         'line': getframeinfo(currentframe()).lineno,
                                         'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                         'KDJ': getKDJ['type'],
-
                                         'action': 'ORDER_START_WAITING',
                                     })
                                     if setBot.status_code == 200:
@@ -617,7 +673,7 @@ while True:
                                     positionConnect = False
                                 except Exception as e:
                                     positionConnectCount += 1
-                                    if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e)) and positionConnectCount < 3:
+                                    if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and positionConnectCount < 3:
                                         time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                                     elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= positionConnectCount <= 6):
                                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
@@ -642,17 +698,27 @@ while True:
                                     # Max Profit
                                     if position['profit'] >= botElements['maxProfit']:
                                         botElements['maxProfitStatus'] = True
+
                                     if position['profit'] > botElements['maxProfitMax']:
                                         botElements['maxProfitMax'] = position['profit']
-                                        botElements['maxProfitMin'] = round(botElements['maxProfitMax'] - ((botElements['maxProfitMax'] / 100) * int(config('SETTING', 'MAX_PROFIT_PERCENT'))), 2)
                                         botElements['maxProfitCount'] = 0
+                                        profitTriggerStatus = True
+                                        for attr, value in botElements['profitMax']['profit'].items():
+                                            if ((botElements['balance'] / 100) * attr) >= botElements['maxProfitMax'] and profitTriggerStatus == True:
+                                                profitTriggerStatus = False
+                                                botElements['maxProfitCountMax'] = value['count']
+                                                botElements['maxProfitMin'] = round(botElements['maxProfitMax'] - ((botElements['maxProfitMax'] / 100) * value['percent']), 2)
+
                                     # Max Profit Max
                                     if botElements['maxProfitMin'] >= position['profit'] and botElements['maxProfitStatus'] == True:
-                                        if botElements['maxProfitCount'] >= int(config('SETTING', 'MAX_PROFIT_COUNT')):
+                                        if botElements['maxProfitCount'] >= botElements['maxProfitCountMax']:
                                             botElements['profitTriggerKey'] = "TRIGGER_PROFIT_EXIT"
                                             botElements['profitTurn'] = True
                                         else:
                                             botElements['maxProfitCount'] += 1
+                                    else:
+                                        botElements['maxProfitCount'] = 0
+
                                 elif position['profit'] < 0:
                                     botElements['maxProfitStatus'] = False
                                     if abs(position['profit']) >= botElements['maxDamageUSDT']:
@@ -669,6 +735,7 @@ while True:
                                 if botElements['lastSide'] != getKDJ['side'] and botElements['KDJtriggerCheck'] >= int(config('SETTING', 'CLOSE_ORDER_KDJ')):
                                     botElements['profitTurn'] = True
                                     botElements['profitTriggerKey'] = "KDJ_TRIGGER"
+
                                 if botElements['profitTurn']:
                                     botElements['KDJtriggerCheck'] = 0
                                     botElements['profitTurn'] = False
@@ -676,7 +743,25 @@ while True:
                                     botElements['profitTrigger'] = True
                                     botElements['orderStatus'] = False
                                     jsonData(getBot['bot'], 'SET', botElements)
-                                    client.futures_create_order(symbol=getBot['parity'], side='SELL' if botElements['lastType'] == 'LONG' else "BUY", positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
+
+                                    orderCreate = True
+                                    orderCreateCount = 0
+                                    while orderCreate:
+                                        try:
+                                            client.futures_create_order(symbol=getBot['parity'], side='SELL' if botElements['lastType'] == 'LONG' else "BUY", positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
+                                            orderCreate = False
+                                        except Exception as e:
+                                            orderCreateCount += 1
+                                            if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and orderCreateCount < 3:
+                                                time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                                            elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= orderCreateCount <= 6):
+                                                proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
+                                                    'neresi': 'dogunun+billurlari'
+                                                }).json()
+                                                getBot['proxy'] = proxyOrder['proxy']
+                                            else:
+                                                raise Exception(e)
+
                                     setBotWhile = True
                                     setBotCount = 0
                                     while setBotWhile:
