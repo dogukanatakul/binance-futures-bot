@@ -61,12 +61,12 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
             DB::beginTransaction();
             if (!empty($order = Order::where('bot', $fail->uuid)->whereIn('status', [1, 2])->first())) {
                 if (!empty($bot = Bot::orderBy('signal', 'DESC')->where('version', config('app.bot_version'))->where('status', false)->first())) {
-                    $order->bot = $bot->uuid;
-                    $order->save();
                     $bot->status = true;
                     $bot->transfer = $fail->uuid;
                     $bot->save();
                     $fail->delete();
+                    $order->bot = $bot->uuid;
+                    $order->save();
                     DB::commit();
                 }
             } else {
