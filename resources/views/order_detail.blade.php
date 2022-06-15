@@ -22,10 +22,6 @@
                                 <th scope="col">{{ __('app.order_detail_action') }}</th>
                                 @if($user->admin)
                                     <th scope="col">KDJ</th>
-                                    <th scope="col">MACD</th>
-                                    <th scope="col">CE</th>
-                                    <th scope="col">15M</th>
-                                    <th scope="col">30M</th>
                                     <th scope="col">{{ __('app.order_detail_time') }}</th>
                                 @endif
                             </tr>
@@ -57,18 +53,6 @@
                                     @if($user->admin)
                                         <td>
                                             {{ $operation->KDJ }}
-                                        </td>
-                                        <td>
-                                            {{ $operation->MACD_DEMA }}
-                                        </td>
-                                        <td>
-                                            {{ $operation->CE }}
-                                        </td>
-                                        <td>
-                                            {{ $operation->TRIGGER_15_MIN }}
-                                        </td>
-                                        <td>
-                                            {{ $operation->TRIGGER_30_MIN }}
                                         </td>
                                         <td>
                                             {{ $operation->time }}

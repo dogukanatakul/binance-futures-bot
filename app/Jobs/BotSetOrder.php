@@ -36,22 +36,6 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
      */
     public function handle(): bool
     {
-        $orders = Order::where('status', 0)->get();
-        foreach ($orders as $order) {
-            if (!empty($bot = Bot::orderBy('signal', 'DESC')->where('version', config('app.bot_version'))->where('status', false)->first())) {
-                $order->bot = $bot->uuid;
-                $order->status = 1;
-                $order->save();
-                sleep(1);
-                $bot->status = true;
-                $bot->save();
-            }
-        }
-        Proxy::where('status', false)
-            ->where('updated_at', '>', now()->tz('Europe/Istanbul')->subMinutes(1)->toDateTimeLocalString())
-            ->update([
-                'status' => true
-            ]);
         Bot::where('version', '!=', config('app.bot_version'))->where('status', false)->delete();
         Bot::where('signal', '<', now()->tz('Europe/Istanbul')->subMinutes(2))->where('status', false)->delete();
         $fails = Bot::where('signal', '<', now()->tz('Europe/Istanbul')->subMinutes(2)->toDateTimeLocalString())
@@ -74,6 +58,23 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
                 DB::commit();
             }
         }
+
+        $orders = Order::where('status', 0)->get();
+        foreach ($orders as $order) {
+            if (!empty($bot = Bot::orderBy('signal', 'DESC')->where('version', config('app.bot_version'))->where('status', false)->first())) {
+                $order->bot = $bot->uuid;
+                $order->status = 1;
+                $order->save();
+                sleep(1);
+                $bot->status = true;
+                $bot->save();
+            }
+        }
+        Proxy::where('status', false)
+            ->where('updated_at', '>', now()->tz('Europe/Istanbul')->subMinutes(1)->toDateTimeLocalString())
+            ->update([
+                'status' => true
+            ]);
         return true;
     }
 }
