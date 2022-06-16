@@ -182,15 +182,15 @@ def profitMax(klines, leverage):
     return {
         'profit': {
             maxDiff: {
-                'count': 1,
+                'count': 3,
                 'percent': 15,
             },
             averageDiff: {
-                'count': 2,
-                'percent': 20,
+                'count': 4,
+                'percent': 30,
             },
             minDiff: {
-                'count': 3,
+                'count': 4,
                 'percent': 40,
             },
         },
@@ -356,6 +356,7 @@ while True:
                 'maxDamageUSDT': 0,
                 'maxDamageCount': 0,
                 'maxDamageBefore': 0,
+                'lastProfitOuts': [],
                 'maxProfit': 100,
                 'maxProfitCount': 0,
                 'maxProfitCountMax': 0,
@@ -369,6 +370,7 @@ while True:
                 'setLeverage': True,
                 'firstLogin': True,
                 'KDJtriggerCheck': 0,
+                'KDJtriggerCheckReverse': 0,
             }
             jsonData(getBot['bot'], 'SET', botElements)
         klines = {}
@@ -563,7 +565,6 @@ while True:
                                         'line': getframeinfo(currentframe()).lineno,
                                         'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                         'KDJ': getKDJ['type'],
-
                                         'side': botElements['lastSide'],
                                         'action': 'CLOSE',
                                     })
@@ -685,6 +686,8 @@ while True:
 
                                 if botElements['lastSide'] == getKDJ['side']:
                                     botElements['KDJtriggerCheck'] += 1
+                                else:
+                                    botElements['KDJtriggerCheckReverse'] += 1
 
                                 if botElements['setLeverage']:
                                     botElements['maxDamageUSDT'] = botElements['maxDamageUSDT'] * position['leverage']
@@ -715,9 +718,22 @@ while True:
                                             botElements['profitTriggerKey'] = "TRIGGER_PROFIT_EXIT"
                                             botElements['profitTurn'] = True
                                         else:
-                                            botElements['maxProfitCount'] += 1
+                                            if len(botElements['lastProfitOuts']) == 0:
+                                                botElements['lastProfitOuts'].append(position['profit'])
+                                                botElements['maxProfitCount'] += 1
+                                            elif botElements['lastProfitOuts'][-1] > position['profit']:
+                                                botElements['lastProfitOuts'].append(position['profit'])
+                                                botElements['maxProfitCount'] += 1
+                                            elif botElements['lastProfitOuts'][-1] < position['profit']:
+                                                for last in botElements['lastProfitOuts']:
+                                                    if position['profit'] > last:
+                                                        botElements['lastProfitOuts'].remove(last)
+                                                        botElements['maxProfitCount'] -= 1
+                                                if botElements['maxProfitCount'] < 0:
+                                                    botElements['maxProfitCount'] = 0
                                     else:
                                         botElements['maxProfitCount'] = 0
+                                        botElements['lastProfitOuts'] = []
 
                                 elif position['profit'] < 0:
                                     botElements['maxProfitStatus'] = False
@@ -732,12 +748,13 @@ while True:
                                         botElements['maxDamageBefore'] = abs(position['profit'])
                                 jsonData(getBot['bot'], 'SET', botElements)
 
-                                if botElements['lastSide'] != getKDJ['side'] and botElements['KDJtriggerCheck'] >= int(config('SETTING', 'CLOSE_ORDER_KDJ')):
+                                if botElements['lastSide'] != getKDJ['side'] and (botElements['KDJtriggerCheck'] >= int(config('SETTING', 'CLOSE_ORDER_KDJ')) or botElements['KDJtriggerCheckReverse'] >= int(config('SETTING', 'CLOSE_ORDER_KDJ_REVERSE'))):
                                     botElements['profitTurn'] = True
                                     botElements['profitTriggerKey'] = "KDJ_TRIGGER"
 
                                 if botElements['profitTurn']:
                                     botElements['KDJtriggerCheck'] = 0
+                                    botElements['KDJtriggerCheckReverse'] = 0
                                     botElements['profitTurn'] = False
                                     botElements['fakeTrigger'] = 0
                                     botElements['profitTrigger'] = True
