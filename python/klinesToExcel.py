@@ -1,12 +1,11 @@
 import json
-
 from binance.client import Client
 import pandas as pd
 
-symbol = "BNBUSDT"
+symbol = "BTCUSDT"
 
 client = Client()
-klines = client.futures_klines(symbol=symbol, interval=client.KLINE_INTERVAL_15MINUTE, limit=300)
+klines = client.futures_klines(symbol=symbol, interval=client.KLINE_INTERVAL_1HOUR, limit=300)
 cols = [
     'Date',
     'Open',
@@ -21,7 +20,7 @@ cols = [
     'TakerBuyQuoteVolume',
     'Ignore'
 ]
-num_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
+num_cols = ['Open', 'High', 'Low', 'Close', 'Volume', 'Date']
 df = pd.DataFrame(klines, columns=cols)
 df = df.drop(columns=['CloseTime', 'QuoteVolume', 'NumberTrades', 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume', 'Ignore'])
 df[num_cols] = df[num_cols].apply(pd.to_numeric, errors='coerce')
@@ -35,4 +34,4 @@ df = {
 }
 
 df_json = pd.read_json(json.dumps(df))
-df_json.to_excel(symbol + "_15MIN.xlsx")
+df_json.to_excel(symbol + ".xlsx")

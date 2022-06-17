@@ -352,6 +352,7 @@ while True:
                 'profitTriggerKey': None,
                 'firstTypeTrigger': 0,
                 'fakeTrigger': 0,
+                'fakeTriggerK': [],
                 'fakeTriggerSide': 'HOLD',
                 'maxDamageUSDT': 0,
                 'maxDamageCount': 0,
@@ -418,9 +419,18 @@ while True:
                             botElements['lastSide'] = getKDJ['side']
                         # first side check END
                         if botElements['fakeTriggerSide'] == getKDJ['side'] and botElements['firstTypeTrigger'] >= int(config('SETTING', 'FIRST_FAKE')):
-                            botElements['fakeTrigger'] += 1
+                            if len(botElements['fakeTriggerK']) > 0:
+                                if getKDJ['side'] == 'BUY' and botElements['fakeTriggerK'][-1] < float(getKDJ['K']):
+                                    botElements['fakeTrigger'] += 1
+                                    botElements['fakeTriggerK'].append(float(getKDJ['K']))
+                                elif getKDJ['side'] == 'SELL' and botElements['fakeTriggerK'][-1] > float(getKDJ['K']):
+                                    botElements['fakeTrigger'] += 1
+                                    botElements['fakeTriggerK'].append(float(getKDJ['K']))
+                            else:
+                                botElements['fakeTriggerK'].append(float(getKDJ['K']))
                         else:
                             botElements['fakeTrigger'] = 0
+                            botElements['fakeTriggerK'] = []
                         botElements['fakeTriggerSide'] = getKDJ['side']
                         jsonData(getBot['bot'], 'SET', botElements)
 
