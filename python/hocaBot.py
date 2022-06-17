@@ -696,7 +696,7 @@ while True:
 
                                 if botElements['lastSide'] == getKDJ['side']:
                                     botElements['KDJtriggerCheck'] += 1
-                                elif botElements['KDJtriggerCheck'] > 0:
+                                elif botElements['KDJtriggerCheck'] <= 5:
                                     botElements['KDJtriggerCheckReverse'] += 1
 
                                 if botElements['setLeverage']:
