@@ -14,21 +14,7 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $this->call(ReferenceSeeder::class);
-//        $this->call(ParitySeeder::class);
         $this->call(LeverageSeeder::class);
-//        $this->call(TimeSeeder::class);
         $this->call(ProxySeeder::class);
-        $this->call(ImportSeeder::class);
-//        \App\Models\User::factory(50)->create();
-//        \App\Models\User::create([
-//            'email' => 'datakul@yandex.com',
-//            'login_key' => 'X',
-//            'status' => 2,
-//            'admin' => true,
-//            'api_key' => 'l8FqzEGOW91yP139vjZKDMs6oZJse4Isl3emol6dAMwVwKhHvOwH5irOVBvBhsVc',
-//            'api_secret' => 'eMlTWnJKQypSF2nlpCoWqTv6zyXej2hjDt2e7iqTNQbMoRQW3mOp94bkowj1OAtg',
-//            'api_status' => true,
-//            'binance_id' => 95200230
-//        ]);
     }
 }

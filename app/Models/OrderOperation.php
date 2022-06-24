@@ -18,9 +18,10 @@ class OrderOperation extends Model
         'position_side',
         'action',
         'profit',
-        'KDJ',
-        'MACD',
-        'CE',
+        'BRS',
+        'BRS_M',
+        'BRS_T',
+        'BRS_C',
         'time',
         'line',
     ];

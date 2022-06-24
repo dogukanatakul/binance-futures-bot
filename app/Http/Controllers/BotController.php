@@ -9,6 +9,7 @@ use App\Models\OrderError;
 use App\Models\OrderOperation;
 use App\Models\Parity;
 use App\Models\Proxy;
+use App\Models\Time;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -29,12 +30,9 @@ class BotController extends Controller
                 'profit' => $order->profit,
                 'parity' => $order->parity->parity,
                 'MAX_DAMAGE_USDT_PERCENT' => $order->time->MAX_DAMAGE_USDT_PERCENT,
-                'KDJ_X' => $order->time->KDJ_X,
-                'kdj_period' => $order->time->kdj_period,
-                'kdj_signal' => $order->time->kdj_signal,
-                'dema_short' => $order->time->dema_short,
-                'dema_long' => $order->time->dema_long,
-                'dema_signal' => $order->time->dema_signal,
+                'BRS_M' => $order->time->BRS_M,
+                'BRS_T' => $order->time->BRS_T,
+                'BRS_LIMIT' => $order->time->BRS_LIMIT,
                 'time' => $order->time->time,
                 'proxy' => [
                     'http' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port,
@@ -226,6 +224,14 @@ class BotController extends Controller
             try {
                 if (!empty($parity = Parity::where('parity', $request->parity)->first())) {
                     $parity->update($request->toArray());
+                } else {
+                    $parity = Parity::create($request->toArray());
+                    foreach (config('app.times') as $time) {
+                        Time::create([
+                            'parities_id' => $parity->id,
+                            'time' => $time
+                        ]);
+                    }
                 }
                 return response()->json([
                     'status' => 'success'

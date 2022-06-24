@@ -17,19 +17,15 @@ return new class extends Migration {
             $table->bigInteger('parities_id')->unsigned();
             $table->foreign('parities_id')->references('id')->on('parities');
             $table->string('time');
-            // KDJ
-            $table->integer('kdj_period')->default(9);
-            $table->integer('kdj_signal')->default(2);
+            // BRS
+            $table->float('BRS_M')->default(1);
+            $table->float('BRS_T')->default(1);
+            $table->integer('BRS_LIMIT')->default(11);
 
-            // MACD DEMA
-            $table->integer('dema_short')->default(12);
-            $table->integer('dema_long')->default(26);
-            $table->integer('dema_signal')->default(9);
-
-            $table->integer('MAX_DAMAGE_USDT_PERCENT')->default(10);
-            $table->float('KDJ_X')->default(1.07);
+            $table->float('MAX_DAMAGE_USDT_PERCENT')->default(1);
 
             $table->boolean('status')->default(false);
+            $table->tinyInteger('export')->default(0);
             $table->softDeletes();
             $table->timestamps();
         });

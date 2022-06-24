@@ -17,16 +17,16 @@ class TimeSeeder extends Seeder
     public function run()
     {
         $times = [
-//            [
-//                'time' => '1min',
-//                'trigger_diff' => 20,
-//            ],
-//            [
-//                'time' => '5min',
-//                'trigger_diff' => 10,
-//            ],
+            [
+                'time' => '1min',
+                'trigger_diff' => 20,
+            ],
             [
                 'time' => '5min',
+                'trigger_diff' => 10,
+            ],
+            [
+                'time' => '15min',
             ],
         ];
 

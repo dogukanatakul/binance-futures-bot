@@ -23,9 +23,12 @@ return new class extends Migration {
             $table->string("position_side")->nullable()->default(null);
             $table->string("action")->nullable()->default(null);
             $table->decimal("profit", 38, 22)->default(0);
-            $table->string("KDJ")->nullable()->default(null);
-            $table->string("MACD")->nullable()->default(null);
-            $table->string("CE")->nullable()->default(null);
+
+            $table->string("BRS")->nullable()->default(null);
+            $table->string("BRS_M")->nullable()->default(null);
+            $table->string("BRS_T")->nullable()->default(null);
+            $table->string("BRS_C")->nullable()->default(null);
+
             $table->dateTime("time");
             $table->integer('line')->default(0);
             $table->softDeletes();

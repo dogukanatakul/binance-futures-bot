@@ -43,12 +43,8 @@
                         <tr>
                             <th scope="col">Zaman</th>
                             <th scope="col">Max. Zarar</th>
-                            <th scope="col">KDJ Çarpan</th>
-                            <th scope="col">KDJ Period</th>
-                            <th scope="col">KDJ Signal</th>
-                            <th scope="col">MACD Short</th>
-                            <th scope="col">MACD Long</th>
-                            <th scope="col">MACD Signal</th>
+                            <th scope="col">BRS_M</th>
+                            <th scope="col">BRS_T</th>
                             <th scope="col">Durum</th>
                             <th scope="col"><i class="bi bi-arrow-clockwise"></i></th>
                         </tr>
@@ -64,37 +60,22 @@
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[MAX_DAMAGE_USDT_PERCENT]" value="{{ $time->MAX_DAMAGE_USDT_PERCENT }}">
+                                            <input type="number" class="form-control" name="update[MAX_DAMAGE_USDT_PERCENT]" min="0" step="0.0001" value="{{ $time->MAX_DAMAGE_USDT_PERCENT }}">
                                         </div>
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" min="0" step="0.01" name="update[KDJ_X]" value="{{ $time->KDJ_X }}">
+                                            <input type="number" class="form-control" min="0" step="0.0001" name="update[BRS_M]" value="{{ $time->BRS_M }}">
                                         </div>
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[kdj_period]" value="{{ $time->kdj_period }}">
+                                            <input type="number" class="form-control" min="0" step="0.0001" name="update[BRS_T]" value="{{ $time->BRS_T }}">
                                         </div>
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[kdj_signal]" value="{{ $time->kdj_signal }}">
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[dema_short]" value="{{ $time->dema_short }}">
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[dema_long]" value="{{ $time->dema_long }}">
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" name="update[dema_signal]" value="{{ $time->dema_signal }}">
+                                            <input type="number" class="form-control" min="1" name="update[BRS_LIMIT]" value="{{ $time->BRS_LIMIT }}">
                                         </div>
                                     </td>
                                     <td>
