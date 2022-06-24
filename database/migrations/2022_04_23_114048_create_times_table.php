@@ -25,7 +25,7 @@ return new class extends Migration {
             $table->float('MAX_DAMAGE_USDT_PERCENT')->default(1);
 
             $table->boolean('status')->default(false);
-            $table->tinyInteger('export')->default(0);
+            $table->tinyInteger('export')->default(0); # 0: Boşta 1: İstek 2: Sonuç
             $table->softDeletes();
             $table->timestamps();
         });

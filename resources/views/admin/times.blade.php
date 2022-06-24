@@ -45,6 +45,7 @@
                             <th scope="col">Max. Zarar</th>
                             <th scope="col">BRS_M</th>
                             <th scope="col">BRS_T</th>
+                            <th scope="col">BRS_LIMIT</th>
                             <th scope="col">Durum</th>
                             <th scope="col"><i class="bi bi-arrow-clockwise"></i></th>
                         </tr>
