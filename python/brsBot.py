@@ -25,10 +25,10 @@ def brs(klines, M=0, T=0):
         'TakerBuyQuoteVolume',
         'Ignore'
     ]
-    num_cols = ['Open', 'High', 'Low', 'Close', 'Volume', 'Date']
+    num_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
     df = pd.DataFrame(klines, columns=cols)
     df = df.drop(columns=['CloseTime', 'QuoteVolume', 'NumberTrades', 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume', 'Ignore'])
-    klines[num_cols] = df[num_cols].apply(pd.to_numeric, errors='coerce')
+    df[num_cols] = df[num_cols].apply(pd.to_numeric, errors='coerce')
     BRS = (((list(df['Close'])[-1] - (sum(df['Low']) / len(df['Low']))) / ((sum(df['High']) / len(df['High'])) - (sum(df['Low']) / len(df['Low'])))) * 100) * 1
     M = 2.5 / 3 * M + 0.5 / 3 * BRS
     T = 2.5 / 3 * T + 0.5 / 3 * M
