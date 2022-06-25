@@ -10,7 +10,7 @@ import logging
 url = config('API', 'SITE')
 
 
-def brs(klines, M=0, T=0):
+def parse(kline):
     cols = [
         'Date',
         'Open',
@@ -25,34 +25,67 @@ def brs(klines, M=0, T=0):
         'TakerBuyQuoteVolume',
         'Ignore'
     ]
-    num_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
-    df = pd.DataFrame(klines, columns=cols)
+    num_cols = ['Open', 'High', 'Low', 'Close', 'Volume', 'Date']
+    df = pd.DataFrame(kline, columns=cols)
     df = df.drop(columns=['CloseTime', 'QuoteVolume', 'NumberTrades', 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume', 'Ignore'])
     df[num_cols] = df[num_cols].apply(pd.to_numeric, errors='coerce')
-    BRS = (((list(df['Close'])[-1] - (sum(df['Low']) / len(df['Low']))) / ((sum(df['High']) / len(df['High'])) - (sum(df['Low']) / len(df['Low'])))) * 100) * 1
-    M = 2.5 / 3 * M + 0.5 / 3 * BRS
-    T = 2.5 / 3 * T + 0.5 / 3 * M
-    C = 3 * M - 2 * T
+    return df
 
-    if C > T:
-        result = {
-            'type': 'LONG',
-            'side': 'BUY',
-            'BRS': BRS,
-            'M': M,
-            'T': T,
-            'C': C,
-        }
+
+def brs(klines15m, klines3m, M=0, T=0, result={}):
+    klines3m.pop(-1)
+    klines3mNew = []
+    for key, min3 in enumerate(klines3m):
+        if int(klines15m[-1][0]) <= int(min3[0]):
+            klines3mNew.append(min3)
+    klines3m = klines3mNew
+    if len(klines3m) != 0:
+        df3m = parse(klines3m)
+        # Klines 3M END
+        klines15m.pop(-1)
+        klines15m.append([
+            klines3m[-1][0],
+            klines3m[0][1],
+            max(df3m['High']),
+            min(df3m['Low']),
+            klines3m[-1][4],
+            klines3m[-1][5],
+            klines3m[-1][6],
+            klines3m[-1][7],
+            klines3m[-1][8],
+            klines3m[-1][9],
+            klines3m[-1][10],
+            klines3m[-1][11],
+        ])
+    df15m = parse(klines15m)
+    if result['date'] == klines15m[-1][0]:
+        return result
     else:
-        result = {
-            'type': 'SHORT',
-            'side': 'SELL',
-            'BRS': BRS,
-            'M': M,
-            'T': T,
-            'C': C,
-        }
-    return result
+        BRS = ((list(df15m['Close'])[-1] - (sum(df15m['Low']) / len(df15m['Low']))) / ((sum(df15m['High']) / len(df15m['High'])) - (sum(df15m['Low']) / len(df15m['Low'])))) * 100
+        M = 2.5 / 3 * M + 0.5 / 3 * BRS
+        T = 2.5 / 3 * T + 0.5 / 3 * M
+        C = 3 * M - 2 * T
+
+        if C > T:
+            return {
+                'type': 'LONG',
+                'side': 'BUY',
+                'BRS': BRS,
+                'M': M,
+                'T': T,
+                'C': C,
+                'date': klines15m[-1][0]
+            }
+        else:
+            return {
+                'type': 'SHORT',
+                'side': 'SELL',
+                'BRS': BRS,
+                'M': M,
+                'T': T,
+                'C': C,
+                'date': klines15m[-1][0]
+            }
 
 
 def getOrderBalance(client, currenty, percent):
@@ -103,54 +136,6 @@ def getPosition(client, symbol, side):
             'leverage': int(info['leverage'])
         }
     return positions[side]
-
-
-def profitMax(klines, leverage):
-    cols = [
-        'Date',
-        'Open',
-        'High',
-        'Low',
-        'Close',
-        'Volume',
-        'CloseTime',
-        'QuoteVolume',
-        'NumberTrades',
-        'TakerBuyBaseVolume',
-        'TakerBuyQuoteVolume',
-        'Ignore'
-    ]
-    df = pd.DataFrame(klines, columns=cols)
-    df = df.drop(columns=['CloseTime', 'QuoteVolume', 'NumberTrades', 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume', 'Ignore'])
-    high = list(df['High'])
-    high.reverse()
-    high.pop(0)
-    low = list(df['Low'])
-    low.reverse()
-    low.pop(0)
-    diffs = []
-    for key in range(0, 10):
-        diffs.append(get_diff(float(low[key]), float(high[key])))
-    minDiff = int(min(diffs) * leverage)
-    maxDiff = int(max(diffs) * leverage)
-    averageDiff = int((sum(diffs) / len(diffs)) * leverage)
-    return {
-        'profit': {
-            maxDiff: {
-                'count': 3,
-                'percent': 15,
-            },
-            averageDiff: {
-                'count': 4,
-                'percent': 30,
-            },
-            minDiff: {
-                'count': 4,
-                'percent': 40,
-            },
-        },
-        'default': minDiff
-    }
 
 
 def sideCalc(klines):
@@ -296,14 +281,19 @@ while True:
                 'BRS_T': getBot['BRS_T'],
             }
             jsonData(getBot['bot'], 'SET', botElements)
-        klines = {}
+        getBRS = {
+            'date': 0
+        }
+        klines15m = {}
+        klines3m = {}
         while operationLoop:
             try:
                 klineConnect = True
                 klineConnectCount = 0
                 while klineConnect:
                     try:
-                        klines = client.futures_klines(symbol=getBot['parity'], interval=str(getBot['time']), limit=int(getBot['BRS_LIMIT']))
+                        klines15m = client.futures_klines(symbol=getBot['parity'], interval="15m", limit=11)
+                        klines3m = client.futures_klines(symbol=getBot['parity'], interval="3m", limit=6)
                         klineConnect = False
                     except Exception as e:
                         klineConnectCount += 1
@@ -316,7 +306,7 @@ while True:
                             client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 300, 'proxies': proxyOrder})
                         else:
                             raise Exception(e)
-                getBRS = brs(klines, botElements['BRS_M'], botElements['BRS_T'])
+                getBRS = brs(klines15m, klines3m, botElements['BRS_M'], botElements['BRS_T'], getBRS)
                 if getBRS['M'] != sameTest['M'] or getBRS['T'] != sameTest['T'] or getBRS['C'] != sameTest['C']:
                     botElements['BRS_M'] = getBRS['M']
                     botElements['BRS_T'] = getBRS['T']
@@ -496,7 +486,6 @@ while True:
                                 botElements['maxDamageUSDT'] = round((botElements['balance'] / 100) * int(getBot['MAX_DAMAGE_USDT_PERCENT']), 2)
                                 botElements['maxDamageCount'] = 0
                                 botElements['maxDamageBefore'] = 0
-                                botElements['profitMax'] = profitMax(klines, int(getBot['leverage']))
                                 botElements['setLeverage'] = True
 
                                 # profit trigger END
