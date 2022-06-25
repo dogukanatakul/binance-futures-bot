@@ -34,7 +34,7 @@ def brs(klines, M=0, T=0):
     T = 2.5 / 3 * T + 0.5 / 3 * M
     C = 3 * M - 2 * T
 
-    if M > C:
+    if C > T:
         result = {
             'type': 'LONG',
             'side': 'BUY',
@@ -53,37 +53,6 @@ def brs(klines, M=0, T=0):
             'C': C,
         }
     return result
-
-
-def mac_dema(kline, dema_short=12, dema_long=26, dema_signal=9, lastMAC=None):
-    df = pd.DataFrame(kline)
-    df.columns = ['Datetime',
-                  'Open', 'High', 'Low', 'Close', 'volume',
-                  'close_time', 'qav', 'num_trades',
-                  'taker_base_vol', 'taker_quote_vol', 'ignore']
-    df.index = [datetime.fromtimestamp(x / 1000.0) for x in df.close_time]
-    df.drop(['close_time', 'qav', 'num_trades', 'taker_base_vol', 'taker_quote_vol', 'ignore'], axis=1, inplace=True)
-    df["Close"] = pd.to_numeric(df["Close"], downcast="float")
-    close = df['Close']
-    close = list(filter(lambda v: v == v, close))
-    MMEslowa = talib.EMA(numpy.asarray(close), timeperiod=dema_long)
-    MMEslowb = talib.EMA(MMEslowa, timeperiod=dema_long)
-    DEMAslow = ((2 * MMEslowa) - MMEslowb)
-    MMEfasta = talib.EMA(numpy.asarray(close), timeperiod=dema_short)
-    MMEfastb = talib.EMA(MMEfasta, timeperiod=dema_short)
-    DEMAfast = ((2 * MMEfasta) - MMEfastb)
-    LigneMACD = DEMAfast - DEMAslow
-    MMEsignala = talib.EMA(LigneMACD, timeperiod=dema_signal)
-    MMEsignalb = talib.EMA(MMEsignala, timeperiod=dema_signal)
-    Lignesignal = ((2 * MMEsignala) - MMEsignalb)
-
-    if LigneMACD[-2] <= Lignesignal[-2] and LigneMACD[-1] >= Lignesignal[-1]:
-        dir = 'LONG'
-    elif LigneMACD[-2] >= Lignesignal[-2] and LigneMACD[-1] <= Lignesignal[-1]:
-        dir = 'SHORT'
-    else:
-        dir = lastMAC
-    return dir
 
 
 def getOrderBalance(client, currenty, percent):
@@ -454,7 +423,7 @@ while True:
                                             'BRS': getBRS['BRS'],
                                             'BRS_M': getBRS['M'],
                                             'BRS_T': getBRS['T'],
-                                            'BRS_C': getBRS['T'],
+                                            'BRS_C': getBRS['C'],
                                             'side': botElements['lastSide'],
                                             'price': position['markPrice'],
                                             'profit': position['profit'],
@@ -480,7 +449,7 @@ while True:
                                             'BRS': getBRS['BRS'],
                                             'BRS_M': getBRS['M'],
                                             'BRS_T': getBRS['T'],
-                                            'BRS_C': getBRS['T'],
+                                            'BRS_C': getBRS['C'],
                                             'side': botElements['lastSide'],
                                             'action': 'MANUAL_STOP',
                                         })
@@ -505,7 +474,7 @@ while True:
                                         'BRS': getBRS['BRS'],
                                         'BRS_M': getBRS['M'],
                                         'BRS_T': getBRS['T'],
-                                        'BRS_C': getBRS['T'],
+                                        'BRS_C': getBRS['C'],
                                         'side': botElements['lastSide'],
                                         'action': 'CLOSE',
                                     })
@@ -568,7 +537,7 @@ while True:
                                         'BRS': getBRS['BRS'],
                                         'BRS_M': getBRS['M'],
                                         'BRS_T': getBRS['T'],
-                                        'BRS_C': getBRS['T'],
+                                        'BRS_C': getBRS['C'],
                                         'side': botElements['lastSide'],
                                         'position': botElements['lastType'],
                                         'balance': botElements['balance'],
@@ -596,7 +565,7 @@ while True:
                                         'BRS': getBRS['BRS'],
                                         'BRS_M': getBRS['M'],
                                         'BRS_T': getBRS['T'],
-                                        'BRS_C': getBRS['T'],
+                                        'BRS_C': getBRS['C'],
                                         'action': 'ORDER_START_WAITING',
                                     })
                                     if setBot.status_code == 200:
@@ -677,7 +646,7 @@ while True:
                                             'BRS': getBRS['BRS'],
                                             'BRS_M': getBRS['M'],
                                             'BRS_T': getBRS['T'],
-                                            'BRS_C': getBRS['T'],
+                                            'BRS_C': getBRS['C'],
                                             'side': botElements['lastSide'],
                                             'price': position['markPrice'],
                                             'profit': position['profit'],
@@ -703,7 +672,7 @@ while True:
                                             'BRS': getBRS['BRS'],
                                             'BRS_M': getBRS['M'],
                                             'BRS_T': getBRS['T'],
-                                            'BRS_C': getBRS['T'],
+                                            'BRS_C': getBRS['C'],
                                             'action': 'ORDER_ENDING_WAITING',
                                         })
                                         if setBot.status_code == 200:
