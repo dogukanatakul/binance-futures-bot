@@ -21,7 +21,10 @@
                                 <th scope="col">{{ __('app.order_detail_position') }}</th>
                                 <th scope="col">{{ __('app.order_detail_action') }}</th>
                                 @if($user->admin)
-                                    <th scope="col">KDJ</th>
+                                    <th scope="col">BRS</th>
+                                    <th scope="col">BRS_M</th>
+                                    <th scope="col">BRS_T</th>
+                                    <th scope="col">BRS_C</th>
                                     <th scope="col">{{ __('app.order_detail_time') }}</th>
                                 @endif
                             </tr>
@@ -52,7 +55,16 @@
                                     </td>
                                     @if($user->admin)
                                         <td>
-                                            {{ $operation->KDJ }}
+                                            {{ $operation->BRS }}
+                                        </td>
+                                        <td>
+                                            {{ $operation->BRS_M }}
+                                        </td>
+                                        <td>
+                                            {{ $operation->BRS_T }}
+                                        </td>
+                                        <td>
+                                            {{ $operation->BRS_C }}
                                         </td>
                                         <td>
                                             {{ $operation->time }}
