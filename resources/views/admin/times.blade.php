@@ -18,18 +18,22 @@
                         <tr>
                             <th scope="col">Parite</th>
                             <th scope="col">Seçim</th>
+                            <th scope="col" style="text-align: right">Aktif</th>
                         </tr>
                         </thead>
                         <tbody>
                         @foreach($parities as $parity)
                             <tr>
-                                <td class="text-center">
+                                <td class="text-left">
                                     {{ $parity->parity }}
                                 </td>
                                 <td>
                                     <div class="d-grid gap-2">
                                         <a href="{{ route('panel.admin.times')."?parity=".$parity->id }}" class="btn btn-outline-warning btn-sm">Seç</a>
                                     </div>
+                                </td>
+                                <td class="text-end">
+                                    <a href="{{ route('panel.admin.times')."?status=".$parity->id }}" class="btn btn-outline-secondary btn-sm">{{ $parity->status?'Aktifliği Kaldır':'Aktif Yap' }}</a>
                                 </td>
                             </tr>
                         @endforeach

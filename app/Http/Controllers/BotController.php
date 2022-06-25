@@ -252,4 +252,32 @@ class BotController extends Controller
             'status' => 'success'
         ]);
     }
+
+
+    public function exports(Request $request): \Illuminate\Http\JsonResponse
+    {
+        if ($request->filled('id')) {
+            Time::where('id', $request->id)->update([
+                'export' => 2
+            ]);
+            return response()->json([
+                'status' => 'success',
+            ]);
+        } else {
+            if (!empty($time = Time::with('parity')
+                ->where('export', 1)
+                ->first())) {
+                return response()->json([
+                    'time' => $time->time,
+                    'parity' => $time->parity->parity,
+                    'id' => $time->id,
+                ]);
+            } else {
+                return response()->json([
+                    'id' => 0,
+                ]);
+            }
+
+        }
+    }
 }

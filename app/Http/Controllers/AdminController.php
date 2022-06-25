@@ -9,6 +9,7 @@ use App\Models\Time;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -51,8 +52,14 @@ class AdminController extends Controller
     }
 
 
-    public function times(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
+    public function times(Request $request): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\Contracts\Foundation\Application
     {
+        if ($request->filled('status')) {
+            $parity = Parity::where('id', $request->status)->first();
+            $parity->status = !$parity->status;
+            $parity->save();
+            return redirect()->back();
+        }
         $parities = Parity::orderBy('parity', 'ASC')->get();
         $times = [];
         $selectTimes = [];
@@ -83,6 +90,35 @@ class AdminController extends Controller
             $update['status'] = 0;
         }
         Time::where('id', $request->id)->update($update);
+        return redirect()->back();
+    }
+
+
+    public function export(Request $request): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
+    {
+        $parities = Parity::orderBy('parity', 'ASC')->get();
+        $times = [];
+        $selectTimes = [];
+        if ($request->filled('parity')) {
+            $times = Time::with('parity')->where('parities_id', $request->parity)->get();
+            $selectTimes = collect($times)->mapWithKeys(function ($item) {
+                return [$item['id'] => $item['time']];
+            });
+            header("Refresh: 5;");
+        }
+        $status = [
+            'Bekliyor',
+            'Hazırlanıyor',
+            'Hazır'
+        ];
+        return view('admin.export', compact('times', 'parities', 'selectTimes', 'status'));
+    }
+
+    public function exportUpdate($id): \Illuminate\Http\RedirectResponse
+    {
+        Time::where('id', $id)->update([
+            'export' => 1
+        ]);
         return redirect()->back();
     }
 

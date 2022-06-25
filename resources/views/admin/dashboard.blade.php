@@ -24,9 +24,14 @@
                     <a href="{{ route('panel.admin.leverages') }}" title="Kaldıraçlar" class="btn btn-outline-warning">Kaldıraçlar</a>
                 </div>
             </div>
-            <div class="col-12 text-center mt-2">
+            <div class="col-6 text-center mt-2">
                 <div class="d-grid gap-2">
                     <a href="{{ route('panel.admin.orders') }}" title="Emirler" class="btn btn-outline-warning">Emirler</a>
+                </div>
+            </div>
+            <div class="col-6 text-center mt-2">
+                <div class="d-grid gap-2">
+                    <a href="{{ route('panel.admin.export') }}" title="Emirler" class="btn btn-outline-success">Dışa Aktar</a>
                 </div>
             </div>
         </div>

@@ -34,6 +34,8 @@ Route::group([
         Route::post('/times', [\App\Http\Controllers\AdminController::class, 'timeSave'])->name('time_save');
         Route::get('/orders', [\App\Http\Controllers\AdminController::class, 'orders'])->name('orders');
         Route::get('/leverages', [\App\Http\Controllers\AdminController::class, 'leverages'])->name('leverages');
+        Route::get('/export', [\App\Http\Controllers\AdminController::class, 'export'])->name('export');
+        Route::get('/export/{id}', [\App\Http\Controllers\AdminController::class, 'exportUpdate'])->name('export_update');
     });
 
 });
