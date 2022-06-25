@@ -7,3 +7,4 @@ DateTime
 TA-Lib
 numpy
 matplotlib
+openpyxl
