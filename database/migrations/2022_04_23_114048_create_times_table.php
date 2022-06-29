@@ -26,6 +26,7 @@ return new class extends Migration {
 
             $table->boolean('status')->default(false);
             $table->tinyInteger('export')->default(0); # 0: Boşta 1: İstek 2: Sonuç
+            $table->bigInteger('export_time')->nullable()->default(null);
             $table->softDeletes();
             $table->timestamps();
         });

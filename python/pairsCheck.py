@@ -20,5 +20,4 @@ while True:
                 'binance_status': item['status'],
                 'parity': item['symbol'],
             }).json()
-            print(setPair)
             time.sleep(1)

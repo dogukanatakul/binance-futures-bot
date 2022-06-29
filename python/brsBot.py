@@ -104,25 +104,6 @@ def getOrderBalance(client, currenty, percent):
         return False
 
 
-def get_diff(previous, current):
-    try:
-        if previous == current:
-            percentage = 0
-        elif previous < 0 and current < 0:
-            percentage = ((previous - current) / min(previous, current)) * 100
-        elif previous < 0 and current > 0:
-            percentage = (((max(previous, current) - min(previous, current)) / max(previous, current)) * 100)
-        elif previous > 0 and current < 0:
-            percentage = (((max(previous, current) - min(previous, current)) / max(previous, current)) * 100) * -1
-        elif previous > current:
-            percentage = (((previous - current) / previous) * 100) * -1
-        else:
-            percentage = ((current - previous) / current) * 100
-    except ZeroDivisionError:
-        percentage = float('inf')
-    return percentage
-
-
 def getPosition(client, symbol, side):
     infos = client.futures_position_information(symbol=symbol)
     positions = {}
@@ -136,33 +117,6 @@ def getPosition(client, symbol, side):
             'leverage': int(info['leverage'])
         }
     return positions[side]
-
-
-def sideCalc(klines):
-    cols = [
-        'Date',
-        'Open',
-        'High',
-        'Low',
-        'Close',
-        'Volume',
-        'CloseTime',
-        'QuoteVolume',
-        'NumberTrades',
-        'TakerBuyBaseVolume',
-        'TakerBuyQuoteVolume',
-        'Ignore'
-    ]
-    num_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
-    df = pd.DataFrame(klines, columns=cols)
-    df = df.drop(columns=['CloseTime', 'QuoteVolume', 'NumberTrades', 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume', 'Ignore'])
-    df[num_cols] = df[num_cols].apply(pd.to_numeric, errors='coerce')
-    if df['Close'][1] > df['Close'][0] and abs(get_diff(df['Low'][1], df['Close'][1])) > 1 and abs(get_diff(df['High'][1], df['Close'][1])) < 1.5:
-        return 'BUY'
-    elif df['Close'][1] < df['Close'][0] and abs(get_diff(df['High'][1], df['Close'][1])) > 1 and abs(get_diff(df['Low'][1], df['Close'][1])) < 1.5:
-        return 'SELL'
-    else:
-        return 'HOLD'
 
 
 def jsonData(bot, status='GET', data={}):
@@ -276,7 +230,6 @@ while True:
                 'newTriggerOrder': False,
                 'balance': 0,
                 'setLeverage': True,
-                'firstLogin': True,
                 'BRS_M': getBot['BRS_M'],
                 'BRS_T': getBot['BRS_T'],
             }
@@ -347,7 +300,7 @@ while True:
                                 'BRS': getBRS['BRS'],
                                 'BRS_M': getBRS['M'],
                                 'BRS_T': getBRS['T'],
-                                'BRS_C': getBRS['T'],
+                                'BRS_C': getBRS['C'],
                                 'side': botElements['lastSide'],
                                 'action': 'CLOSE',
                             })
@@ -360,7 +313,7 @@ while True:
                                 setBotCount += 1
                     else:
                         # START ORDER
-                        if botElements['lastSide'] != getBRS['side'] and botElements['orderStatus'] == False:
+                        if botElements['lastSide'] != getBRS['side']:
                             botElements['lastPrice'] = float(client.futures_ticker(symbol=getBot['parity'])['lastPrice'])
                             if botElements['lastSide'] != 'HOLD' and botElements['orderStatus'] == True:
                                 positionConnect = True
@@ -478,7 +431,6 @@ while True:
                             else:
                                 botElements['lastSide'] = getBRS['side']
                                 botElements['lastType'] = getBRS['type']
-                                botElements['firstLogin'] = False
                                 # Binance
                                 botElements['balance'] = getOrderBalance(client, "USDT", int(getBot['percent']))
 

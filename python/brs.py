@@ -95,46 +95,11 @@ BRS = {
     'date': 0
 }
 
-# times = [
-#     1656186840000,
-#     1656187020000,
-#     1656187200000,
-#     1656187380000,
-#     1656187560000,
-#     1656187740000,
-#     1656187920000,
-#     1656188100000,
-#     1656188280000,
-# ]
-# lastDate = 0
-# for tmm in times:
-#     klines15m = json.loads(open(os.path.dirname(os.path.realpath(__file__)) + '/datas/' + str(tmm) + '.json', "r").read())
-#     klines3m = json.loads(open(os.path.dirname(os.path.realpath(__file__)) + '/datas/' + str(tmm) + '_3.json', "r").read())
-#     BRS = brs(klines15m, klines3m, M, T, BRS)
-#     BRS['date'] = microTime(BRS['date'])
-#
-#     # if BRS['date'] != lastDate:
-#     #     lastDate = BRS['date']
-#     #     with open(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + str(BRS['date']) + '.json', 'w+') as outfile:
-#     #         outfile.write(json.dumps(klines15m))
-#     #     with open(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + str(BRS['date']) + '_3.json', 'w+') as outfile:
-#     #         outfile.write(json.dumps(klines3m))
-#     print(BRS)
-#     M = BRS['M']
-#     T = BRS['T']
 
 lastDate = 0
 while True:
     klines15m = client.futures_klines(symbol="BNBUSDT", interval="15m", limit=11)
     klines3m = client.futures_klines(symbol="BNBUSDT", interval="3m", limit=6)
     BRS = brs(klines15m, klines3m, M, T, BRS)
-
-    if BRS['date'] != lastDate:
-        lastDate = BRS['date']
-        with open(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + str(BRS['date']) + '.json', 'w+') as outfile:
-            outfile.write(json.dumps(klines15m))
-        with open(os.path.dirname(os.path.realpath(__file__)) + "/datas/" + str(BRS['date']) + '_3.json', 'w+') as outfile:
-            outfile.write(json.dumps(klines3m))
-        print(BRS)
     M = BRS['M']
     T = BRS['T']

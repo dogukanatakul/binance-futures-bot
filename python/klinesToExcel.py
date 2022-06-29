@@ -41,19 +41,20 @@ while True:
             for date in df['Date']:
                 dates.append(microTime(date))
 
-            df = {
+            dfParse = {
                 'Open': list(df['Open']),
                 'High': list(df['High']),
                 'Low': list(df['Low']),
                 'Close': list(df['Close']),
                 'Date': dates
             }
-            df_json = pd.read_json(json.dumps(df))
+            df_json = pd.read_json(json.dumps(dfParse))
             df_json.to_excel(os.path.dirname(os.path.realpath(__file__)) + "/../storage/app/export/" + req['parity'] + "_" + req['time'] + ".xlsx")
             requests.post(config('API', 'SITE') + 'exports', headers={
                 'neresi': 'dogunun+billurlari'
             }, json={
                 'id': req['id'],
+                'export_time': df['Date'][-1]
             }).json()
         except:
             time.sleep(10)

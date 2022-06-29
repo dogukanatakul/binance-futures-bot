@@ -18,4 +18,5 @@ Route::group([
     Route::post('/update-parity', [\App\Http\Controllers\BotController::class, 'updateParity']);
     Route::post('/delete-bots', [\App\Http\Controllers\BotController::class, 'deleteBots']);
     Route::post('/exports', [\App\Http\Controllers\BotController::class, 'exports']);
+    Route::post('/mt-sync', [\App\Http\Controllers\BotController::class, 'mtSync']);
 });

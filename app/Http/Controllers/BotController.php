@@ -258,7 +258,8 @@ class BotController extends Controller
     {
         if ($request->filled('id')) {
             Time::where('id', $request->id)->update([
-                'export' => 2
+                'export' => 2,
+                'export_time' => $request->export_time
             ]);
             return response()->json([
                 'status' => 'success',
@@ -279,5 +280,31 @@ class BotController extends Controller
             }
 
         }
+    }
+
+    public function mtSync(): \Illuminate\Http\JsonResponse
+    {
+        $orders = Order::where('status', 1)->get()->pluck('times_id');
+        $parities = Parity::with(['time' => function ($q) use ($orders) {
+            $q->whereNotIn('id', $orders)->where('status', true)->whereNotNull('export_time');
+        }])
+            ->whereHas('time', function ($q) use ($orders) {
+                $q->whereNotIn('id', $orders)->where('status', true)->whereNotNull('export_time');
+            })
+            ->where('status', true)
+            ->get();
+        $results = [];
+        foreach ($parities as $parity) {
+            foreach ($parity->time as $time) {
+                $results[] = [
+                    'parity' => $parity->parity,
+                    'time' => $time->time,
+                    'export_time' => $time->export_time,
+                    'BRS_M' => $time->BRS_M,
+                    'BRS_T' => $time->BRS_T,
+                ];
+            }
+        }
+        return response()->json($results);
     }
 }
