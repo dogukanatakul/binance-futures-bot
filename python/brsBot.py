@@ -1,4 +1,4 @@
-import time, sys, os, requests, uuid, talib, numpy
+import time, sys, os, requests, uuid
 from datetime import datetime
 from binance.client import Client
 import pandas as pd

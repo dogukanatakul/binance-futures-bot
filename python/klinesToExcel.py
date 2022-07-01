@@ -10,7 +10,6 @@ def microTime(dt):
 
 
 while True:
-    time.sleep(5)
     req = requests.post(config('API', 'SITE') + 'exports', headers={
         'neresi': 'dogunun+billurlari'
     }).json()
