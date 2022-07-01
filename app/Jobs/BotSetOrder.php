@@ -68,7 +68,7 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
             }
         }
         Proxy::where('status', false)
-            ->where('updated_at', '>', now()->tz('Europe/Istanbul')->subMinutes(1)->toDateTimeLocalString())
+            ->where('updated_at', '>', now()->tz('Europe/Istanbul')->subMinutes(15)->toDateTimeLocalString())
             ->update([
                 'status' => true
             ]);

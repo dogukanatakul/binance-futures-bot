@@ -17,10 +17,10 @@ class BotController extends Controller
 {
     public function getOrder($bot): \Illuminate\Http\JsonResponse
     {
-        Bot::where('uuid', $bot)->update(['signal' => now()->tz('Europe/Istanbul')->toDateTimeLocalString()]);
         if (!empty($order = Order::with(['order_operation', 'user', 'parity', 'time' => function ($q) {
             $q->with('sub_time');
         }, 'proxy', 'bots'])->where('bot', $bot)->whereIn('status', [1, 2])->first())) {
+            Bot::where('uuid', $bot)->update(['signal' => now()->tz('Europe/Istanbul')->toDateTimeLocalString()]);
             return response()->json([
                 'bot' => $order->bot,
                 'api_key' => $order->user->api_key,
