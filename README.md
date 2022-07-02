@@ -19,3 +19,10 @@
 
 ### Zorunlu İşlemler
 sudo chmod -R 777 /var/www/binance-futures-bot/storage/logs/
+
+
+## Sembol Link Oluşturma
+###  Linux Server:
+ln -s /var/www/binance-futures-bot/storage/app/export /var/www/binance-futures-bot/public/export
+### Windows Server
+mklink /J C:\www\binance-futures-bot\storage\app\export C:\www\binance-futures-bot\public\export
