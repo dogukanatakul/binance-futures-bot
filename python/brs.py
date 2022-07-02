@@ -99,6 +99,8 @@ BRS = {
 lastDate = 0
 while True:
     klines15m = client.futures_klines(symbol="BNBUSDT", interval="15m", limit=11)
+    print(klines15m)
+    time.sleep(9999)
     klines3m = client.futures_klines(symbol="BNBUSDT", interval="3m", limit=6)
     BRS = brs(klines15m, klines3m, M, T, BRS)
     M = BRS['M']

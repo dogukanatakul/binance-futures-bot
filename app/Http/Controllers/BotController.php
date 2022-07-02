@@ -282,29 +282,41 @@ class BotController extends Controller
         }
     }
 
-    public function mtSync(): \Illuminate\Http\JsonResponse
+    public function mtSync(Request $request): \Illuminate\Http\JsonResponse
     {
-        $orders = Order::where('status', 1)->get()->pluck('times_id');
-        $parities = Parity::with(['time' => function ($q) use ($orders) {
-            $q->whereNotIn('id', $orders)->where('status', true)->whereNotNull('export_time');
-        }])
-            ->whereHas('time', function ($q) use ($orders) {
+        if ($request->filled('date')) {
+            Time::where('id', $request->id)->update([
+                'BRS_M' => $request->M,
+                'BRS_T' => $request->T,
+                'export_time' => (int)$request->date
+            ]);
+            return response()->json([
+                'status' => 'success'
+            ]);
+        } else {
+            $orders = Order::where('status', 1)->get()->pluck('times_id');
+            $parities = Parity::with(['time' => function ($q) use ($orders) {
                 $q->whereNotIn('id', $orders)->where('status', true)->whereNotNull('export_time');
-            })
-            ->where('status', true)
-            ->get();
-        $results = [];
-        foreach ($parities as $parity) {
-            foreach ($parity->time as $time) {
-                $results[] = [
-                    'parity' => $parity->parity,
-                    'time' => $time->time,
-                    'export_time' => $time->export_time,
-                    'BRS_M' => $time->BRS_M,
-                    'BRS_T' => $time->BRS_T,
-                ];
+            }])
+                ->whereHas('time', function ($q) use ($orders) {
+                    $q->whereNotIn('id', $orders)->where('status', true)->whereNotNull('export_time');
+                })
+                ->where('status', true)
+                ->get();
+            $results = [];
+            foreach ($parities as $parity) {
+                foreach ($parity->time as $time) {
+                    $results[] = [
+                        'parity' => $parity->parity,
+                        'time' => $time->time,
+                        'id' => $time->id,
+                        'export_time' => $time->export_time,
+                        'BRS_M' => $time->BRS_M,
+                        'BRS_T' => $time->BRS_T,
+                    ];
+                }
             }
+            return response()->json($results);
         }
-        return response()->json($results);
     }
 }
