@@ -10,5 +10,6 @@ while True:
         'neresi': 'dogunun+billurlari'
     }).json()
     for parity in parities:
+
         # 180000 : 3min
         print(int(time.time() * 1000.0))

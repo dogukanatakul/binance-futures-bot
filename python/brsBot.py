@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import time, sys, os, requests, uuid
 from datetime import datetime
 from binance.client import Client
@@ -162,6 +163,7 @@ while True:
                 client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 300, 'proxies': getBot['proxy']})
                 clientConnect = False
             except Exception as e:
+                logging.error(str(e))
                 clientConnectCount += 1
                 if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and clientConnectCount < 3:
                     time.sleep(float(config('SETTING', 'TIME_SLEEP')))
@@ -249,6 +251,7 @@ while True:
                         klines3m = client.futures_klines(symbol=getBot['parity'], interval="3m", limit=6)
                         klineConnect = False
                     except Exception as e:
+                        logging.error(str(e))
                         klineConnectCount += 1
                         if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and klineConnectCount < 3:
                             time.sleep(float(config('SETTING', 'TIME_SLEEP')))
@@ -322,6 +325,7 @@ while True:
                                     position = getPosition(client, getBot['parity'], botElements['lastType'])
                                     positionConnect = False
                                 except Exception as e:
+                                    logging.error(str(e))
                                     positionConnectCount += 1
                                     if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and positionConnectCount < 3:
                                         time.sleep(float(config('SETTING', 'TIME_SLEEP')))
@@ -343,6 +347,7 @@ while True:
                                             client.futures_create_order(symbol=getBot['parity'], side=getBRS['side'], positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
                                             orderCreate = False
                                         except Exception as e:
+                                            logging.error(str(e))
                                             orderCreateCount += 1
                                             if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and orderCreateCount < 3:
                                                 time.sleep(float(config('SETTING', 'TIME_SLEEP')))
@@ -453,6 +458,7 @@ while True:
                                         client.futures_create_order(symbol=getBot['parity'], side=botElements['lastSide'], type='MARKET', quantity=botElements['lastQuantity'], positionSide=botElements['lastType'])
                                         orderCreate = False
                                     except Exception as e:
+                                        logging.error(str(e))
                                         orderCreateCount += 1
                                         if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and orderCreateCount < 3:
                                             time.sleep(float(config('SETTING', 'TIME_SLEEP')))
@@ -523,6 +529,7 @@ while True:
                                     position = getPosition(client, getBot['parity'], botElements['lastType'])
                                     positionConnect = False
                                 except Exception as e:
+                                    logging.error(str(e))
                                     positionConnectCount += 1
                                     if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and positionConnectCount < 3:
                                         time.sleep(float(config('SETTING', 'TIME_SLEEP')))
@@ -565,6 +572,7 @@ while True:
                                             client.futures_create_order(symbol=getBot['parity'], side='SELL' if botElements['lastType'] == 'LONG' else "BUY", positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
                                             orderCreate = False
                                         except Exception as e:
+                                            logging.error(str(e))
                                             orderCreateCount += 1
                                             if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and orderCreateCount < 3:
                                                 time.sleep(float(config('SETTING', 'TIME_SLEEP')))
