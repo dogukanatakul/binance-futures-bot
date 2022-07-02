@@ -19,6 +19,7 @@ class User extends Model
         'login_key',
         'reference_codes_id',
         'subscription_period',
+        'status',
         'api_key',
         'api_secret',
         'api_status',
@@ -30,6 +31,7 @@ class User extends Model
         'developer' => 'boolean',
         'api_status' => 'boolean',
         'api_permissions' => 'array',
+        'status' => 'integer',
     ];
 
     protected $attributes = [

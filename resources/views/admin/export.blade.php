@@ -5,7 +5,7 @@
             <div class="col-12">
                 <div class="d-grid gap-2">
                     @if(request()->filled('parity'))
-                        <a href="{{ route('panel.admin.times') }}" class="btn btn-outline-warning btn-sm">Geri Dön</a>
+                        <a href="{{ route('panel.admin.export') }}" class="btn btn-outline-warning btn-sm">Geri Dön</a>
                     @else
                         <a href="{{ route('panel.admin.dashboard') }}" class="btn btn-outline-warning btn-sm">Geri Dön</a>
                     @endif

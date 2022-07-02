@@ -53,7 +53,7 @@ while True:
                 'neresi': 'dogunun+billurlari'
             }, json={
                 'id': req['id'],
-                'export_time': df['Date'][-1]
+                'export_time': list(df['Date'])[-1]
             }).json()
         except:
             time.sleep(10)
