@@ -37,25 +37,32 @@ def parse(kline):
     return df
 
 
-def brs(klines3m, M=0, T=0, lastTime=0):
+def brs(klines3mGroup, M=0, T=0, lastTime=0):
     # Klines 3M
-    filterKlines3m = []
-    high = []
-    low = []
-    for key, min3 in enumerate(klines3m):
-        if len(filterKlines3m) == 0:
-            filterKlines3m.append(min3)
-            high.append(min3[2])
-            low.append(min3[3])
-        else:
-            high.append(min3[2])
-            low.append(min3[3])
-            min3[2] = max(high)
-            min3[3] = min(low)
-            filterKlines3m.append(min3)
-    klines3m = filterKlines3m
+
+    klines3mFilter = []
+    for m3 in klines3mGroup:
+        high = []
+        low = []
+        open = 0
+        filterKlines3m = []
+        for min3 in m3:
+            if len(filterKlines3m) == 0:
+                filterKlines3m.append(min3)
+                open = min3[1]
+                high.append(min3[2])
+                low.append(min3[3])
+            else:
+                high.append(min3[2])
+                low.append(min3[3])
+                min3[1] = open
+                min3[2] = max(high)
+                min3[3] = min(low)
+                filterKlines3m.append(min3)
+        klines3mFilter.append(filterKlines3m[-1])
+    klines3m = klines3mFilter
+    df3m = parse(klines3m)
     if lastTime < klines3m[-1][0]:
-        df3m = parse(klines3m)
         BRS = ((list(df3m['Close'])[-1] - (sum(df3m['Low']) / len(df3m['Low']))) / ((sum(df3m['High']) / len(df3m['High'])) - (sum(df3m['Low']) / len(df3m['Low'])))) * 100
         M = 2.5 / 3 * M + 0.5 / 3 * BRS
         T = 2.5 / 3 * T + 0.5 / 3 * M
@@ -108,13 +115,15 @@ while True:
         # 900000 : 15min
         missingTime = int((int(time.time() * 1000.0) - parity['date']) / 180000)
         if missingTime > 1:
-            missingTime += 5
+            missingTime = 5 * 11
             client = {}
+            klines3m = []
             clientConnect = True
             clientConnectCount = 0
             while clientConnect:
                 try:
                     client = Client(requests_params={"timeout": 300, 'proxies': parity['proxy']})
+                    klines3m = client.futures_klines(symbol=parity['parity'], interval="3m", limit=missingTime)
                     clientConnect = False
                 except Exception as e:
                     clientConnectCount += 1
@@ -131,7 +140,7 @@ while True:
                     else:
                         raise Exception(e)
             del parity['proxy']
-            klines3m = client.futures_klines(symbol=parity['parity'], interval="3m", limit=missingTime)
+
             klines3m.pop(-1)
             klines3mGroup = {}
             for m3 in klines3m:
@@ -141,16 +150,13 @@ while True:
                     klines3mGroup[quarter].append(m3)
                 else:
                     klines3mGroup[quarter].append(m3)
-            for min3 in klines3mGroup:
-                groupCount = 0
-                for klGroup in klines3mGroup[min3]:
-                    groupCount += 1
-                    BRS = brs(klines3mGroup[min3][0:groupCount], parity['M'], parity['T'], parity['date'])
-                    if BRS != False:
-                        for key, value in BRS.items():
-                            parity[key] = value
-                        req = requests.post(config('API', 'SITE') + 'mt-sync', headers={
-                            'neresi': 'dogunun+billurlari'
-                        }, json=parity).json()
-                        if req['status'] == 'fail':
-                            print("HATA")
+
+            BRS = brs(klines3mGroup.values(), parity['M'], parity['T'], parity['date'])
+            if BRS != False:
+                for key, value in BRS.items():
+                    parity[key] = value
+                req = requests.post(config('API', 'SITE') + 'mt-sync', headers={
+                    'neresi': 'dogunun+billurlari'
+                }, json=parity).json()
+                if req['status'] == 'fail':
+                    print("HATA")
