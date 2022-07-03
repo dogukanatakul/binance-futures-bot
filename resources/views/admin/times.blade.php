@@ -70,12 +70,12 @@
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" min="0" step="0.0001" name="update[BRS_M]" value="{{ $time->BRS_M }}">
+                                            <input type="number" class="form-control" step="0.0001" name="update[BRS_M]" value="{{ $time->BRS_M }}">
                                         </div>
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" min="0" step="0.0001" name="update[BRS_T]" value="{{ $time->BRS_T }}">
+                                            <input type="number" class="form-control" step="0.0001" name="update[BRS_T]" value="{{ $time->BRS_T }}">
                                         </div>
                                     </td>
                                     <td>
