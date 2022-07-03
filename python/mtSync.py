@@ -3,7 +3,6 @@ from datetime import timedelta, datetime
 import pandas as pd
 from binance.client import Client
 from helper import config
-from decimal import Decimal
 
 
 def microTime(dt):
@@ -152,11 +151,11 @@ while True:
                         klines3mGroup[quarter].append(m3)
                 klines3mGroup = klines3mGroup.values()
                 BRS = brs(klines3mGroup, parity['M'], parity['T'], parity['date'])
-                # if BRS != False:
-                #     for key, value in BRS.items():
-                #         parity[key] = value
-                #     req = requests.post(config('API', 'SITE') + 'mt-sync', headers={
-                #         'neresi': 'dogunun+billurlari'
-                #     }, json=parity).json()
-                #     if req['status'] == 'fail':
-                #         print("HATA")
+                if BRS != False:
+                    for key, value in BRS.items():
+                        parity[key] = value
+                    req = requests.post(config('API', 'SITE') + 'mt-sync', headers={
+                        'neresi': 'dogunun+billurlari'
+                    }, json=parity).json()
+                    if req['status'] == 'fail':
+                        print("HATA")
