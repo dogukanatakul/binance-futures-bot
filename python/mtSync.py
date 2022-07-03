@@ -130,7 +130,6 @@ while True:
                 for klGroup in klines3mGroup[min3]:
                     groupCount += 1
                     BRS = brs(klines3mGroup[min3][0:groupCount], parity['M'], parity['T'], parity['date'])
-                    print(BRS)
                     if BRS != False:
                         for key, value in BRS.items():
                             parity[key] = value
@@ -139,4 +138,3 @@ while True:
                         }, json=parity).json()
                         if req['status'] == 'fail':
                             print("HATA")
-                            time.sleep(99999999)
