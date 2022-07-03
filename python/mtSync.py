@@ -66,7 +66,6 @@ def brs(klines3mGroup, M=0, T=0, lastTime=0):
         M = 2.5 / 3 * M + 0.5 / 3 * BRS
         T = 2.5 / 3 * T + 0.5 / 3 * M
         C = 3 * M - 2 * T
-        print("ANLIK:", M, T, BRS)
         if C > T:
             result = {
                 'type': 'LONG',
@@ -77,9 +76,9 @@ def brs(klines3mGroup, M=0, T=0, lastTime=0):
                 'C': C,
                 'date': klines3m[-1][0],
                 'dateFormat': microTime(klines3m[-1][0]),
-                'Open': df3m['Open'][0],
-                'High': max(df3m['High']),
-                'Low': min(df3m['Low']),
+                'Open': list(df3m['Open'])[-1],
+                'High': list(df3m['High'])[-1],
+                'Low': list(df3m['Low'])[-1],
                 'Close': list(df3m['Close'])[-1],
             }
         else:
@@ -92,9 +91,9 @@ def brs(klines3mGroup, M=0, T=0, lastTime=0):
                 'C': C,
                 'date': klines3m[-1][0],
                 'dateFormat': microTime(klines3m[-1][0]),
-                'Open': df3m['Open'][0],
-                'High': max(df3m['High']),
-                'Low': min(df3m['Low']),
+                'Open': list(df3m['Open'])[-1],
+                'High': list(df3m['High'])[-1],
+                'Low': list(df3m['Low'])[-1],
                 'Close': list(df3m['Close'])[-1],
             }
         return result
@@ -114,7 +113,7 @@ while True:
         # 900000 : 15min
         missingTime = int((int(time.time() * 1000.0) - parity['date']) / 180000)
         if missingTime > 1:
-            missingTime = 5 * 11
+            missingTimeSET = missingTime + (5 * 11)
             client = {}
             klines3m = []
             clientConnect = True
@@ -122,7 +121,7 @@ while True:
             while clientConnect:
                 try:
                     client = Client(requests_params={"timeout": 300, 'proxies': parity['proxy']})
-                    klines3m = client.futures_klines(symbol=parity['parity'], interval="3m", limit=missingTime)
+                    klines3m = client.futures_klines(symbol=parity['parity'], interval="3m", limit=missingTimeSET)
                     clientConnect = False
                 except Exception as e:
                     clientConnectCount += 1
@@ -139,23 +138,26 @@ while True:
                     else:
                         raise Exception(e)
             del parity['proxy']
-
             klines3m.pop(-1)
-            klines3mGroup = {}
-            for m3 in klines3m:
-                quarter = ceil_date(m3[0], minutes=15)
-                if quarter not in klines3mGroup:
-                    klines3mGroup[quarter] = []
-                    klines3mGroup[quarter].append(m3)
-                else:
-                    klines3mGroup[quarter].append(m3)
+            timeRange = list(range(1, (missingTime + 1)))
+            timeRange.reverse()
 
-            BRS = brs(klines3mGroup.values(), parity['M'], parity['T'], parity['date'])
-            if BRS != False:
-                for key, value in BRS.items():
-                    parity[key] = value
-                req = requests.post(config('API', 'SITE') + 'mt-sync', headers={
-                    'neresi': 'dogunun+billurlari'
-                }, json=parity).json()
-                if req['status'] == 'fail':
-                    print("HATA")
+            for tmRng in timeRange:
+                klines3mGroup = {}
+                for m3 in klines3m[:(tmRng * -1)]:
+                    quarter = ceil_date(m3[0], minutes=15)
+                    if quarter not in klines3mGroup:
+                        klines3mGroup[quarter] = []
+                        klines3mGroup[quarter].append(m3)
+                    else:
+                        klines3mGroup[quarter].append(m3)
+                klines3mGroup = klines3mGroup.values()
+                BRS = brs(klines3mGroup, parity['M'], parity['T'], parity['date'])
+                if BRS != False:
+                    for key, value in BRS.items():
+                        parity[key] = value
+                    req = requests.post(config('API', 'SITE') + 'mt-sync', headers={
+                        'neresi': 'dogunun+billurlari'
+                    }, json=parity).json()
+                    if req['status'] == 'fail':
+                        print("HATA")

@@ -3,6 +3,10 @@ import time
 import pandas as pd
 from datetime import datetime
 
+list = list(range(1, 10))
+list.reverse()
+print(list)
+time.sleep(99999)
 
 def parse(kline):
     cols = [
