@@ -39,7 +39,6 @@ def parse(kline):
 
 def brs(klines3mGroup, M=0, T=0, lastTime=0):
     # Klines 3M
-
     klines3mFilter = []
     for m3 in klines3mGroup:
         high = []
@@ -60,7 +59,7 @@ def brs(klines3mGroup, M=0, T=0, lastTime=0):
                 min3[3] = min(low)
                 filterKlines3m.append(min3)
         klines3mFilter.append(filterKlines3m[-1])
-    klines3m = klines3mFilter
+    klines3m = klines3mFilter[-11:]
     df3m = parse(klines3m)
     if lastTime < klines3m[-1][0]:
         BRS = ((list(df3m['Close'])[-1] - (sum(df3m['Low']) / len(df3m['Low']))) / ((sum(df3m['High']) / len(df3m['High'])) - (sum(df3m['Low']) / len(df3m['Low'])))) * 100
