@@ -1,7 +1,18 @@
 import requests, time
+from datetime import timedelta, datetime
 import pandas as pd
 from binance.client import Client
 from helper import config
+
+
+def microTime(dt):
+    return datetime.fromtimestamp(dt / 1000.0).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def ceil_date(date, **kwargs):
+    date = datetime.fromtimestamp(date / 1000.0).timestamp()
+    secs = timedelta(**kwargs).total_seconds()
+    return datetime.fromtimestamp(date + secs - date % secs).strftime("%d%H%M")
 
 
 def parse(kline):
@@ -26,34 +37,47 @@ def parse(kline):
     return df
 
 
-def brs(klines15m, M=0, T=0):
+def brs(klines3m, M=0, T=0, lastTime=0):
     # Klines 3M
-    df15m = parse(klines15m)
-    BRS = ((list(df15m['Close'])[-1] - (sum(df15m['Low']) / len(df15m['Low']))) / ((sum(df15m['High']) / len(df15m['High'])) - (sum(df15m['Low']) / len(df15m['Low'])))) * 100
-    M = 2.5 / 3 * M + 0.5 / 3 * BRS
-    T = 2.5 / 3 * T + 0.5 / 3 * M
-    C = 3 * M - 2 * T
-    if C > T:
-        result = {
-            'type': 'LONG',
-            'side': 'BUY',
-            'BRS': BRS,
-            'M': M,
-            'T': T,
-            'C': C,
-            'date': klines15m[-1][0]
-        }
+    if lastTime < klines3m[-1][0]:
+        df3m = parse(klines3m)
+        BRS = ((list(df3m['Close'])[-1] - (sum(df3m['Low']) / len(df3m['Low']))) / ((sum(df3m['High']) / len(df3m['High'])) - (sum(df3m['Low']) / len(df3m['Low'])))) * 100
+        M = 2.5 / 3 * M + 0.5 / 3 * BRS
+        T = 2.5 / 3 * T + 0.5 / 3 * M
+        C = 3 * M - 2 * T
+        if C > T:
+            result = {
+                'type': 'LONG',
+                'side': 'BUY',
+                'BRS': BRS,
+                'M': M,
+                'T': T,
+                'C': C,
+                'date': klines3m[-1][0],
+                'dateFormat': microTime(klines3m[-1][0]),
+                'Open': df3m['Open'][0],
+                'High': max(df3m['High']),
+                'Low': min(df3m['Low']),
+                'Close': list(df3m['Close'])[-1],
+            }
+        else:
+            result = {
+                'type': 'SHORT',
+                'side': 'SELL',
+                'BRS': BRS,
+                'M': M,
+                'T': T,
+                'C': C,
+                'date': klines3m[-1][0],
+                'dateFormat': microTime(klines3m[-1][0]),
+                'Open': df3m['Open'][0],
+                'High': max(df3m['High']),
+                'Low': min(df3m['Low']),
+                'Close': list(df3m['Close'])[-1],
+            }
+        return result
     else:
-        result = {
-            'type': 'SHORT',
-            'side': 'SELL',
-            'BRS': BRS,
-            'M': M,
-            'T': T,
-            'C': C,
-            'date': klines15m[-1][0]
-        }
-    return result
+        return False
 
 
 client = Client()
@@ -63,28 +87,56 @@ while True:
     }).json()
     for parity in parities:
         BRS = {}
-        klines15m = []
         updateStatus = False
         # 180000 : 3min
         # 900000 : 15min
-        missingTime = int((int(time.time() * 1000.0) - parity['export_time']) / 900000)
+        missingTime = int((int(time.time() * 1000.0) - parity['date']) / 180000)
         if missingTime > 1:
-            missingTime += 11
-            missingTime += 1  # Güncel 15dk silinecek
-            klines15m = client.futures_klines(symbol=parity['parity'], interval=parity['time'], limit=missingTime)
-            klines15m.pop(-1)
-            if len(klines15m) > 11:
-                klinesCount = len(klines15m) - 11
-                for ii in range(0, klinesCount):
-                    updateStatus = True
-                    BRS = brs(klines15m[ii:(ii + 11)], parity['BRS_M'], parity['BRS_T'])
-                    # print(BRS)
-                    parity['BRS_M'] = BRS['M']
-                    parity['BRS_T'] = BRS['T']
-        if updateStatus:
-            BRS['id'] = parity['id']
-            BRS['date'] = klines15m[-1][0]
-            req = requests.post(config('API', 'SITE') + 'mt-sync', headers={
-                'neresi': 'dogunun+billurlari'
-            }, json=BRS).json()
-            time.sleep(15)
+            missingTime += 5
+            client = {}
+            clientConnect = True
+            clientConnectCount = 0
+            while clientConnect:
+                try:
+                    client = Client(requests_params={"timeout": 300, 'proxies': parity['proxy']})
+                    clientConnect = False
+                except Exception as e:
+                    clientConnectCount += 1
+                    if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and clientConnectCount < 3:
+                        time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                    elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= clientConnectCount <= 6):
+                        proxy = requests.post(config('API', 'SITE') + 'mt-sync-proxy', headers={
+                            'neresi': 'dogunun+billurlari'
+                        }).json()
+                        if proxy['status'] == 'success':
+                            parity['proxy'] = proxy['proxy']
+                        else:
+                            raise Exception(e)
+                    else:
+                        raise Exception(e)
+            del parity['proxy']
+            klines3m = client.futures_klines(symbol=parity['parity'], interval="3m", limit=missingTime)
+            klines3m.pop(-1)
+            klines3mGroup = {}
+            for m3 in klines3m:
+                quarter = ceil_date(m3[0], minutes=15)
+                if quarter not in klines3mGroup:
+                    klines3mGroup[quarter] = []
+                    klines3mGroup[quarter].append(m3)
+                else:
+                    klines3mGroup[quarter].append(m3)
+            for min3 in klines3mGroup:
+                groupCount = 0
+                for klGroup in klines3mGroup[min3]:
+                    groupCount += 1
+                    BRS = brs(klines3mGroup[min3][0:groupCount], parity['M'], parity['T'], parity['date'])
+                    print(BRS)
+                    if BRS != False:
+                        for key, value in BRS.items():
+                            parity[key] = value
+                        req = requests.post(config('API', 'SITE') + 'mt-sync', headers={
+                            'neresi': 'dogunun+billurlari'
+                        }, json=parity).json()
+                        if req['status'] == 'fail':
+                            print("HATA")
+                            time.sleep(99999999)

@@ -45,6 +45,7 @@
                             <th scope="col">Durum</th>
                             <th scope="col">İndir</th>
                             <th scope="col">Talep</th>
+                            <th scope="col" width="10%">Senkronizasyon</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -65,9 +66,11 @@
                                         İşleniyor
                                     @endif
                                 </td>
-
                                 <td>
                                     <a href="{{ route('panel.admin.export_update', $time->id) }}" class="btn btn-outline-warning btn-sm"><i class="bi bi-arrow-clockwise"></i></a>
+                                </td>
+                                <td width="10%">
+                                    <a href="{{ route('panel.admin.export_info', $time->id) }}" class="btn btn-outline-warning btn-sm"><i class="bi bi-body-text"></i></a>
                                 </td>
                             </tr>
                         @endforeach

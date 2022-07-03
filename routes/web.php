@@ -36,6 +36,7 @@ Route::group([
         Route::get('/leverages', [\App\Http\Controllers\AdminController::class, 'leverages'])->name('leverages');
         Route::get('/export', [\App\Http\Controllers\AdminController::class, 'export'])->name('export');
         Route::get('/export/{id}', [\App\Http\Controllers\AdminController::class, 'exportUpdate'])->name('export_update');
+        Route::get('/export-info/{id}', [\App\Http\Controllers\AdminController::class, 'exportInfo'])->name('export_info');
     });
 
 });

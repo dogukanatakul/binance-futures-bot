@@ -19,4 +19,5 @@ Route::group([
     Route::post('/delete-bots', [\App\Http\Controllers\BotController::class, 'deleteBots']);
     Route::post('/exports', [\App\Http\Controllers\BotController::class, 'exports']);
     Route::post('/mt-sync', [\App\Http\Controllers\BotController::class, 'mtSync']);
+    Route::post('/mt-sync-proxy', [\App\Http\Controllers\BotController::class, 'mtSyncProxy']);
 });

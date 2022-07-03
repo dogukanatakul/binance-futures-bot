@@ -1,26 +1,10 @@
-from binance.client import Client
+import time, datetime, os, json
 import pandas as pd
-
-client = Client()
-klines = client.futures_klines(symbol="BNBUSDT", interval=Client.KLINE_INTERVAL_3MINUTE, limit=10)
-cols = [
-    'Date',
-    'Open',
-    'High',
-    'Low',
-    'Close',
-    'Volume',
-    'CloseTime',
-    'QuoteVolume',
-    'NumberTrades',
-    'TakerBuyBaseVolume',
-    'TakerBuyQuoteVolume',
-    'Ignore'
-]
-num_cols = ['Open', 'High', 'Low', 'Close', 'Volume', 'Date']
-df = pd.DataFrame(klines, columns=cols)
-df = df.drop(columns=['CloseTime', 'QuoteVolume', 'NumberTrades', 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume', 'Ignore'])
-df[num_cols] = df[num_cols].apply(pd.to_numeric, errors='coerce')
+from binance.client import Client
 
 
-print(klines)
+def microTime(dt):
+    return datetime.datetime.fromtimestamp(dt / 1000.0).strftime("%Y-%m-%d %H:%M:%S")
+
+
+print(microTime(1656775080000))

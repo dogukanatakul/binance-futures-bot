@@ -6,6 +6,7 @@ use App\Models\Leverage;
 use App\Models\Order;
 use App\Models\Parity;
 use App\Models\Time;
+use App\Models\TimeIndicatorPeriod;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -120,6 +121,13 @@ class AdminController extends Controller
             'export' => 1
         ]);
         return redirect()->back();
+    }
+
+    public function exportInfo($id)
+    {
+        $infos = TimeIndicatorPeriod::where('times_id', $id)->orderBy('microtime', 'DESC')->get();
+        header("Refresh: 5;");
+        return view('admin.export_info', compact('infos', 'id'));
     }
 
     public function orders(): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application

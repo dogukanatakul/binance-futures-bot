@@ -10,6 +10,7 @@ use App\Models\OrderOperation;
 use App\Models\Parity;
 use App\Models\Proxy;
 use App\Models\Time;
+use App\Models\TimeIndicatorPeriod;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -285,14 +286,27 @@ class BotController extends Controller
     public function mtSync(Request $request): \Illuminate\Http\JsonResponse
     {
         if ($request->filled('date')) {
-            Time::where('id', $request->id)->update([
-                'BRS_M' => $request->M,
-                'BRS_T' => $request->T,
-                'export_time' => (int)$request->date
-            ]);
-            return response()->json([
-                'status' => 'success'
-            ]);
+            try {
+                TimeIndicatorPeriod::create([
+                    'times_id' => $request->id,
+                    'microtime' => (int)$request->date,
+                    'values' => $request->toArray()
+
+                ]);
+                Time::where('id', $request->id)->update([
+                    'BRS_M' => $request->M,
+                    'BRS_T' => $request->T,
+                    'export_time' => (int)$request->date
+                ]);
+                return response()->json([
+                    'status' => 'success'
+                ]);
+            } catch (\Exception $exception) {
+                report($exception);
+                return response()->json([
+                    'status' => 'fail'
+                ]);
+            }
         } else {
             $orders = Order::where('status', 1)->get()->pluck('times_id');
             $parities = Parity::with(['time' => function ($q) use ($orders) {
@@ -306,17 +320,44 @@ class BotController extends Controller
             $results = [];
             foreach ($parities as $parity) {
                 foreach ($parity->time as $time) {
+                    $activeOrders = Order::whereIn('status', [0, 1, 2])->get()->pluck('proxies_id');
+                    $proxy = collect(Proxy::where('status', true)->whereNotIn('id', $activeOrders->toArray())->orderByRaw("RAND()")->limit(1)->get())->map(function ($item) {
+                        return [
+                            'http' => "http://" . $item->user . ":" . $item->password . "@" . $item->host . ":" . $item->port,
+                            'https' => "http://" . $item->user . ":" . $item->password . "@" . $item->host . ":" . $item->port
+                        ];
+                    })->first();
                     $results[] = [
                         'parity' => $parity->parity,
                         'time' => $time->time,
                         'id' => $time->id,
-                        'export_time' => $time->export_time,
-                        'BRS_M' => $time->BRS_M,
-                        'BRS_T' => $time->BRS_T,
+                        'date' => $time->export_time,
+                        'M' => $time->BRS_M,
+                        'T' => $time->BRS_T,
+                        'proxy' => $proxy
                     ];
                 }
             }
             return response()->json($results);
         }
+    }
+
+    public function mtSyncProxy(): \Illuminate\Http\JsonResponse
+    {
+
+        $activeOrders = Order::whereIn('status', [0, 1, 2])->get()->pluck('proxies_id');
+        $proxy = Proxy::whereNotIn('id', $activeOrders->toArray())->where('status', true)->orderByRaw("RAND()")->first();
+        if (empty($proxy)) {
+            return response()->json([
+                'status' => 'fail'
+            ]);
+        }
+        return response()->json([
+            'status' => 'success',
+            'proxy' => [
+                'http' => "http://" . $proxy->user . ":" . $proxy->password . "@" . $proxy->host . ":" . $proxy->port,
+                'https' => "http://" . $proxy->user . ":" . $proxy->password . "@" . $proxy->host . ":" . $proxy->port
+            ],
+        ]);
     }
 }
