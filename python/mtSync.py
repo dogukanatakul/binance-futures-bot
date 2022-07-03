@@ -39,12 +39,28 @@ def parse(kline):
 
 def brs(klines3m, M=0, T=0, lastTime=0):
     # Klines 3M
+    filterKlines3m = []
+    high = []
+    low = []
+    for key, min3 in enumerate(klines3m):
+        if len(filterKlines3m) == 0:
+            filterKlines3m.append(min3)
+            high.append(min3[2])
+            low.append(min3[3])
+        else:
+            high.append(min3[2])
+            low.append(min3[3])
+            min3[2] = max(high)
+            min3[3] = min(low)
+            filterKlines3m.append(min3)
+    klines3m = filterKlines3m
     if lastTime < klines3m[-1][0]:
         df3m = parse(klines3m)
         BRS = ((list(df3m['Close'])[-1] - (sum(df3m['Low']) / len(df3m['Low']))) / ((sum(df3m['High']) / len(df3m['High'])) - (sum(df3m['Low']) / len(df3m['Low'])))) * 100
         M = 2.5 / 3 * M + 0.5 / 3 * BRS
         T = 2.5 / 3 * T + 0.5 / 3 * M
         C = 3 * M - 2 * T
+        print("ANLIK:", M, T, BRS)
         if C > T:
             result = {
                 'type': 'LONG',
