@@ -61,6 +61,9 @@ def brs(klines3mGroup, M=0, T=0, lastTime=0):
         klines3mFilter.append(filterKlines3m[-1])
     klines3m = klines3mFilter[-11:]
     df3m = parse(klines3m)
+    print(df3m)
+    print(microTime(list(df3m['Date'])[-1]))
+    time.sleep(999999)
     if lastTime < klines3m[-1][0]:
         BRS = ((list(df3m['Close'])[-1] - (sum(df3m['Low']) / len(df3m['Low']))) / ((sum(df3m['High']) / len(df3m['High'])) - (sum(df3m['Low']) / len(df3m['Low'])))) * 100
         M = 2.5 / 3 * M + 0.5 / 3 * BRS
@@ -151,11 +154,11 @@ while True:
                         klines3mGroup[quarter].append(m3)
                 klines3mGroup = klines3mGroup.values()
                 BRS = brs(klines3mGroup, parity['M'], parity['T'], parity['date'])
-                if BRS != False:
-                    for key, value in BRS.items():
-                        parity[key] = value
-                    req = requests.post(config('API', 'SITE') + 'mt-sync', headers={
-                        'neresi': 'dogunun+billurlari'
-                    }, json=parity).json()
-                    if req['status'] == 'fail':
-                        print("HATA")
+                # if BRS != False:
+                #     for key, value in BRS.items():
+                #         parity[key] = value
+                #     req = requests.post(config('API', 'SITE') + 'mt-sync', headers={
+                #         'neresi': 'dogunun+billurlari'
+                #     }, json=parity).json()
+                #     if req['status'] == 'fail':
+                #         print("HATA")
