@@ -16,7 +16,7 @@ sudo pip install -r requirements.txt
 ```
 
 ```
-nano /etc/supervisor/supervisord.conf
+sudo nano /etc/supervisor/supervisord.conf
 sudo systemctl stop supervisor
 sudo systemctl restart supervisor
 ```
