@@ -90,6 +90,8 @@ class AdminController extends Controller
         if (!$request->filled('update.status')) {
             $update['status'] = 0;
         }
+        $update['export_time'] = (int)(microtime(true) * 1000.0);
+        $update['export_time_status'] = true;
         Time::where('id', $request->id)->update($update);
         return redirect()->back();
     }

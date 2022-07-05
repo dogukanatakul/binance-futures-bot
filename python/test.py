@@ -3,6 +3,9 @@ import pandas as pd
 from datetime import timedelta, datetime
 from binance.client import Client
 
+print(1657045440000 - (180000 * 2))
+time.sleep(999)
+
 
 def ceil_date(date, **kwargs):
     date = datetime.fromtimestamp(date / 1000.0).timestamp()

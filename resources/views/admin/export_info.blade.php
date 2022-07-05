@@ -18,6 +18,8 @@
                                 <th scope="col">Kapanış</th>
                                 <th scope="col">Yüksek</th>
                                 <th scope="col">Düşük</th>
+                                <th scope="col"><small>Ö.M</small></th>
+                                <th scope="col"><small>Ö.T</small></th>
                                 <th scope="col">M</th>
                                 <th scope="col">T</th>
                                 <th scope="col">C</th>
@@ -44,10 +46,16 @@
                                         {{ $info->values['Low'] ?? '' }}
                                     </td>
                                     <td>
-                                        {{ $info->values['M'] ?? '' }}
+                                        <small>{{ $info->values['M'] ?? '' }}</small>
                                     </td>
                                     <td>
-                                        {{ $info->values['T'] ?? '' }}
+                                        <small>{{ $info->values['T'] ?? '' }}</small>
+                                    </td>
+                                    <td>
+                                        {{ $info->values['CURRENT_M'] ?? '' }}
+                                    </td>
+                                    <td>
+                                        {{ $info->values['CURRENT_T'] ?? '' }}
                                     </td>
                                     <td>
                                         {{ $info->values['C'] ?? '' }}

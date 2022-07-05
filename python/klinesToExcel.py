@@ -52,8 +52,7 @@ while True:
             requests.post(config('API', 'SITE') + 'exports', headers={
                 'neresi': 'dogunun+billurlari'
             }, json={
-                'id': req['id'],
-                'export_time': list(df['Date'])[-1]
+                'id': req['id']
             }).json()
         except:
             time.sleep(10)

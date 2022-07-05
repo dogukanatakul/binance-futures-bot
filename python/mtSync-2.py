@@ -1,4 +1,4 @@
-import requests, time, json, os
+import time, json, os
 from datetime import timedelta, datetime
 import pandas as pd
 from binance.client import Client
@@ -106,6 +106,7 @@ def brs(klines3mGroup, M=0, T=0, lastTime=0):
         M = 2.5 / 3 * M + 0.5 / 3 * BRS
         T = 2.5 / 3 * T + 0.5 / 3 * M
         C = 3 * M - 2 * T
+        # toExcel(df3m, BRS, M, T, C, before['M'], before['T'])
         if C > T:
             result = {
                 'type': 'LONG',
@@ -141,93 +142,70 @@ def brs(klines3mGroup, M=0, T=0, lastTime=0):
         return False
 
 
+client = Client()
+parity = {
+    'date': 0,
+    'parity': 'BNBUSDT',
+    'M': -45.2143,
+    'T': -44.386,
+    'ceil': 0
+}
 ceilStatus = False
-parities = []
 while True:
-    setBotWhile = True
-    setBotCount = 0
-    while setBotWhile:
-        parities = requests.post(config('API', 'SITE') + 'mt-sync', headers={
-            'neresi': 'dogunun+billurlari'
-        })
-        if parities.status_code == 200:
-            setBotWhile = False
-            parities = parities.json()
-        elif setBotCount >= int(config('API', 'ERR_COUNT')):
-            raise Exception('server_error')
-        else:
-            time.sleep(1)
-            setBotCount += 1
-    for parity in parities:
-        time.sleep(1)
-        BRS = {}
-        updateStatus = False
-        # 180000 : 3min
-        # 900000 : 15min
-        missingTime = int((int(time.time() * 1000.0) - parity['date']) / 180000)
-        if missingTime >= 1:
-            missingTimeSET = missingTime + (5 * 11)
-            client = {}
-            klines3m = []
-            clientConnect = True
-            clientConnectCount = 0
-            while clientConnect:
-                try:
-                    client = Client()
-                    klines3m = client.futures_klines(symbol=parity['parity'], interval="3m", limit=missingTimeSET)
-                    clientConnect = False
-                except Exception as e:
-                    clientConnectCount += 1
-                    if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Connection aborted." in str(e) or "Please try again" in str(e)) and clientConnectCount < 3:
-                        time.sleep(float(config('SETTING', 'TIME_SLEEP')))
-                    elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= clientConnectCount <= 6):
-                        time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+    BRS = {}
+    updateStatus = False
+    # 180000 : 3min
+    # 900000 : 15min
+    if parity['date'] == 0:
+        missingTime = 1
+    else:
+        missingTime = int((int(time.time() * 1000.0) - parity['date']) / 180000) + 50
+    if missingTime >= 1:
+        missingTimeSET = missingTime + (5 * 11)
+        client = {}
+        klines3m = []
+        clientConnect = True
+        clientConnectCount = 0
+        while clientConnect:
+            try:
+                client = Client()
+                klines3m = client.futures_klines(symbol=parity['parity'], interval="3m", limit=missingTimeSET)
+                clientConnect = False
+            except Exception as e:
+                clientConnectCount += 1
+                if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Connection aborted." in str(e) or "Please try again" in str(e)) and clientConnectCount < 3:
+                    time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= clientConnectCount <= 6):
+                    time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                else:
+                    raise Exception(e)
+        timeRange = list(range(1, (missingTime + 1)))
+        timeRange.reverse()
+        for tmRng in timeRange:
+            klines3mGroup = {}
+            for m3 in klines3m[:(tmRng * -1)]:
+                quarter = ceil_date(m3[0], minutes=15)
+                if quarter not in klines3mGroup:
+                    klines3mGroup[quarter] = []
+                    klines3mGroup[quarter].append(m3)
+                else:
+                    klines3mGroup[quarter].append(m3)
+            klines3mGroup = klines3mGroup.values()
+            BRS = brs(klines3mGroup, parity['M'], parity['T'], parity['date'])
+            if BRS != False:
+                print(BRS)
+                if ceil_date((list(klines3mGroup)[-1][-1][0] + 180000), minutes=15) != parity['ceil'] and parity['ceil'] != 0:
+                    parity['ceil'] = ceil_date((list(klines3mGroup)[-1][-1][0] + 180000), minutes=15)
+                    ceilStatus = True
+                elif parity['ceil'] == 0:
+                    parity['ceil'] = ceil_date((list(klines3mGroup)[-1][-1][0] + 180000), minutes=15)
+                    ceilStatus = False
+                else:
+                    ceilStatus = False
+                for key, value in BRS.items():
+                    if ceilStatus == False and (key == 'T' or key == 'M'):
+                        print('atla')
+                    elif key == 'ceil':
+                        print('ceil_atla')
                     else:
-                        raise Exception(e)
-            timeRange = list(range(1, (missingTime + 1)))
-            timeRange.reverse()
-            for tmRng in timeRange:
-                klines3mGroup = {}
-                for m3 in klines3m[:(tmRng * -1)]:
-                    quarter = ceil_date(m3[0], minutes=15)
-                    if quarter not in klines3mGroup:
-                        klines3mGroup[quarter] = []
-                        klines3mGroup[quarter].append(m3)
-                    else:
-                        klines3mGroup[quarter].append(m3)
-                klines3mGroup = klines3mGroup.values()
-                BRS = brs(klines3mGroup, parity['M'], parity['T'], parity['date'])
-                if BRS:
-                    if ceil_date((BRS['date'] + 180000), minutes=15) != parity['ceil'] and parity['ceil'] != "0" and parity['ceil'] != 0:
-                        parity['ceil'] = ceil_date((BRS['date'] + 180000), minutes=15)
-                        ceilStatus = True
-                    elif parity['ceil'] == "0" or parity['ceil'] == 0:
-                        parity['ceil'] = ceil_date((BRS['date'] + 180000), minutes=15)
-                        ceilStatus = False
-                    else:
-                        ceilStatus = False
-                    for key, value in BRS.items():
-                        if ceilStatus == False and (key == 'T' or key == 'M'):
-                            print('atla')
-                        elif key == 'ceil':
-                            print('ceil_atla')
-                        else:
-                            parity[key] = value
-                    parity['date'] = list(klines3mGroup)[-1][-1][0]
-                    parity['CURRENT_M'] = BRS['M']
-                    parity['CURRENT_T'] = BRS['T']
-                    parity['SET_CEIL'] = ceil_date((BRS['date'] + 180000), minutes=15)
-                    setBotWhile = True
-                    setBotCount = 0
-                    while setBotWhile:
-                        setBot = requests.post(config('API', 'SITE') + 'mt-sync', headers={
-                            'neresi': 'dogunun+billurlari'
-                        }, json=parity)
-                        if setBot.status_code == 200:
-                            print("gönderildi")
-                            setBotWhile = False
-                        elif setBotCount >= int(config('API', 'ERR_COUNT')):
-                            raise Exception('server_error')
-                        else:
-                            time.sleep(1)
-                            setBotCount += 1
+                        parity[key] = value

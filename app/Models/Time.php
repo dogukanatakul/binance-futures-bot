@@ -17,7 +17,9 @@ class Time extends Model
         'BRS_LIMIT',
         'MAX_DAMAGE_USDT_PERCENT',
         'status',
-        'export_time'
+        'export_time',
+        'export_time_status',
+        'ceil',
     ];
 
     protected $casts = [
@@ -26,7 +28,9 @@ class Time extends Model
         'BRS_LIMIT' => 'integer',
         'MAX_DAMAGE_USDT_PERCENT' => 'float',
         'status' => 'boolean',
-        'export_time' => 'integer'
+        'export_time' => 'integer',
+        'export_time_status' => 'boolean',
+        'ceil' => 'string',
     ];
 
     public function parity(): \Illuminate\Database\Eloquent\Relations\HasOne

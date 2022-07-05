@@ -259,8 +259,7 @@ class BotController extends Controller
     {
         if ($request->filled('id')) {
             Time::where('id', $request->id)->update([
-                'export' => 2,
-                'export_time' => $request->export_time
+                'export' => 2
             ]);
             return response()->json([
                 'status' => 'success',
@@ -291,13 +290,16 @@ class BotController extends Controller
                     'times_id' => $request->id,
                     'microtime' => (int)$request->date,
                     'values' => $request->toArray()
-
                 ]);
-                Time::where('id', $request->id)->update([
-                    'BRS_M' => $request->M,
-                    'BRS_T' => $request->T,
-                    'export_time' => (int)$request->date
-                ]);
+                if (!Time::where('id', $request->id)->first()->export_time_status) {
+                    # Eğer yeni M ve T değerleri girilmişse değiştirme.
+                    Time::where('id', $request->id)->update([
+                        'BRS_M' => $request->M,
+                        'BRS_T' => $request->T,
+                        'ceil' => $request->SET_CEIL,
+                        'export_time' => (int)$request->date
+                    ]);
+                }
                 return response()->json([
                     'status' => 'success'
                 ]);
@@ -311,11 +313,9 @@ class BotController extends Controller
             $orders = Order::where('status', 1)->get()->pluck('times_id');
             $parities = Parity::with(['time' => function ($q) use ($orders) {
                 $q->whereNotIn('id', $orders)->where('status', true)->whereNotNull('export_time');
-            }])
-                ->whereHas('time', function ($q) use ($orders) {
-                    $q->whereNotIn('id', $orders)->where('status', true)->whereNotNull('export_time');
-                })
-                ->where('status', true)
+            }])->whereHas('time', function ($q) use ($orders) {
+                $q->whereNotIn('id', $orders)->where('status', true)->whereNotNull('export_time');
+            })
                 ->get();
             $results = [];
             foreach ($parities as $parity) {
@@ -327,6 +327,9 @@ class BotController extends Controller
                             'https' => "http://" . $item->user . ":" . $item->password . "@" . $item->host . ":" . $item->port
                         ];
                     })->first();
+                    Time::where('export_time_status', true)->update([
+                        'export_time_status' => false
+                    ]);
                     $results[] = [
                         'parity' => $parity->parity,
                         'time' => $time->time,
@@ -334,6 +337,7 @@ class BotController extends Controller
                         'date' => $time->export_time,
                         'M' => $time->BRS_M,
                         'T' => $time->BRS_T,
+                        'ceil' => $time->ceil,
                         'proxy' => $proxy
                     ];
                 }
