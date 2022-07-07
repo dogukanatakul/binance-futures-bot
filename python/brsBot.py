@@ -118,9 +118,7 @@ while True:
             priceFractions[item['symbol']] = item['pricePrecision']
         # LONG: BUY | SHORT: SELL
         sameTest = {
-            'M': 0,
-            'T': 0,
-            'C': 0
+            'BRS': 0,
         }
         operationLoop = True
         if getBot['transfer'] is not None:
