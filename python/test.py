@@ -3,9 +3,6 @@ import pandas as pd
 from datetime import timedelta, datetime
 from binance.client import Client
 
-print(1657045440000 - (180000 * 2))
-time.sleep(999)
-
 
 def ceil_date(date, **kwargs):
     date = datetime.fromtimestamp(date / 1000.0).timestamp()
@@ -13,23 +10,18 @@ def ceil_date(date, **kwargs):
     return datetime.fromtimestamp(date + secs - date % secs).strftime("%d%H%M")
 
 
-client = Client()
-klines3m = client.futures_klines(symbol="BNBUSDT", interval="3m", limit=100)
-parity = {
-    'date': 0,
-    'parity': 'BNBUSDT',
-    'M': 66.94872,
-    'T': 100.1118,
-    'ceil': 0
-}
-ceilStatus = False
-for m3 in klines3m:
-    if ceil_date((m3[0] + 180000), minutes=15) != parity['ceil'] and parity['ceil'] != 0:
-        parity['ceil'] = ceil_date((m3[0] + 180000), minutes=15)
-        ceilStatus = True
-    elif parity['ceil'] == 0:
-        parity['ceil'] = ceil_date((m3[0] + 180000), minutes=15)
-        ceilStatus = False
-    else:
-        ceilStatus = False
-    print(ceil_date(m3[0], minutes=15), ceilStatus)
+aa = 100
+print(aa - (2 * 1.01))
+
+#
+client = Client("SjlxXktwDHd1h7Nrg9HnAQM4oJ7R8tu9H7joAEJM9mPc79RWkj0qDMviby1wb7Zq", "KWyjvXX4lkMBtlwIj9R4BIJkpLgYcfwNfFIiSUemojroJaEgDLgGsnz7rfb4CHYG")
+# client.futures_create_order(symbol="1000SHIBUSDT", side="BUY", type='MARKET', quantity=500, positionSide="LONG")
+# client.futures_create_order(symbol="1000SHIBUSDT", side="SELL", type='STOP_MARKET', quantity=500, positionSide="LONG", stopPrice=0.0103, closePosition="true")
+# openOrdersF = client.futures_get_open_orders()
+# if len(openOrdersF) > 0:
+#     for orderF in openOrdersF:
+#         client.futures_cancel_order(symbol="1000SHIBUSDT", orderId=orderF['orderId'])
+#     print(openOrdersF)
+# print("ok")
+#
+# print(client.futures_exchange_info())

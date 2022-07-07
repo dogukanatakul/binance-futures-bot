@@ -9,6 +9,24 @@ def microTime(dt):
     return datetime.fromtimestamp(dt / 1000.0).strftime("%Y-%m-%d %H:%M:%S")
 
 
+def jsonData(bot, status='GET', data={}):
+    if status == 'SET':
+        with open(os.path.dirname(os.path.realpath(__file__)) + "/syncs/" + bot + '.json', 'w+') as outfile:
+            outfile.write(json.dumps(data))
+        return True
+    elif status == 'DELETE':
+        try:
+            os.remove((os.path.dirname(os.path.realpath(__file__)) + "/syncs/" + bot + '.json'))
+            return True
+        except:
+            return False
+    else:
+        if os.path.exists(os.path.dirname(os.path.realpath(__file__)) + "/syncs/" + bot + '.json'):
+            return json.loads(open(os.path.dirname(os.path.realpath(__file__)) + "/syncs/" + bot + '.json', "r").read())
+        else:
+            return False
+
+
 def ceil_date(date, **kwargs):
     date = datetime.fromtimestamp(date / 1000.0).timestamp()
     secs = timedelta(**kwargs).total_seconds()
@@ -159,7 +177,6 @@ while True:
             time.sleep(1)
             setBotCount += 1
     for parity in parities:
-        time.sleep(1)
         BRS = {}
         updateStatus = False
         # 180000 : 3min
@@ -220,6 +237,7 @@ while True:
                     setBotWhile = True
                     setBotCount = 0
                     while setBotWhile:
+                        jsonData(parity['parity'], 'SET', parity)
                         setBot = requests.post(config('API', 'SITE') + 'mt-sync', headers={
                             'neresi': 'dogunun+billurlari'
                         }, json=parity)

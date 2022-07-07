@@ -55,6 +55,20 @@ class AdminController extends Controller
 
     public function times(Request $request): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Http\RedirectResponse|\Illuminate\Contracts\Foundation\Application
     {
+        $forbidden = in_array((int)now('Europe/Istanbul')->format('i'), [
+            00,
+            13,
+            14,
+            15,
+            28,
+            29,
+            30,
+            43,
+            44,
+            45,
+            58,
+            59,
+        ]);
         if ($request->filled('status')) {
             $parity = Parity::where('id', $request->status)->first();
             $parity->status = !$parity->status;
@@ -70,7 +84,7 @@ class AdminController extends Controller
                 return [$item['id'] => $item['time']];
             });
         }
-        return view('admin.times', compact('times', 'parities', 'selectTimes'));
+        return view('admin.times', compact('times', 'parities', 'selectTimes', 'forbidden'));
     }
 
     public function timeSave(Request $request): \Illuminate\Http\RedirectResponse
@@ -92,6 +106,25 @@ class AdminController extends Controller
         }
         if (Time::where('id', $request->id)->first()->export_time == 0) {
             $update['export_time'] = (int)(microtime(true) * 1000.0);
+        }
+        $forbidden = in_array((int)now('Europe/Istanbul')->format('i'), [
+            00,
+            13,
+            14,
+            15,
+            28,
+            29,
+            30,
+            43,
+            44,
+            45,
+            58,
+            59,
+        ]);
+        if ($forbidden) {
+            unset($update['BRS_M']);
+            unset($update['BRS_T']);
+            Session::flash('error', 'Değerler değişmedi! Yasaklı zaman dilimi içerisinde güncelleme yapmaya çalıştınız.');
         }
         $update['export_time_status'] = true;
         Time::where('id', $request->id)->update($update);

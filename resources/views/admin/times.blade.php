@@ -59,6 +59,7 @@
                             <form method="POST" action="{{ route('panel.admin.time_save') }}">
                                 @csrf
                                 <input type="hidden" name="id" value="{{ $time->id }}">
+                                <input type="hidden" name="forbidden" value="{{ $forbidden }}">
                                 <tr>
                                     <td class="text-center">
                                         {{ $time->time }}
@@ -70,12 +71,12 @@
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
-                                            <input type="text" class="form-control" name="update[BRS_M]" value="{{ $time->BRS_M }}">
+                                            <input type="text" class="form-control" {{ $forbidden ? 'disabled="disabled"':'' }} name="update[BRS_M]" value="{{ $time->BRS_M }}">
                                         </div>
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
-                                            <input type="text" class="form-control" name="update[BRS_T]" value="{{ $time->BRS_T }}">
+                                            <input type="text" class="form-control" {{ $forbidden ? 'disabled="disabled"':'' }} name="update[BRS_T]" value="{{ $time->BRS_T }}">
                                         </div>
                                     </td>
                                     <td>

@@ -2,91 +2,12 @@
 import time, sys, os, requests, uuid
 from datetime import datetime
 from binance.client import Client
-import pandas as pd
 import json
 from helper import config
 from inspect import currentframe, getframeinfo
 import logging
 
 url = config('API', 'SITE')
-
-
-def parse(kline):
-    cols = [
-        'Date',
-        'Open',
-        'High',
-        'Low',
-        'Close',
-        'Volume',
-        'CloseTime',
-        'QuoteVolume',
-        'NumberTrades',
-        'TakerBuyBaseVolume',
-        'TakerBuyQuoteVolume',
-        'Ignore'
-    ]
-    num_cols = ['Open', 'High', 'Low', 'Close', 'Volume', 'Date']
-    df = pd.DataFrame(kline, columns=cols)
-    df = df.drop(columns=['CloseTime', 'QuoteVolume', 'NumberTrades', 'TakerBuyBaseVolume', 'TakerBuyQuoteVolume', 'Ignore'])
-    df[num_cols] = df[num_cols].apply(pd.to_numeric, errors='coerce')
-    return df
-
-
-def brs(klines15m, klines3m, M=0, T=0, result={}):
-    klines3m.pop(-1)
-    klines3mNew = []
-    for key, min3 in enumerate(klines3m):
-        if int(klines15m[-1][0]) <= int(min3[0]):
-            klines3mNew.append(min3)
-    klines3m = klines3mNew
-    if len(klines3m) != 0:
-        df3m = parse(klines3m)
-        # Klines 3M END
-        klines15m.pop(-1)
-        klines15m.append([
-            klines3m[-1][0],
-            klines3m[0][1],
-            max(df3m['High']),
-            min(df3m['Low']),
-            klines3m[-1][4],
-            klines3m[-1][5],
-            klines3m[-1][6],
-            klines3m[-1][7],
-            klines3m[-1][8],
-            klines3m[-1][9],
-            klines3m[-1][10],
-            klines3m[-1][11],
-        ])
-    df15m = parse(klines15m)
-    if result['date'] == klines15m[-1][0]:
-        return result
-    else:
-        BRS = ((list(df15m['Close'])[-1] - (sum(df15m['Low']) / len(df15m['Low']))) / ((sum(df15m['High']) / len(df15m['High'])) - (sum(df15m['Low']) / len(df15m['Low'])))) * 100
-        M = 2.5 / 3 * M + 0.5 / 3 * BRS
-        T = 2.5 / 3 * T + 0.5 / 3 * M
-        C = 3 * M - 2 * T
-
-        if C > T:
-            return {
-                'type': 'LONG',
-                'side': 'BUY',
-                'BRS': BRS,
-                'M': M,
-                'T': T,
-                'C': C,
-                'date': klines15m[-1][0]
-            }
-        else:
-            return {
-                'type': 'SHORT',
-                'side': 'SELL',
-                'BRS': BRS,
-                'M': M,
-                'T': T,
-                'C': C,
-                'date': klines15m[-1][0]
-            }
 
 
 def getOrderBalance(client, currenty, percent):
@@ -138,6 +59,16 @@ def jsonData(bot, status='GET', data={}):
             return False
 
 
+def brs(bot):
+    try:
+        if os.path.exists(os.path.dirname(os.path.realpath(__file__)) + "/syncs/" + bot + '.json'):
+            return json.loads(open(os.path.dirname(os.path.realpath(__file__)) + "/syncs/" + bot + '.json', "r").read())
+        else:
+            return False
+    except:
+        return False
+
+
 getBot = {
     'status': 0
 }
@@ -181,8 +112,10 @@ while True:
         result = client.futures_change_leverage(symbol=getBot['parity'], leverage=getBot['leverage'])
         info = client.futures_exchange_info()
         fractions = {}
+        priceFractions = {}
         for item in info['symbols']:
             fractions[item['symbol']] = item['quantityPrecision']
+            priceFractions[item['symbol']] = item['pricePrecision']
         # LONG: BUY | SHORT: SELL
         sameTest = {
             'M': 0,
@@ -231,45 +164,34 @@ while True:
                 'lastQuantity': None,
                 'newTriggerOrder': False,
                 'balance': 0,
+                'stopLoss': 0,
                 'setLeverage': True,
-                'BRS_M': getBot['BRS_M'],
-                'BRS_T': getBot['BRS_T'],
             }
             jsonData(getBot['bot'], 'SET', botElements)
         getBRS = {
-            'date': 0
+            'BRS': 0
         }
-        klines15m = {}
-        klines3m = {}
         while operationLoop:
             try:
-                klineConnect = True
-                klineConnectCount = 0
-                while klineConnect:
+                brsConnect = True
+                brsConnectCount = 0
+                while brsConnect:
                     try:
-                        klines15m = client.futures_klines(symbol=getBot['parity'], interval="15m", limit=11)
-                        klines3m = client.futures_klines(symbol=getBot['parity'], interval="3m", limit=6)
-                        klineConnect = False
+                        getBRS = brs(getBot['parity'])
+                        if not getBRS:
+                            # dosya çekilemediyse
+                            raise Exception("dont_get_file")
+                        brsConnect = False
                     except Exception as e:
                         logging.error(str(e))
-                        klineConnectCount += 1
-                        if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and klineConnectCount < 3:
-                            time.sleep(float(config('SETTING', 'TIME_SLEEP')))
-                        elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= klineConnectCount <= 6):
-                            proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                'neresi': 'dogunun+billurlari'
-                            }).json()
-                            client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 300, 'proxies': proxyOrder})
-                        else:
+                        brsConnectCount += 1
+                        if brsConnectCount > int(config('API', 'ERR_COUNT_BRS')):
                             raise Exception(e)
-                getBRS = brs(klines15m, klines3m, botElements['BRS_M'], botElements['BRS_T'], getBRS)
-                if getBRS['M'] != sameTest['M'] or getBRS['T'] != sameTest['T'] or getBRS['C'] != sameTest['C']:
-                    botElements['BRS_M'] = getBRS['M']
-                    botElements['BRS_T'] = getBRS['T']
+                        else:
+                            time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                if getBRS['BRS'] != sameTest['BRS']:
                     sameTest = {
-                        'M': getBRS['M'],
-                        'T': getBRS['T'],
-                        'C': getBRS['C']
+                        'BRS': getBRS['BRS'],
                     }
                     # SYNC BOT
                     syncBotWhile = True
@@ -300,10 +222,6 @@ while True:
                             }, json={
                                 'line': getframeinfo(currentframe()).lineno,
                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                'BRS': getBRS['BRS'],
-                                'BRS_M': getBRS['M'],
-                                'BRS_T': getBRS['T'],
-                                'BRS_C': getBRS['C'],
                                 'side': botElements['lastSide'],
                                 'action': 'CLOSE',
                             })
@@ -321,6 +239,7 @@ while True:
                             if botElements['lastSide'] != 'HOLD' and botElements['orderStatus'] == True:
                                 positionConnect = True
                                 positionConnectCount = 0
+                                position = {}
                                 try:
                                     position = getPosition(client, getBot['parity'], botElements['lastType'])
                                     positionConnect = False
@@ -333,7 +252,8 @@ while True:
                                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
                                             'neresi': 'dogunun+billurlari'
                                         }).json()
-                                        client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
+                                        getBot['proxy'] = proxyOrder['proxy']
+                                        client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
                                     else:
                                         raise Exception(e)
                                 if position['amount'] > 0:
@@ -356,8 +276,31 @@ while True:
                                                     'neresi': 'dogunun+billurlari'
                                                 }).json()
                                                 getBot['proxy'] = proxyOrder['proxy']
+                                                client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
                                             else:
                                                 raise Exception(e)
+
+                                    # closeOrders = True
+                                    # closeOrdersCount = 0
+                                    # while closeOrders:
+                                    #     try:
+                                    #         openOrdersF = client.futures_get_open_orders()
+                                    #         if len(openOrdersF) > 0:
+                                    #             for orderF in openOrdersF:
+                                    #                 client.futures_cancel_order(symbol=getBot['parity'], orderId=orderF['orderId'])
+                                    #         closeOrders = False
+                                    #     except Exception as e:
+                                    #         logging.error(str(e))
+                                    #         closeOrdersCount += 1
+                                    #         if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and closeOrdersCount < 3:
+                                    #             time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                                    #         elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= closeOrdersCount <= 6):
+                                    #             proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
+                                    #                 'neresi': 'dogunun+billurlari'
+                                    #             }).json()
+                                    #             getBot['proxy'] = proxyOrder['proxy']
+                                    #         else:
+                                    #             raise Exception(e)
 
                                     # Binance END
                                     setBotWhile = True
@@ -368,10 +311,6 @@ while True:
                                         }, json={
                                             'line': getframeinfo(currentframe()).lineno,
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                            'BRS': getBRS['BRS'],
-                                            'BRS_M': getBRS['M'],
-                                            'BRS_T': getBRS['T'],
-                                            'BRS_C': getBRS['C'],
                                             'side': botElements['lastSide'],
                                             'price': position['markPrice'],
                                             'profit': position['profit'],
@@ -394,12 +333,8 @@ while True:
                                         }, json={
                                             'line': getframeinfo(currentframe()).lineno,
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                            'BRS': getBRS['BRS'],
-                                            'BRS_M': getBRS['M'],
-                                            'BRS_T': getBRS['T'],
-                                            'BRS_C': getBRS['C'],
                                             'side': botElements['lastSide'],
-                                            'action': 'MANUAL_STOP',
+                                            'action': 'MANUAL_STOP_OR_MAX_DAMAGE',
                                         })
                                         if setBot.status_code == 200:
                                             setBotWhile = False
@@ -408,7 +343,6 @@ while True:
                                         else:
                                             time.sleep(1)
                                             setBotCount += 1
-                                    raise Exception('manual_stop')
                             if getBot['status'] == 2:
                                 operationLoop = False
                                 setBotWhile = True
@@ -419,10 +353,6 @@ while True:
                                     }, json={
                                         'line': getframeinfo(currentframe()).lineno,
                                         'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                        'BRS': getBRS['BRS'],
-                                        'BRS_M': getBRS['M'],
-                                        'BRS_T': getBRS['T'],
-                                        'BRS_C': getBRS['C'],
                                         'side': botElements['lastSide'],
                                         'action': 'CLOSE',
                                     })
@@ -467,8 +397,35 @@ while True:
                                                 'neresi': 'dogunun+billurlari'
                                             }).json()
                                             getBot['proxy'] = proxyOrder['proxy']
+                                            client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
                                         else:
                                             raise Exception(e)
+
+                                # stopLossCreate = True
+                                # stopLossCreateCount = 0
+                                # while stopLossCreate:
+                                #     try:
+                                #         MAX_DAMAGE_USDT_PERCENT = int(getBot['MAX_DAMAGE_USDT_PERCENT'] * 1.01)
+                                #         if botElements['lastType'] == 'LONG':
+                                #             botElements['stopLoss'] = (botElements['lastPrice'] / 100) * (100 - MAX_DAMAGE_USDT_PERCENT)
+                                #         else:
+                                #             botElements['stopLoss'] = (botElements['lastPrice'] / 100) * (100 + MAX_DAMAGE_USDT_PERCENT)
+                                #         botElements['stopLoss'] = "{:0.0{}f}".format(float(botElements['stopLoss']), priceFractions[getBot['parity']])
+                                #         client.futures_create_order(symbol=getBot['parity'], side='SELL' if botElements['lastType'] == 'LONG' else 'BUY', type='STOP_MARKET', quantity=botElements['lastQuantity'], positionSide=botElements['lastType'], stopPrice=botElements['stopLoss'], closePosition="true")
+                                #         stopLossCreate = False
+                                #     except Exception as e:
+                                #         logging.error(str(e))
+                                #         stopLossCreateCount += 1
+                                #         if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and stopLossCreateCount < 3:
+                                #             time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                                #         elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= stopLossCreateCount <= 6):
+                                #             proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
+                                #                 'neresi': 'dogunun+billurlari'
+                                #             }).json()
+                                #             getBot['proxy'] = proxyOrder['proxy']
+                                #             client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
+                                #         else:
+                                #             raise Exception(e)
 
                                 # Binance END
                                 botElements['orderStatus'] = True
@@ -481,10 +438,6 @@ while True:
                                     }, json={
                                         'line': getframeinfo(currentframe()).lineno,
                                         'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                        'BRS': getBRS['BRS'],
-                                        'BRS_M': getBRS['M'],
-                                        'BRS_T': getBRS['T'],
-                                        'BRS_C': getBRS['C'],
                                         'side': botElements['lastSide'],
                                         'position': botElements['lastType'],
                                         'balance': botElements['balance'],
@@ -509,10 +462,6 @@ while True:
                                     }, json={
                                         'line': getframeinfo(currentframe()).lineno,
                                         'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                        'BRS': getBRS['BRS'],
-                                        'BRS_M': getBRS['M'],
-                                        'BRS_T': getBRS['T'],
-                                        'BRS_C': getBRS['C'],
                                         'action': 'ORDER_START_WAITING',
                                     })
                                     if setBot.status_code == 200:
@@ -569,7 +518,7 @@ while True:
                                     orderCreateCount = 0
                                     while orderCreate:
                                         try:
-                                            client.futures_create_order(symbol=getBot['parity'], side='SELL' if botElements['lastType'] == 'LONG' else "BUY", positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
+                                            client.futures_create_order(symbol=getBot['parity'], side='SELL' if botElements['lastType'] == 'LONG' else 'BUY', positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
                                             orderCreate = False
                                         except Exception as e:
                                             logging.error(str(e))
@@ -584,6 +533,28 @@ while True:
                                             else:
                                                 raise Exception(e)
 
+                                    # closeOrders = True
+                                    # closeOrdersCount = 0
+                                    # while closeOrders:
+                                    #     try:
+                                    #         openOrdersF = client.futures_get_open_orders()
+                                    #         if len(openOrdersF) > 0:
+                                    #             for orderF in openOrdersF:
+                                    #                 client.futures_cancel_order(symbol=getBot['parity'], orderId=orderF['orderId'])
+                                    #         closeOrders = False
+                                    #     except Exception as e:
+                                    #         logging.error(str(e))
+                                    #         closeOrdersCount += 1
+                                    #         if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and closeOrdersCount < 3:
+                                    #             time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                                    #         elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= closeOrdersCount <= 6):
+                                    #             proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
+                                    #                 'neresi': 'dogunun+billurlari'
+                                    #             }).json()
+                                    #             getBot['proxy'] = proxyOrder['proxy']
+                                    #         else:
+                                    #             raise Exception(e)
+
                                     setBotWhile = True
                                     setBotCount = 0
                                     while setBotWhile:
@@ -592,10 +563,6 @@ while True:
                                         }, json={
                                             'line': getframeinfo(currentframe()).lineno,
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                            'BRS': getBRS['BRS'],
-                                            'BRS_M': getBRS['M'],
-                                            'BRS_T': getBRS['T'],
-                                            'BRS_C': getBRS['C'],
                                             'side': botElements['lastSide'],
                                             'price': position['markPrice'],
                                             'profit': position['profit'],
@@ -618,10 +585,6 @@ while True:
                                         }, json={
                                             'line': getframeinfo(currentframe()).lineno,
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                            'BRS': getBRS['BRS'],
-                                            'BRS_M': getBRS['M'],
-                                            'BRS_T': getBRS['T'],
-                                            'BRS_C': getBRS['C'],
                                             'action': 'ORDER_ENDING_WAITING',
                                         })
                                         if setBot.status_code == 200:
@@ -634,7 +597,7 @@ while True:
                                 # emir bozma yeri
                     # Max Request Sleep
                     # Wait 3 minute
-                    time.sleep(180)
+                    time.sleep(1)
                     # Max Request Sleep
                 else:
                     time.sleep(float(config('SETTING', 'TIME_SLEEP')))
