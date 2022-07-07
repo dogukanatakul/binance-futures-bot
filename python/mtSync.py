@@ -191,7 +191,7 @@ while True:
             while clientConnect:
                 try:
                     client = Client()
-                    klines3m = client.futures_klines(symbol=parity['parity'], interval="3m", limit=missingTimeSET)
+                    klines3m = client.futures_klines(symbol=parity['parity'], interval="3m", limit=missingTimeSET, requests_params={"timeout": 300, 'proxies': parity['proxy']})
                     clientConnect = False
                 except Exception as e:
                     clientConnectCount += 1
