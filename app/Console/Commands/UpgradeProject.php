@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Bot;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +32,11 @@ class UpgradeProject extends Command
     {
         DB::table('jobs')->truncate();
         DB::table('failed_jobs')->truncate();
-        DB::table('bots')->truncate();
+        if (Bot::where('status', true)->get()->count() > 0) {
+            Bot::where('status', false)->delete();
+        } else {
+            DB::table('bots')->truncate();
+        }
         Artisan::call('queue:flush');
         Artisan::call('queue:restart');
         Artisan::call('queue:clear', [
