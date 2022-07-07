@@ -270,7 +270,7 @@ while True:
                 if errBot.status_code == 200:
                     errBotWhile = False
                 elif errBotCount >= int(config('API', 'ERR_COUNT')):
-                    raise Exception('server_error')
+                    os.execl(sys.executable, sys.executable, *sys.argv)
                 else:
                     time.sleep(1)
                     errBotCount += 1
