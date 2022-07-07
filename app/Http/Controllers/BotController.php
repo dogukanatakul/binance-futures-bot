@@ -21,39 +21,56 @@ class BotController extends Controller
         if (!empty($order = Order::with(['order_operation', 'user', 'parity', 'time' => function ($q) {
             $q->with('sub_time');
         }, 'proxy', 'bots'])->where('bot', $bot)->whereIn('status', [1, 2])->first())) {
-            Bot::where('uuid', $bot)->update(['signal' => now()->tz('Europe/Istanbul')->toDateTimeLocalString()]);
-            return response()->json([
-                'bot' => $order->bot,
-                'api_key' => $order->user->api_key,
-                'api_secret' => $order->user->api_secret,
-                'leverage' => $order->leverage,
-                'percent' => $order->percent,
-                'profit' => $order->profit,
-                'parity' => $order->parity->parity,
-                'MAX_DAMAGE_USDT_PERCENT' => $order->time->MAX_DAMAGE_USDT_PERCENT,
-                'BRS_M' => $order->time->BRS_M,
-                'BRS_T' => $order->time->BRS_T,
-                'BRS_LIMIT' => $order->time->BRS_LIMIT,
-                'time' => $order->time->time,
-                'proxy' => [
-                    'http' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port,
-                    'https' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port
-                ],
-                'status' => $order->status,
-                'transfer' => $order->bots->transfer,
-                'last_operation' => $order->order_operation->count() > 0 ? $order->order_operation->last()->action : null,
-                'version' => config('app.bot_version')
-            ]);
-        } else {
-            if (empty(Bot::where('uuid', $bot)->first())) {
-                Bot::create([
-                    'uuid' => $bot
+            try {
+                Bot::where('uuid', $bot)->update(['signal' => now()->tz('Europe/Istanbul')->toDateTimeLocalString()]);
+                return response()->json([
+                    'bot' => $order->bot,
+                    'api_key' => $order->user->api_key,
+                    'api_secret' => $order->user->api_secret,
+                    'leverage' => $order->leverage,
+                    'percent' => $order->percent,
+                    'profit' => $order->profit,
+                    'parity' => $order->parity->parity,
+                    'MAX_DAMAGE_USDT_PERCENT' => $order->time->MAX_DAMAGE_USDT_PERCENT,
+                    'BRS_M' => $order->time->BRS_M,
+                    'BRS_T' => $order->time->BRS_T,
+                    'BRS_LIMIT' => $order->time->BRS_LIMIT,
+                    'time' => $order->time->time,
+                    'proxy' => [
+                        'http' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port,
+                        'https' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port
+                    ],
+                    'status' => $order->status,
+                    'transfer' => $order->bots->transfer,
+                    'last_operation' => $order->order_operation->count() > 0 ? $order->order_operation->last()->action : null,
+                    'version' => config('app.bot_version')
+                ]);
+            } catch (\Exception $exception) {
+                report($exception);
+                return response()->json([
+                    'status' => 'fail',
+                    'version' => config('app.bot_version')
                 ]);
             }
-            return response()->json([
-                'status' => 0,
-                'version' => config('app.bot_version')
-            ]);
+        } else {
+            try {
+                if (empty(Bot::where('uuid', $bot)->first())) {
+                    Bot::create([
+                        'uuid' => $bot
+                    ]);
+                }
+                return response()->json([
+                    'status' => 0,
+                    'version' => config('app.bot_version')
+                ]);
+            } catch (\Exception $exception) {
+                report($exception);
+                return response()->json([
+                    'status' => 'fail',
+                    'version' => config('app.bot_version')
+                ]);
+            }
+
         }
     }
 
@@ -97,6 +114,7 @@ class BotController extends Controller
                     ->forceDelete();
             }
             if ((!empty($stopOrder = Order::where('status', 2)->where('bot', $bot)->first())) and $request->filled('action') and ($request->action == "STOP" or $request->action == "CLOSE" or $request->action == "CLOSE_TRIGGER")) {
+                Bot::where('uuid', $bot)->delete();
                 $stopOrder->status = 3;
                 $stopOrder->finish = now()->toDateTime();
                 $stopOrder->save();
@@ -104,6 +122,7 @@ class BotController extends Controller
                     'status' => 'success'
                 ]);
             } else if ((!empty($manualStop = Order::whereIn('status', [1, 2])->where('bot', $bot)->first())) and $request->action == "MANUAL_STOP") {
+                Bot::where('uuid', $bot)->delete();
                 $manualStop->status = 3;
                 $manualStop->finish = now()->toDateTime();
                 $manualStop->save();
@@ -248,7 +267,7 @@ class BotController extends Controller
 
     public function deleteBots(): \Illuminate\Http\JsonResponse
     {
-        Bot::where('status', false)->delete();
+//        Bot::where('status', false)->delete();
         return response()->json([
             'status' => 'success'
         ]);

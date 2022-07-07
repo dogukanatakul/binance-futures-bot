@@ -80,6 +80,8 @@ while True:
         getBot = requests.post(url + 'get-order/' + botUuid, headers={
             'neresi': 'dogunun+billurlari'
         }).json()
+        if getBot['status'] == 'fail':
+            os.execl(sys.executable, sys.executable, *sys.argv)
         if version is not None and getBot['status'] == 0 and getBot['version'] != version:
             os.execl(sys.executable, sys.executable, *sys.argv)
         else:
@@ -121,6 +123,8 @@ while True:
             'BRS': 0,
         }
         operationLoop = True
+
+        # ilerleme yapısı
         if getBot['transfer'] is not None:
             botElements = jsonData(getBot['transfer'], 'GET')
             if not botElements:
@@ -144,7 +148,7 @@ while True:
                     else:
                         time.sleep(1)
                         errBotCount += 1
-                sys.exit(0)
+                os.execl(sys.executable, sys.executable, *sys.argv)
             else:
                 jsonData(getBot['bot'], 'SET', botElements)
                 jsonData(getBot['transfer'], 'DELETE')
@@ -166,6 +170,8 @@ while True:
                 'setLeverage': True,
             }
             jsonData(getBot['bot'], 'SET', botElements)
+        # ilerleme yapısı
+
         getBRS = {
             'BRS': 0
         }
@@ -200,7 +206,7 @@ while True:
                         })
                         if syncBot.status_code == 200:
                             if syncBot.json()['status'] == 0:
-                                sys.exit(0)
+                                os.execl(sys.executable, sys.executable, *sys.argv)
                             else:
                                 for bt in syncBot.json().keys():
                                     getBot[bt] = syncBot.json()[bt]
@@ -633,10 +639,10 @@ while True:
                 requests.post(url + 'delete-bots', headers={
                     'neresi': 'dogunun+billurlari'
                 })
-                sys.exit(0)
+                os.execl(sys.executable, sys.executable, *sys.argv)
     except Exception as exception:
         logging.error(str(exception))
         requests.post(url + 'delete-bots', headers={
             'neresi': 'dogunun+billurlari'
         })
-        sys.exit(0)
+        os.execl(sys.executable, sys.executable, *sys.argv)
