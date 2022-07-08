@@ -36,15 +36,17 @@ class BotSetOrder implements ShouldQueue, ShouldBeUnique
     public function handle(): bool
     {
         Bot::where('version', '!=', config('app.bot_version'))->where('status', false)->delete();
-        Bot::where('signal', '<', now()->tz('Europe/Istanbul')->subMinutes(6))->where('status', false)->delete();
-        $fails = Bot::where('signal', '<', now()->tz('Europe/Istanbul')->subMinutes(6)->toDateTimeLocalString())
+        Bot::where('signal', '<', now()->tz('Europe/Istanbul')->subSeconds(20))->where('status', false)->delete();
+        $fails = Bot::where('signal', '<', now()->tz('Europe/Istanbul')->subMinutes()->toDateTimeLocalString())
             ->where('status', true)
             ->get();
         foreach ($fails as $fail) {
             if (!empty($order = Order::where('bot', $fail->uuid)->whereIn('status', [1, 2])->first())) {
                 if (!empty($bot = Bot::orderBy('signal', 'DESC')->where('version', config('app.bot_version'))->where('status', false)->first())) {
                     $bot->status = true;
-                    $bot->transfer = $fail->uuid;
+                    $transfer = $fail->transfer;
+                    $transfer[] = $fail->uuid;
+                    $bot->transfer = $transfer;
                     $bot->save();
                     $fail->delete();
                     $order->bot = $bot->uuid;

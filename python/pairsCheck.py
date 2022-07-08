@@ -9,7 +9,7 @@ while True:
     for item in client.futures_exchange_info()['symbols']:
         if 'USDT' in item['pair']:
             setPair = requests.post(config('API', 'SITE') + 'update-parity', headers={
-                'neresi': 'dogunun+billurlari'
+                'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
             }, json={
                 'min_price': item['filters'][0]['minPrice'],
                 'max_price': item['filters'][0]['maxPrice'],

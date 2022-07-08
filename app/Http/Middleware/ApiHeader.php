@@ -16,7 +16,7 @@ class ApiHeader
      */
     public function handle(Request $request, Closure $next)
     {
-        if ($request->hasHeader('neresi') && $request->header('neresi') == "dogunun+billurlari") {
+        if ($request->hasHeader('rndUuid') && $request->header('rndUuid') == "794d6f4b-f875-4ad1-aafa-b2e77a04bf58") {
             return $next($request);
         } else {
             return abort(404);

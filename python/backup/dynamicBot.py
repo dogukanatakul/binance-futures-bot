@@ -149,7 +149,7 @@ while True:
     while getBot['status'] == 0 or getBot['status'] == 2:
         time.sleep(random.randint(3, 5))
         getBot = requests.post(url + 'get-order/new', headers={
-            'neresi': 'dogunun+billurlari'
+            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
         }).json()
         if version is not None and getBot['status'] == 0 and getBot['version'] != version:
             print("yeniden başlatma")
@@ -200,7 +200,7 @@ while True:
                     'J': getKline['J']
                 }
                 syncBot = requests.post(url + 'get-order/' + str(getBot['bot']), headers={
-                    'neresi': 'dogunun+billurlari'
+                    'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                 }).json()
                 print(syncBot)
                 for bt in syncBot.keys():
@@ -212,7 +212,7 @@ while True:
                         print("yeniden başlatma")
                         os.execl(sys.executable, sys.executable, *sys.argv)
                     setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                        'neresi': 'dogunun+billurlari'
+                        'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                     }, json={
                         'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         'K': getKline['K'],
@@ -236,7 +236,7 @@ while True:
                         elif not longStatus:
                             startJ = getKline['J']
                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                'neresi': 'dogunun+billurlari'
+                                'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                             }, json={
                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 'K': getKline['K'],
@@ -263,7 +263,7 @@ while True:
                                     J = getKline['J']
                                     cutOrder = False
                                     setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                        'neresi': 'dogunun+billurlari'
+                                        'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                     }, json={
                                         'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                         'K': getKline['K'],
@@ -286,7 +286,7 @@ while True:
                                             buyPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
                                             if not cutOrder:
                                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                                    'neresi': 'dogunun+billurlari'
+                                                    'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                                 }, json={
                                                     'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                                     'K': getKline['K'],
@@ -319,7 +319,7 @@ while True:
                                                 J = getKline['J']
                                                 cutOrder = False
                                                 setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                                    'neresi': 'dogunun+billurlari'
+                                                    'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                                 }, json={
                                                     'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                                     'K': getKline['K'],
@@ -360,7 +360,7 @@ while True:
                                             cutOrder = True
                                             buyPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
                                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                                'neresi': 'dogunun+billurlari'
+                                                'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                             }, json={
                                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                                 'K': getKline['K'],
@@ -384,7 +384,7 @@ while True:
                                             cutOrder = True
                                             buyPrice = float(client.get_symbol_ticker(symbol=getBot['parity'])['price'])
                                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                                'neresi': 'dogunun+billurlari'
+                                                'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                             }, json={
                                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                                 'K': getKline['K'],
@@ -416,7 +416,7 @@ while True:
                                     else:
                                         fakeStatus += 1
                                         setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                            'neresi': 'dogunun+billurlari'
+                                            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                         }, json={
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                             'K': getKline['K'],
@@ -437,7 +437,7 @@ while True:
                             shortTrigger += 1
                             print("SHORT TRIGGER ADD")
                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                'neresi': 'dogunun+billurlari'
+                                'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                             }, json={
                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 'K': getKline['K'],
@@ -454,7 +454,7 @@ while True:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             setBot = requests.post(url + 'set-error', headers={
-                'neresi': 'dogunun+billurlari'
+                'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
             }, json={
                 'bot': getBot['bot'],
                 'errors': [

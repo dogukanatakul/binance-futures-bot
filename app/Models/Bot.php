@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 
 class Bot extends Model
 {
@@ -18,6 +17,7 @@ class Bot extends Model
         'signal'
     ];
     protected $casts = [
+        'transfer' => 'array',
         'uuid' => 'string',
         'version' => 'string',
         'status' => 'boolean',

@@ -11,7 +11,7 @@ def microTime(dt):
 
 while True:
     req = requests.post(config('API', 'SITE') + 'exports', headers={
-        'neresi': 'dogunun+billurlari'
+        'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
     }).json()
     if req['id'] != 0:
         try:
@@ -50,7 +50,7 @@ while True:
             df_json = pd.read_json(json.dumps(dfParse))
             df_json.to_excel(os.path.dirname(os.path.realpath(__file__)) + "/../storage/app/export/" + req['parity'] + "_" + req['time'] + ".xlsx")
             requests.post(config('API', 'SITE') + 'exports', headers={
-                'neresi': 'dogunun+billurlari'
+                'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
             }, json={
                 'id': req['id']
             }).json()

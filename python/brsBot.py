@@ -78,7 +78,7 @@ while True:
     while getBot['status'] == 0:
         time.sleep(float(config('SETTING', 'TIME_SLEEP')))
         getBot = requests.post(url + 'get-order/' + botUuid, headers={
-            'neresi': 'dogunun+billurlari'
+            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
         }).json()
         if getBot['status'] == 'fail':
             os.execl(sys.executable, sys.executable, *sys.argv)
@@ -102,7 +102,7 @@ while True:
                     time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                 elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= clientConnectCount <= 6):
                     proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                        'neresi': 'dogunun+billurlari'
+                        'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                     }).json()
                     getBot['proxy'] = proxyOrder['proxy']
                 else:
@@ -125,19 +125,26 @@ while True:
         operationLoop = True
 
         # ilerleme yapısı
-        if getBot['transfer'] is not None:
-            botElements = jsonData(getBot['transfer'], 'GET')
-            if not botElements:
+        if len(getBot['transfer']) > 0:
+            transferFailStatus = True
+            for transferUuid in getBot['transfer']:
+                botElements = jsonData(transferUuid, 'GET')
+                if botElements:
+                    jsonData(getBot['bot'], 'SET', botElements)
+                    jsonData(getBot['transfer'][0], 'DELETE')
+                    transferFailStatus = False
+                    break
+            if transferFailStatus:
                 errBotWhile = True
                 errBotCount = 0
                 while errBotWhile:
                     errBot = requests.post(url + 'set-error', headers={
-                        'neresi': 'dogunun+billurlari'
+                        'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                     }, json={
                         'bot': getBot['bot'],
                         'errors': [
                             "ilerleme dosyasi bulunamadi.",
-                            getBot['transfer'],
+                            getBot['transfer'][0],
                             getBot['bot'],
                         ]
                     })
@@ -149,9 +156,6 @@ while True:
                         time.sleep(1)
                         errBotCount += 1
                 os.execl(sys.executable, sys.executable, *sys.argv)
-            else:
-                jsonData(getBot['bot'], 'SET', botElements)
-                jsonData(getBot['transfer'], 'DELETE')
         else:
             botElements = {
                 'lastPrice': 0,
@@ -202,7 +206,7 @@ while True:
                     syncBotCount = 0
                     while syncBotWhile:
                         syncBot = requests.post(url + 'get-order/' + getBot['bot'], headers={
-                            'neresi': 'dogunun+billurlari'
+                            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                         })
                         if syncBot.status_code == 200:
                             if syncBot.json()['status'] == 0:
@@ -222,7 +226,7 @@ while True:
                         setBotCount = 0
                         while setBotWhile:
                             setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                'neresi': 'dogunun+billurlari'
+                                'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                             }, json={
                                 'line': getframeinfo(currentframe()).lineno,
                                 'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -254,7 +258,7 @@ while True:
                                         time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                                     elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= positionConnectCount <= 6):
                                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                            'neresi': 'dogunun+billurlari'
+                                            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                         }).json()
                                         getBot['proxy'] = proxyOrder['proxy']
                                         client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
@@ -277,7 +281,7 @@ while True:
                                                 time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                                             elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= orderCreateCount <= 6):
                                                 proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                                    'neresi': 'dogunun+billurlari'
+                                                    'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                                 }).json()
                                                 getBot['proxy'] = proxyOrder['proxy']
                                                 client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
@@ -300,7 +304,7 @@ while True:
                                     #             time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                                     #         elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= closeOrdersCount <= 6):
                                     #             proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                    #                 'neresi': 'dogunun+billurlari'
+                                    #                 'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                     #             }).json()
                                     #             getBot['proxy'] = proxyOrder['proxy']
                                     #         else:
@@ -311,7 +315,7 @@ while True:
                                     setBotCount = 0
                                     while setBotWhile:
                                         setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                            'neresi': 'dogunun+billurlari'
+                                            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                         }, json={
                                             'line': getframeinfo(currentframe()).lineno,
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -333,7 +337,7 @@ while True:
                                     setBotCount = 0
                                     while setBotWhile:
                                         setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                            'neresi': 'dogunun+billurlari'
+                                            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                         }, json={
                                             'line': getframeinfo(currentframe()).lineno,
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -353,7 +357,7 @@ while True:
                                 setBotCount = 0
                                 while setBotWhile:
                                     setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                        'neresi': 'dogunun+billurlari'
+                                        'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                     }, json={
                                         'line': getframeinfo(currentframe()).lineno,
                                         'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -398,7 +402,7 @@ while True:
                                             time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                                         elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= orderCreateCount <= 6):
                                             proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                                'neresi': 'dogunun+billurlari'
+                                                'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                             }).json()
                                             getBot['proxy'] = proxyOrder['proxy']
                                             client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
@@ -424,7 +428,7 @@ while True:
                                 #             time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                                 #         elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= stopLossCreateCount <= 6):
                                 #             proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                #                 'neresi': 'dogunun+billurlari'
+                                #                 'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                 #             }).json()
                                 #             getBot['proxy'] = proxyOrder['proxy']
                                 #             client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
@@ -438,7 +442,7 @@ while True:
                                 setBotCount = 0
                                 while setBotWhile:
                                     setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                        'neresi': 'dogunun+billurlari'
+                                        'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                     }, json={
                                         'line': getframeinfo(currentframe()).lineno,
                                         'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -462,7 +466,7 @@ while True:
                                 setBotCount = 0
                                 while setBotWhile:
                                     setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                        'neresi': 'dogunun+billurlari'
+                                        'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                     }, json={
                                         'line': getframeinfo(currentframe()).lineno,
                                         'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -488,7 +492,7 @@ while True:
                                         time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                                     elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= positionConnectCount <= 6):
                                         proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                            'neresi': 'dogunun+billurlari'
+                                            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                         }).json()
                                         client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
                                     else:
@@ -531,7 +535,7 @@ while True:
                                                 time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                                             elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= orderCreateCount <= 6):
                                                 proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                                    'neresi': 'dogunun+billurlari'
+                                                    'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                                 }).json()
                                                 getBot['proxy'] = proxyOrder['proxy']
                                             else:
@@ -553,7 +557,7 @@ while True:
                                     #             time.sleep(float(config('SETTING', 'TIME_SLEEP')))
                                     #         elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= closeOrdersCount <= 6):
                                     #             proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                    #                 'neresi': 'dogunun+billurlari'
+                                    #                 'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                     #             }).json()
                                     #             getBot['proxy'] = proxyOrder['proxy']
                                     #         else:
@@ -563,7 +567,7 @@ while True:
                                     setBotCount = 0
                                     while setBotWhile:
                                         setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                            'neresi': 'dogunun+billurlari'
+                                            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                         }, json={
                                             'line': getframeinfo(currentframe()).lineno,
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -585,7 +589,7 @@ while True:
                                     setBotCount = 0
                                     while setBotWhile:
                                         setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                            'neresi': 'dogunun+billurlari'
+                                            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                                         }, json={
                                             'line': getframeinfo(currentframe()).lineno,
                                             'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -615,7 +619,7 @@ while True:
                 errBotCount = 0
                 while errBotWhile:
                     errBot = requests.post(url + 'set-error', headers={
-                        'neresi': 'dogunun+billurlari'
+                        'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                     }, json={
                         'bot': getBot['bot'],
                         'errors': [
@@ -633,16 +637,15 @@ while True:
                         time.sleep(1)
                         errBotCount += 1
                 if getBot['version'] != version:
-                    print("yeniden başlatma")
                     os.execl(sys.executable, sys.executable, *sys.argv)
             except KeyboardInterrupt:
                 requests.post(url + 'delete-bots', headers={
-                    'neresi': 'dogunun+billurlari'
+                    'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                 })
                 os.execl(sys.executable, sys.executable, *sys.argv)
     except Exception as exception:
         logging.error(str(exception))
         requests.post(url + 'delete-bots', headers={
-            'neresi': 'dogunun+billurlari'
+            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
         })
         os.execl(sys.executable, sys.executable, *sys.argv)

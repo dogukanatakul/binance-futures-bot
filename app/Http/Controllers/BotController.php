@@ -41,7 +41,7 @@ class BotController extends Controller
                         'https' => "http://" . $order->proxy->user . ":" . $order->proxy->password . "@" . $order->proxy->host . ":" . $order->proxy->port
                     ],
                     'status' => $order->status,
-                    'transfer' => $order->bots->transfer,
+                    'transfer' => array_reverse($order->bots->transfer),
                     'last_operation' => $order->order_operation->count() > 0 ? $order->order_operation->last()->action : null,
                     'version' => config('app.bot_version')
                 ]);
@@ -58,6 +58,8 @@ class BotController extends Controller
                     Bot::create([
                         'uuid' => $bot
                     ]);
+                } else {
+                    Bot::where('uuid', $bot)->update(['signal' => now()->tz('Europe/Istanbul')->toDateTimeLocalString()]);
                 }
                 return response()->json([
                     'status' => 0,

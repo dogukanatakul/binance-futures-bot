@@ -5,7 +5,7 @@ import requests
 
 while True:
     reqs = requests.post(config('API', 'SITE') + 'get-req-user', headers={
-        'neresi': 'dogunun+billurlari'
+        'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
     }).json()
     proxyCount = 0
     for user in reqs['users']:
@@ -22,7 +22,7 @@ while True:
                 if attr in permissions and value:
                     permissions.remove(attr)
             setPerm = requests.post(config('API', 'SITE') + 'set-req-user', headers={
-                'neresi': 'dogunun+billurlari'
+                'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
             }, json={
                 'user': user['id'],
                 'permissions': permissions
@@ -32,7 +32,7 @@ while True:
             if str(e).find("Invalid API-key") >= 0:
                 # APIError(code=-2008): Invalid Api-Key ID.
                 setPerm = requests.post(config('API', 'SITE') + 'set-req-user', headers={
-                    'neresi': 'dogunun+billurlari'
+                    'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                 }, json={
                     'user': user['id'],
                     'status': 'fail'
