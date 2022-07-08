@@ -259,7 +259,6 @@ while True:
                 errBot = requests.post(config('API', 'SITE') + 'set-error', headers={
                     'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
                 }, json={
-                    'bot': 'mtSync.py',
                     'errors': [
                         str(exc_type),
                         str(fname),
