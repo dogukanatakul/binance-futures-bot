@@ -126,7 +126,6 @@ class AdminController extends Controller
             unset($update['BRS_T']);
             Session::flash('error', 'Değerler değişmedi! Yasaklı zaman dilimi içerisinde güncelleme yapmaya çalıştınız.');
         }
-        dd($update);
         $update['export_time_status'] = true;
         Time::where('id', $request->id)->update($update);
         return redirect()->back();
