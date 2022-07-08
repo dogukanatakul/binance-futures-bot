@@ -166,8 +166,9 @@ while True:
     setBotCount = 0
     while setBotWhile:
         parities = requests.post(config('API', 'SITE') + 'mt-sync', headers={
-            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
+            'neresi': 'dogunun+billurlari'
         })
+        print(parities.json())
         if parities.status_code == 200:
             setBotWhile = False
             parities = parities.json()
@@ -240,7 +241,7 @@ while True:
                         while setBotWhile:
                             jsonData(parity['parity'], 'SET', parity)
                             setBot = requests.post(config('API', 'SITE') + 'mt-sync', headers={
-                                'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
+                                'neresi': 'dogunun+billurlari'
                             }, json=parity)
                             if setBot.status_code == 200:
                                 print("gönderildi")
@@ -251,13 +252,14 @@ while True:
                                 time.sleep(1)
                                 setBotCount += 1
         except Exception as exception:
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exception)
             errBotWhile = True
             errBotCount = 0
             while errBotWhile:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 errBot = requests.post(config('API', 'SITE') + 'set-error', headers={
-                    'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
+                    'neresi': 'dogunun+billurlari'
                 }, json={
                     'bot': 'mtSync.py',
                     'errors': [

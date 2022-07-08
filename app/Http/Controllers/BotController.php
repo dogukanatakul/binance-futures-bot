@@ -331,11 +331,10 @@ class BotController extends Controller
                 ]);
             }
         } else {
-            $orders = Order::where('status', 1)->get()->pluck('times_id');
-            $parities = Parity::with(['time' => function ($q) use ($orders) {
-                $q->whereNotIn('id', $orders)->where('status', true)->whereNotNull('export_time');
-            }])->whereHas('time', function ($q) use ($orders) {
-                $q->whereNotIn('id', $orders)->where('status', true)->whereNotNull('export_time');
+            $parities = Parity::with(['time' => function ($q) {
+                $q->where('status', true)->whereNotNull('export_time');
+            }])->whereHas('time', function ($q) {
+                $q->where('status', true)->whereNotNull('export_time');
             })
                 ->get();
             $results = [];
