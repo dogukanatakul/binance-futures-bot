@@ -347,7 +347,7 @@ class BotController extends Controller
                             'https' => "http://" . $item->user . ":" . $item->password . "@" . $item->host . ":" . $item->port
                         ];
                     })->first();
-                    Time::where('export_time_status', true)->update([
+                    Time::where('export_time_status', true)->where('id', $time->id)->update([
                         'export_time_status' => false
                     ]);
                     $results[] = [

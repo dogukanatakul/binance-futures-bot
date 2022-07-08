@@ -160,7 +160,7 @@ class AdminController extends Controller
         return redirect()->back();
     }
 
-    public function exportInfo($id)
+    public function exportInfo($id): \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Contracts\Foundation\Application
     {
         $infos = TimeIndicatorPeriod::where('times_id', $id)->orderBy('microtime', 'DESC')->get();
         header("Refresh: 5;");
