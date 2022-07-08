@@ -20,7 +20,7 @@ class ProxySeeder extends Seeder
         $proxyCount = 0;
         foreach (explode("\n", $proxies) as $proxy) {
             $proxyCount++;
-            if ($proxyCount <= 50) {
+            if ($proxyCount <= 500) {
                 $proxy = explode(":", $proxy);
                 Proxy::create([
                     'user' => $proxy[2],

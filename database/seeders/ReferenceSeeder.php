@@ -17,11 +17,6 @@ class ReferenceSeeder extends Seeder
     {
         $codes = [
             'CPA_00K3PGAZTF' => 'mtolgacogurcu@gmail.com',
-//            'A4J253H7' => 'haliloffroad42@gmail.com',
-//            '96505344' => 'otenemrah750@gmail.com',
-//            '36560539' => 'kahiyeramazan0@gmail.com',
-//            'WOZNZDTT' => 'mustafakalaycikonya@gmail.com',
-//            'CPA_00U819MFJH' => 'yusufsalih16@gmail.com',
         ];
         foreach ($codes as $code => $email) {
             ReferenceCode::create([
