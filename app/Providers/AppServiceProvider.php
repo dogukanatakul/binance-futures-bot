@@ -42,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $jobName = $event->job->payload()['data']['commandName'];
         if ($jobName === 'App\Jobs\BotSetOrder') {
-            \App\Jobs\BotSetOrder::dispatch()->onQueue('bot')->delay(now()->tz('Europe/Istanbul')->addSeconds(10));
+            \App\Jobs\BotSetOrder::dispatch()->onQueue('bot')->delay(now()->tz('Europe/Istanbul')->addSeconds(2));
         }
     }
 

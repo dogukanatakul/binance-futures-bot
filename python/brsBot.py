@@ -164,14 +164,10 @@ while True:
                 'orderStatus': False,
                 'profitTurn': False,
                 'triggerKey': None,
-                'maxDamageUSDT': 0,
-                'maxDamageCount': 0,
-                'maxDamageBefore': 0,
                 'lastQuantity': None,
                 'newTriggerOrder': False,
                 'balance': 0,
                 'stopLoss': 0,
-                'setLeverage': True,
             }
             jsonData(getBot['bot'], 'SET', botElements)
         # ilerleme yapısı
@@ -287,29 +283,6 @@ while True:
                                                 client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
                                             else:
                                                 raise Exception(e)
-
-                                    # closeOrders = True
-                                    # closeOrdersCount = 0
-                                    # while closeOrders:
-                                    #     try:
-                                    #         openOrdersF = client.futures_get_open_orders()
-                                    #         if len(openOrdersF) > 0:
-                                    #             for orderF in openOrdersF:
-                                    #                 client.futures_cancel_order(symbol=getBot['parity'], orderId=orderF['orderId'])
-                                    #         closeOrders = False
-                                    #     except Exception as e:
-                                    #         logging.error(str(e))
-                                    #         closeOrdersCount += 1
-                                    #         if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and closeOrdersCount < 3:
-                                    #             time.sleep(float(config('SETTING', 'TIME_SLEEP')))
-                                    #         elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= closeOrdersCount <= 6):
-                                    #             proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                    #                 'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
-                                    #             }).json()
-                                    #             getBot['proxy'] = proxyOrder['proxy']
-                                    #         else:
-                                    #             raise Exception(e)
-
                                     # Binance END
                                     setBotWhile = True
                                     setBotCount = 0
@@ -377,14 +350,6 @@ while True:
                                 # Binance
                                 botElements['balance'] = getOrderBalance(client, "USDT", int(getBot['percent']))
 
-                                # profit trigger
-                                botElements['maxDamageUSDT'] = round((botElements['balance'] / 100) * int(getBot['MAX_DAMAGE_USDT_PERCENT']), 2)
-                                botElements['maxDamageCount'] = 0
-                                botElements['maxDamageBefore'] = 0
-                                botElements['setLeverage'] = True
-
-                                # profit trigger END
-
                                 botElements['lastQuantity'] = "{:0.0{}f}".format(float((botElements['balance'] / botElements['lastPrice']) * getBot['leverage']), fractions[getBot['parity']])
                                 if float(botElements['lastQuantity']) <= 0:
                                     raise Exception("Bakiye hatası")
@@ -408,32 +373,6 @@ while True:
                                             client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
                                         else:
                                             raise Exception(e)
-
-                                # stopLossCreate = True
-                                # stopLossCreateCount = 0
-                                # while stopLossCreate:
-                                #     try:
-                                #         MAX_DAMAGE_USDT_PERCENT = int(getBot['MAX_DAMAGE_USDT_PERCENT'] * 1.01)
-                                #         if botElements['lastType'] == 'LONG':
-                                #             botElements['stopLoss'] = (botElements['lastPrice'] / 100) * (100 - MAX_DAMAGE_USDT_PERCENT)
-                                #         else:
-                                #             botElements['stopLoss'] = (botElements['lastPrice'] / 100) * (100 + MAX_DAMAGE_USDT_PERCENT)
-                                #         botElements['stopLoss'] = "{:0.0{}f}".format(float(botElements['stopLoss']), priceFractions[getBot['parity']])
-                                #         client.futures_create_order(symbol=getBot['parity'], side='SELL' if botElements['lastType'] == 'LONG' else 'BUY', type='STOP_MARKET', quantity=botElements['lastQuantity'], positionSide=botElements['lastType'], stopPrice=botElements['stopLoss'], closePosition="true")
-                                #         stopLossCreate = False
-                                #     except Exception as e:
-                                #         logging.error(str(e))
-                                #         stopLossCreateCount += 1
-                                #         if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and stopLossCreateCount < 3:
-                                #             time.sleep(float(config('SETTING', 'TIME_SLEEP')))
-                                #         elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= stopLossCreateCount <= 6):
-                                #             proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                #                 'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
-                                #             }).json()
-                                #             getBot['proxy'] = proxyOrder['proxy']
-                                #             client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
-                                #         else:
-                                #             raise Exception(e)
 
                                 # Binance END
                                 botElements['orderStatus'] = True
@@ -480,6 +419,7 @@ while True:
                                         time.sleep(1)
                                         setBotCount += 1
                             elif botElements['orderStatus']:
+                                position = {}
                                 positionConnect = True
                                 positionConnectCount = 0
                                 try:
@@ -498,115 +438,29 @@ while True:
                                     else:
                                         raise Exception(e)
 
-                                if botElements['setLeverage']:
-                                    botElements['maxDamageUSDT'] = botElements['maxDamageUSDT'] * position['leverage']
-                                    botElements['setLeverage'] = False
-                                    jsonData(getBot['bot'], 'SET', botElements)
-
                                 if position['amount'] <= 0:
                                     raise Exception('close')
-                                elif position['profit'] < 0:
-                                    if abs(position['profit']) >= botElements['maxDamageUSDT']:
-                                        if botElements['maxDamageBefore'] < abs(position['profit']):
-                                            botElements['maxDamageCount'] += 1
-                                            if botElements['maxDamageCount'] >= int(config('SETTING', 'MAX_DAMAGE_COUNT')):
-                                                botElements['triggerKey'] = "MAX_DAMAGE"
-                                                botElements['profitTurn'] = True
-                                        else:
-                                            botElements['maxDamageCount'] = 0
-                                        botElements['maxDamageBefore'] = abs(position['profit'])
                                 jsonData(getBot['bot'], 'SET', botElements)
-
-                                if botElements['profitTurn']:
-                                    botElements['profitTurn'] = False
-                                    botElements['orderStatus'] = False
-                                    jsonData(getBot['bot'], 'SET', botElements)
-
-                                    orderCreate = True
-                                    orderCreateCount = 0
-                                    while orderCreate:
-                                        try:
-                                            client.futures_create_order(symbol=getBot['parity'], side='SELL' if botElements['lastType'] == 'LONG' else 'BUY', positionSide=botElements['lastType'], type="MARKET", quantity=botElements['lastQuantity'])
-                                            orderCreate = False
-                                        except Exception as e:
-                                            logging.error(str(e))
-                                            orderCreateCount += 1
-                                            if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and orderCreateCount < 3:
-                                                time.sleep(float(config('SETTING', 'TIME_SLEEP')))
-                                            elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= orderCreateCount <= 6):
-                                                proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                                    'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
-                                                }).json()
-                                                getBot['proxy'] = proxyOrder['proxy']
-                                            else:
-                                                raise Exception(e)
-
-                                    # closeOrders = True
-                                    # closeOrdersCount = 0
-                                    # while closeOrders:
-                                    #     try:
-                                    #         openOrdersF = client.futures_get_open_orders()
-                                    #         if len(openOrdersF) > 0:
-                                    #             for orderF in openOrdersF:
-                                    #                 client.futures_cancel_order(symbol=getBot['parity'], orderId=orderF['orderId'])
-                                    #         closeOrders = False
-                                    #     except Exception as e:
-                                    #         logging.error(str(e))
-                                    #         closeOrdersCount += 1
-                                    #         if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and closeOrdersCount < 3:
-                                    #             time.sleep(float(config('SETTING', 'TIME_SLEEP')))
-                                    #         elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= closeOrdersCount <= 6):
-                                    #             proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                    #                 'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
-                                    #             }).json()
-                                    #             getBot['proxy'] = proxyOrder['proxy']
-                                    #         else:
-                                    #             raise Exception(e)
-
-                                    setBotWhile = True
-                                    setBotCount = 0
-                                    while setBotWhile:
-                                        setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
-                                        }, json={
-                                            'line': getframeinfo(currentframe()).lineno,
-                                            'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                            'side': botElements['lastSide'],
-                                            'price': position['markPrice'],
-                                            'profit': position['profit'],
-                                            'quantity': position['amount'],
-                                            'action': botElements['triggerKey'],
-                                        })
-                                        if setBot.status_code == 200:
-                                            setBotWhile = False
-                                        elif setBotCount >= int(config('API', 'ERR_COUNT')):
-                                            raise Exception('server_error')
-                                        else:
-                                            time.sleep(1)
-                                            setBotCount += 1
-                                else:
-                                    setBotWhile = True
-                                    setBotCount = 0
-                                    while setBotWhile:
-                                        setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
-                                            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
-                                        }, json={
-                                            'line': getframeinfo(currentframe()).lineno,
-                                            'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                            'action': 'ORDER_ENDING_WAITING',
-                                        })
-                                        if setBot.status_code == 200:
-                                            setBotWhile = False
-                                        elif setBotCount >= int(config('API', 'ERR_COUNT')):
-                                            raise Exception('server_error')
-                                        else:
-                                            time.sleep(1)
-                                            setBotCount += 1
+                                setBotWhile = True
+                                setBotCount = 0
+                                while setBotWhile:
+                                    setBot = requests.post(url + 'set-order/' + str(getBot['bot']), headers={
+                                        'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
+                                    }, json={
+                                        'line': getframeinfo(currentframe()).lineno,
+                                        'time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                        'action': 'ORDER_ENDING_WAITING',
+                                    })
+                                    if setBot.status_code == 200:
+                                        setBotWhile = False
+                                    elif setBotCount >= int(config('API', 'ERR_COUNT')):
+                                        raise Exception('server_error')
+                                    else:
+                                        time.sleep(1)
+                                        setBotCount += 1
                                 # emir bozma yeri
                     # Max Request Sleep
-                    # Wait 3 minute
                     time.sleep(1)
-                    # Max Request Sleep
                 else:
                     time.sleep(float(config('SETTING', 'TIME_SLEEP')))
             except Exception as exception:
