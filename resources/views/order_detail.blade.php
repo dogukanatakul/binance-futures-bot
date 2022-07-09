@@ -20,6 +20,7 @@
                                 <th scope="col">{{ __('app.order_detail_side') }}</th>
                                 <th scope="col">{{ __('app.order_detail_position') }}</th>
                                 <th scope="col">{{ __('app.order_detail_action') }}</th>
+                                <th scope="col">{{ __('app.order_detail_time') }}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -45,6 +46,9 @@
                                     </td>
                                     <td>
                                         {{ $operation->action }}
+                                    </td>
+                                    <td>
+                                        {{ $operation->created_at->format('m-t H:i') }}
                                     </td>
                                 </tr>
                             @endforeach
