@@ -109,9 +109,9 @@ class BotController extends Controller
             $orderOperation = $request->toArray();
             $orderOperation['orders_id'] = $order->id;
             OrderOperation::create($orderOperation);
-            if ($request->action == "ORDER_START_WAITING") {
+            if ($request->action == "ORDER_ENDING_WAITING") {
                 OrderOperation::where('updated_at', '<', now()->tz('Europe/Istanbul')->subMinutes(1)->toDateTimeLocalString())
-                    ->where('action', 'ORDER_START_WAITING')
+                    ->where('action', 'ORDER_ENDING_WAITING')
                     ->where('orders_id', $order->id)
                     ->forceDelete();
             }
