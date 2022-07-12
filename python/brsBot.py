@@ -447,7 +447,6 @@ while True:
                                         client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
                                     else:
                                         raise Exception(e)
-
                                 if position['amount'] <= 0:
                                     raise Exception('close')
                                 jsonData(getBot['bot'], 'SET', botElements)
@@ -478,7 +477,6 @@ while True:
                 getBot['status'] = 0
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-
                 errBotWhile = True
                 errBotCount = 0
                 while errBotWhile:

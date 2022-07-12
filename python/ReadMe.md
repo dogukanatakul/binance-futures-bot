@@ -21,4 +21,13 @@ sudo systemctl stop supervisor
 sudo systemctl restart supervisor
 ```
 
-
+### Config INI
+```
+[API]
+SITE = http://SITE_URL/api/
+ERR_COUNT = 4
+ERR_COUNT_BRS = 10
+[SETTING]
+MAX_DAMAGE_COUNT = 1
+TIME_SLEEP = 1
+```
