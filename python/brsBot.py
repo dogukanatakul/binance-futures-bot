@@ -27,18 +27,24 @@ def getOrderBalance(client, currenty, percent):
 
 
 def getPosition(client, symbol, side):
-    infos = client.futures_position_information(symbol=symbol)
-    positions = {}
-    for info in infos:
-        positions[info['positionSide']] = {
-            'amount': abs(float(info['positionAmt'])),
-            'entryPrice': float(info['entryPrice']),
-            'markPrice': float(info['markPrice']),
-            'profit': float(info['unRealizedProfit']),
-            'fee': round(((abs(float(info['positionAmt'])) * 15) / 1000) * 0.0400, 2),
-            'leverage': int(info['leverage'])
-        }
-    return positions[side]
+    try:
+        infos = client.futures_position_information(symbol=symbol)
+        if 'positionAmt' in infos:
+            positions = {}
+            for info in infos:
+                positions[info['positionSide']] = {
+                    'amount': abs(float(info['positionAmt'])),
+                    'entryPrice': float(info['entryPrice']),
+                    'markPrice': float(info['markPrice']),
+                    'profit': float(info['unRealizedProfit']),
+                    'fee': round(((abs(float(info['positionAmt'])) * 15) / 1000) * 0.0400, 2),
+                    'leverage': int(info['leverage'])
+                }
+            return positions[side]
+        else:
+            return False
+    except:
+        return False
 
 
 def jsonData(bot, status='GET', data={}):
@@ -246,6 +252,8 @@ while True:
                                 position = {}
                                 try:
                                     position = getPosition(client, getBot['parity'], botElements['lastType'])
+                                    if not position:
+                                        raise Exception('position')
                                     positionConnect = False
                                 except Exception as e:
                                     logging.error(str(e))
@@ -424,6 +432,8 @@ while True:
                                 positionConnectCount = 0
                                 try:
                                     position = getPosition(client, getBot['parity'], botElements['lastType'])
+                                    if not position:
+                                        raise Exception('position')
                                     positionConnect = False
                                 except Exception as e:
                                     logging.error(str(e))

@@ -1,8 +1,8 @@
-import sys
-while True:
-    for test in range(0, 10):
-       if True:
-            sys.exit(0)
-            print("ok")
-            break
-       print("no")
+infos = {
+    'positionAmt': '111',
+}
+
+if 'positionAmt' in infos:
+    print("ok")
+else:
+    print("no")
