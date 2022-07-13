@@ -123,8 +123,8 @@ def brs(klines3mGroup, M=0, T=0, P1=2.5, P2=2.5, P3=3, P4=5, lastTime=0):
         BRS = ((list(df3m['Close'])[-1] - min(df3m['Low'])) / (max(df3m['High']) - min(df3m['Low']))) * 100
         M = P1 / P3 * M + (P3 - P1) / P3 * BRS
         T = P2 / P3 * T + (P3 - P2) / P3 * M
-        C = 3 * M - 2 * T
-        if (C + P4) > T:
+        C = (3 * M - 2 * T) + P4
+        if C > T:
             result = {
                 'type': 'LONG',
                 'side': 'BUY',
