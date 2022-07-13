@@ -57,16 +57,16 @@ class AdminController extends Controller
     {
         $forbidden = in_array((int)now('Europe/Istanbul')->format('i'), [
             00,
-            13,
+            01,
             14,
             15,
-            28,
+            16,
             29,
             30,
-            43,
+            31,
             44,
             45,
-            58,
+            46,
             59,
         ]);
         if ($request->filled('status')) {
@@ -113,16 +113,16 @@ class AdminController extends Controller
         }
         $forbidden = in_array((int)now('Europe/Istanbul')->format('i'), [
             00,
-            13,
+            01,
             14,
             15,
-            28,
+            16,
             29,
             30,
-            43,
+            31,
             44,
             45,
-            58,
+            46,
             59,
         ]);
         if ($forbidden) {
