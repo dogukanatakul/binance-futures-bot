@@ -22,6 +22,11 @@ return new class extends Migration {
             $table->decimal('BRS_T', 38, 22)->default(0);
             $table->integer('BRS_LIMIT')->default(11);
 
+            $table->decimal('BRS_P1', 38, 22)->default(2.5);
+            $table->decimal('BRS_P2', 38, 22)->default(2.5);
+            $table->decimal('BRS_P3', 38, 22)->default(3);
+            $table->decimal('BRS_P4', 38, 22)->default(5);
+
             $table->float('MAX_DAMAGE_USDT_PERCENT')->default(1);
 
             $table->boolean('status')->default(false);
