@@ -120,7 +120,7 @@ def brs(klines3mGroup, M=0, T=0, P1=2.5, P2=2.5, P3=3, P4=5, lastTime=0):
     klines3m = klines3mFilter[-11:]
     df3m = parse(klines3m)
     if lastTime < klines3m[-1][0]:
-        BRS = ((list(df3m['Close'])[-1] - max(df3m['Low'])) / (min(df3m['High']) - max(df3m['Low']))) * 100
+        BRS = ((list(df3m['Close'])[-1] - min(df3m['Low'])) / (max(df3m['High']) - min(df3m['Low']))) * 100
         M = P1 / P3 * M + (P3 - P1) / P3 * BRS
         T = P2 / P3 * T + (P3 - P2) / P3 * M
         C = 3 * M - 2 * T
