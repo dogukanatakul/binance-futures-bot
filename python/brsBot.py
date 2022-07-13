@@ -32,6 +32,7 @@ def getPosition(client, symbol, side):
         positions = {}
         for info in infos:
             positions[info['positionSide']] = {
+                'status': 'success',
                 'amount': abs(float(info['positionAmt'])),
                 'entryPrice': float(info['entryPrice']),
                 'markPrice': float(info['markPrice']),
@@ -42,9 +43,15 @@ def getPosition(client, symbol, side):
         if side in positions.keys() and 'amount' in positions[side].keys():
             return positions[side]
         else:
-            return False
-    except:
-        return False
+            return {
+                'status': 'fail',
+                'message': ''
+            }
+    except Exception as e:
+        return {
+            'status': 'fail',
+            'message': str(e)
+        }
 
 
 def jsonData(bot, status='GET', data={}):
@@ -252,8 +259,8 @@ while True:
                                 position = {}
                                 try:
                                     position = getPosition(client, getBot['parity'], botElements['lastType'])
-                                    if not position:
-                                        raise Exception('position')
+                                    if position['status'] == 'fail':
+                                        raise Exception(position['message'])
                                     positionConnect = False
                                 except Exception as e:
                                     logging.error(str(e))
@@ -432,8 +439,8 @@ while True:
                                 positionConnectCount = 0
                                 try:
                                     position = getPosition(client, getBot['parity'], botElements['lastType'])
-                                    if not position:
-                                        raise Exception('position')
+                                    if position['status'] == 'fail':
+                                        raise Exception(position['message'])
                                     positionConnect = False
                                 except Exception as e:
                                     logging.error(str(e))
