@@ -29,17 +29,17 @@ def getOrderBalance(client, currenty, percent):
 def getPosition(client, symbol, side):
     try:
         infos = client.futures_position_information(symbol=symbol)
-        if 'positionAmt' in infos:
-            positions = {}
-            for info in infos:
-                positions[info['positionSide']] = {
-                    'amount': abs(float(info['positionAmt'])),
-                    'entryPrice': float(info['entryPrice']),
-                    'markPrice': float(info['markPrice']),
-                    'profit': float(info['unRealizedProfit']),
-                    'fee': round(((abs(float(info['positionAmt'])) * 15) / 1000) * 0.0400, 2),
-                    'leverage': int(info['leverage'])
-                }
+        positions = {}
+        for info in infos:
+            positions[info['positionSide']] = {
+                'amount': abs(float(info['positionAmt'])),
+                'entryPrice': float(info['entryPrice']),
+                'markPrice': float(info['markPrice']),
+                'profit': float(info['unRealizedProfit']),
+                'fee': round(((abs(float(info['positionAmt'])) * 15) / 1000) * 0.0400, 2),
+                'leverage': int(info['leverage'])
+            }
+        if side in positions.keys() and 'amount' in positions[side].keys():
             return positions[side]
         else:
             return False
