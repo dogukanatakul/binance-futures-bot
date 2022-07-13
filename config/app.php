@@ -33,7 +33,7 @@ return [
 //        '1M'
     ],
 
-    'bot_version' => '20',
+    'bot_version' => '21',
 
     'name' => env('APP_NAME', 'Laravel'),
 
