@@ -49,6 +49,10 @@
                             <th scope="col">Max. Zarar</th>
                             <th scope="col">BRS_M</th>
                             <th scope="col">BRS_T</th>
+                            <th scope="col">BRS_P1</th>
+                            <th scope="col">BRS_P2</th>
+                            <th scope="col">BRS_P3</th>
+                            <th scope="col">BRS_P4</th>
                             <th scope="col">BRS_LIMIT</th>
                             <th scope="col">Durum</th>
                             <th scope="col"><i class="bi bi-arrow-clockwise"></i></th>
@@ -77,6 +81,26 @@
                                     <td>
                                         <div class="input-group input-group-sm">
                                             <input type="text" class="form-control" {{ $forbidden ? 'disabled="disabled"':'' }} name="update[BRS_T]" value="{{ $time->BRS_T }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" {{ $forbidden ? 'disabled="disabled"':'' }} name="update[BRS_P1]" value="{{ $time->BRS_P1 }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" {{ $forbidden ? 'disabled="disabled"':'' }} name="update[BRS_P2]" value="{{ $time->BRS_P2 }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" {{ $forbidden ? 'disabled="disabled"':'' }} name="update[BRS_P3]" value="{{ $time->BRS_P3 }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" class="form-control" {{ $forbidden ? 'disabled="disabled"':'' }} name="update[BRS_P4]" value="{{ $time->BRS_P4 }}">
                                         </div>
                                     </td>
                                     <td>

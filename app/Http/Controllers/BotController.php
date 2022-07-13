@@ -357,6 +357,10 @@ class BotController extends Controller
                         'date' => $time->export_time,
                         'M' => $time->BRS_M,
                         'T' => $time->BRS_T,
+                        'BRS_P1' => $time->BRS_P1,
+                        'BRS_P2' => $time->BRS_P2,
+                        'BRS_P3' => $time->BRS_P3,
+                        'BRS_P4' => $time->BRS_P4,
                         'ceil' => $time->ceil,
                         'proxy' => $proxy
                     ];

@@ -95,7 +95,7 @@ def parse(kline):
     return df
 
 
-def brs(klines3mGroup, M=0, T=0, lastTime=0):
+def brs(klines3mGroup, M=0, T=0, P1=2.5, P2=2.5, P3=3, P4=5, lastTime=0):
     # Klines 3M
     klines3mFilter = []
     for m3 in klines3mGroup:
@@ -121,10 +121,10 @@ def brs(klines3mGroup, M=0, T=0, lastTime=0):
     df3m = parse(klines3m)
     if lastTime < klines3m[-1][0]:
         BRS = ((list(df3m['Close'])[-1] - (sum(df3m['Low']) / len(df3m['Low']))) / ((sum(df3m['High']) / len(df3m['High'])) - (sum(df3m['Low']) / len(df3m['Low'])))) * 100
-        M = 2.5 / 3 * M + 0.5 / 3 * BRS
-        T = 2.5 / 3 * T + 0.5 / 3 * M
+        M = P1 / P3 * M + (P3 - P1) / P3 * BRS
+        T = P2 / P3 * T + (P3 - P2) / P3 * M
         C = 3 * M - 2 * T
-        if C > T:
+        if (C + P4) > T:
             result = {
                 'type': 'LONG',
                 'side': 'BUY',
@@ -214,7 +214,7 @@ while True:
                         else:
                             klines3mGroup[quarter].append(m3)
                     klines3mGroup = klines3mGroup.values()
-                    BRS = brs(klines3mGroup, parity['M'], parity['T'], parity['date'])
+                    BRS = brs(klines3mGroup, parity['M'], parity['T'], parity['BRS_P1'], parity['BRS_P2'], parity['BRS_P3'], parity['BRS_P4'], parity['date'])
                     if BRS:
                         if ceil_date((BRS['date'] + 180000), minutes=15) != parity['ceil'] and parity['ceil'] != "0" and parity['ceil'] != 0:
                             parity['ceil'] = ceil_date((BRS['date'] + 180000), minutes=15)

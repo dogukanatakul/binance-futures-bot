@@ -94,6 +94,10 @@ class AdminController extends Controller
             'update.MAX_DAMAGE_USDT_PERCENT' => 'required|filled|numeric',
             'update.BRS_M' => 'required|filled|numeric',
             'update.BRS_T' => 'required|filled|numeric',
+            'update.BRS_P1' => 'required|filled|numeric',
+            'update.BRS_P2' => 'required|filled|numeric',
+            'update.BRS_P3' => 'required|filled|numeric',
+            'update.BRS_P4' => 'required|filled|numeric',
             'update.BRS_LIMIT' => 'required|filled|integer|min:1',
         ]);
         if ($validator->fails()) {
