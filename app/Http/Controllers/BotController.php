@@ -115,7 +115,7 @@ class BotController extends Controller
                     ->where('orders_id', $order->id)
                     ->forceDelete();
             }
-            if ((!empty($stopOrder = Order::where('status', 2)->where('bot', $bot)->first())) and $request->filled('action') and ($request->action == "STOP" or $request->action == "CLOSE" or $request->action == "CLOSE_TRIGGER")) {
+            if ((!empty($stopOrder = Order::where('status', 2)->where('bot', $bot)->first())) and $request->filled('action') and ($request->action == "STOP" or $request->action == "CLOSE")) {
                 Bot::where('uuid', $bot)->delete();
                 $stopOrder->status = 3;
                 $stopOrder->finish = now()->toDateTime();
