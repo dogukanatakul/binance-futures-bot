@@ -257,24 +257,25 @@ while True:
                                 positionConnect = True
                                 positionConnectCount = 0
                                 position = {}
-                                try:
-                                    position = getPosition(client, getBot['parity'], botElements['lastType'])
-                                    if position['status'] == 'fail':
-                                        raise Exception(position['message'])
-                                    positionConnect = False
-                                except Exception as e:
-                                    logging.error(str(e))
-                                    positionConnectCount += 1
-                                    if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and positionConnectCount < 3:
-                                        time.sleep(float(config('SETTING', 'TIME_SLEEP')))
-                                    elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= positionConnectCount <= 6):
-                                        proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
-                                        }).json()
-                                        getBot['proxy'] = proxyOrder['proxy']
-                                        client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
-                                    else:
-                                        raise Exception(e)
+                                while positionConnect:
+                                    try:
+                                        position = getPosition(client, getBot['parity'], botElements['lastType'])
+                                        if position['status'] == 'fail':
+                                            raise Exception(position['message'])
+                                        positionConnect = False
+                                    except Exception as e:
+                                        logging.error(str(e))
+                                        positionConnectCount += 1
+                                        if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and positionConnectCount < 3:
+                                            time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                                        elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= positionConnectCount <= 6):
+                                            proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
+                                                'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
+                                            }).json()
+                                            getBot['proxy'] = proxyOrder['proxy']
+                                            client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': getBot['proxy']})
+                                        else:
+                                            raise Exception(e)
                                 if position['amount'] > 0:
                                     # Binance
                                     botElements['orderStatus'] = False
@@ -437,23 +438,25 @@ while True:
                                 position = {}
                                 positionConnect = True
                                 positionConnectCount = 0
-                                try:
-                                    position = getPosition(client, getBot['parity'], botElements['lastType'])
-                                    if position['status'] == 'fail':
-                                        raise Exception(position['message'])
-                                    positionConnect = False
-                                except Exception as e:
-                                    logging.error(str(e))
-                                    positionConnectCount += 1
-                                    if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and positionConnectCount < 3:
-                                        time.sleep(float(config('SETTING', 'TIME_SLEEP')))
-                                    elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= positionConnectCount <= 6):
-                                        proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
-                                            'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
-                                        }).json()
-                                        client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
-                                    else:
-                                        raise Exception(e)
+                                while positionConnect:
+                                    try:
+                                        position = getPosition(client, getBot['parity'], botElements['lastType'])
+                                        if position['status'] == 'fail':
+                                            raise Exception(position['message'])
+                                        positionConnect = False
+                                    except Exception as e:
+                                        logging.error(str(e))
+                                        positionConnectCount += 1
+                                        if ("Max retries exceeded" in str(e) or "Too many requests" in str(e) or "recvWindow" in str(e) or "Connection broken" in str(e) or "Please try again" in str(e)) and positionConnectCount < 3:
+                                            time.sleep(float(config('SETTING', 'TIME_SLEEP')))
+                                        elif "Way too many requests" in str(e) or "Read timed out." in str(e) or (3 <= positionConnectCount <= 6):
+                                            proxyOrder = requests.post(url + 'proxy-order/' + str(getBot['bot']), headers={
+                                                'rndUuid': '794d6f4b-f875-4ad1-aafa-b2e77a04bf58'
+                                            }).json()
+                                            client = Client(str(getBot['api_key']), str(getBot['api_secret']), {"timeout": 40, 'proxies': proxyOrder})
+                                        else:
+                                            raise Exception(e)
+
                                 if position['amount'] <= 0:
                                     raise Exception('close')
                                 jsonData(getBot['bot'], 'SET', botElements)
