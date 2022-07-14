@@ -7,7 +7,7 @@
                     <a href="{{ route('panel.admin.dashboard') }}" class="btn btn-outline-warning btn-sm">Geri Dön</a>
                 </div>
             </div>
-            <div class="col-12" style="max-width: 100%;max-height:40vh;overflow-x:auto;overflow-y: auto">
+            <div class="col-12" style="max-width: 100%;max-height:75vh;overflow-x:auto;overflow-y: auto">
                 <table class="table table-striped table-dark">
                     <thead>
                     <tr>
