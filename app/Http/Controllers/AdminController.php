@@ -175,7 +175,6 @@ class AdminController extends Controller
     {
         $user = User::where('login_key', $this->user)->first();
         $orders = Order::with('user', 'order_operation')->orderBy('status', 'ASC')->orderBy('id', 'DESC')->get();
-        header("Refresh: 5;");
         return view('admin.orders', compact('orders', 'user'));
     }
 
