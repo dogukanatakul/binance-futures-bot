@@ -23,6 +23,7 @@ return new class extends Migration {
             $table->string("position_side")->nullable()->default(null);
             $table->string("action")->nullable()->default(null);
             $table->decimal("profit", 38, 22)->default(0);
+            $table->decimal("commission", 38, 22)->default(0);
 
             $table->string("BRS")->nullable()->default(null);
             $table->string("BRS_M")->nullable()->default(null);
